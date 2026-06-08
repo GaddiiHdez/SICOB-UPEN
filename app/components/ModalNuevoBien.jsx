@@ -144,6 +144,51 @@ export default function ModalNuevoBien({ initialData, categorias, ubicaciones, d
 
   const handleChange = (e) => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
 
+  const handleUploadColectorJson = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const data = JSON.parse(event.target.result);
+        
+        if (!data.numero_serie && !data.marca && !data.modelo) {
+          setError('El archivo JSON no parece ser un reporte válido del colector SICOB.');
+          return;
+        }
+
+        setForm(f => ({
+          ...f,
+          marca: data.marca || f.marca,
+          modelo: data.modelo || f.modelo,
+          serial: data.numero_serie || f.serial,
+          descripcion: data.descripcion || f.descripcion || 'Computadora registrada mediante agente colector.',
+          especificaciones: {
+            ...f.especificaciones,
+            ...(data.especificaciones || {})
+          }
+        }));
+
+        if (data.categoria_sugerida && categorias) {
+          const matchCat = categorias.find(c => 
+            c.nombre.toLowerCase().includes(data.categoria_sugerida.toLowerCase())
+          );
+          if (matchCat) {
+            setForm(f => ({ ...f, categoriaId: matchCat.id }));
+          }
+        }
+
+        setError(null);
+        setActiveTab('especificaciones');
+      } catch (err) {
+        console.error(err);
+        setError('Error al leer el archivo JSON. Asegúrate de que no esté corrupto.');
+      }
+    };
+    reader.readAsText(file);
+  };
+
   // Manejo de Especificaciones Dinámicas
   const handleAddSpec = () => {
     if (!newSpec.key.trim() || !newSpec.value.trim()) return;
@@ -244,9 +289,42 @@ export default function ModalNuevoBien({ initialData, categorias, ubicaciones, d
               </div>
             )}
 
-            {/* TAB: GENERAL */}
             {activeTab === 'general' && (
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                {!isEdit && (
+                  <div style={{ gridColumn: '1/-1', display: 'flex', flexDirection: 'column', gap: 10, background: 'rgba(0, 113, 106, 0.04)', border: '1px dashed var(--primary)', borderRadius: 10, padding: '14px 16px', marginBottom: 6 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+                      <div style={{ flex: 1, minWidth: 260 }}>
+                        <strong style={{ fontSize: 13, color: 'var(--primary)', display: 'block', fontWeight: 700 }}>💻 Autocompletar con Agente Colector</strong>
+                        <span style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 2, display: 'block', lineHeight: 1.4 }}>
+                          Descarga el script en la computadora nueva, ejecútalo para generar su ficha técnica en un archivo JSON y súbelo aquí.
+                        </span>
+                      </div>
+                      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                        <a 
+                          href="/colector-sicob.ps1" 
+                          download="colector-sicob.ps1"
+                          className="btn btn-secondary" 
+                          style={{ fontSize: 11, padding: '6px 12px', height: 'auto', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4, fontWeight: 600 }}
+                        >
+                          📥 Descargar Script
+                        </a>
+                        <label 
+                          className="btn btn-primary" 
+                          style={{ fontSize: 11, padding: '6px 12px', height: 'auto', display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer', margin: 0, fontWeight: 600 }}
+                        >
+                          🔌 Cargar JSON
+                          <input 
+                            type="file" 
+                            accept=".json" 
+                            onChange={handleUploadColectorJson}
+                            style={{ display: 'none' }} 
+                          />
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                )}
                 <div><label className="form-label">Marca</label><input className="form-input" name="marca" value={form.marca} onChange={handleChange} required disabled={loading} /></div>
                 <div><label className="form-label">Modelo</label><input className="form-input" name="modelo" value={form.modelo} onChange={handleChange} required disabled={loading} /></div>
                 <div>
