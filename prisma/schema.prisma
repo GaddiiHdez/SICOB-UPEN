@@ -1,0 +1,143 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Bien {
+  id                Int          @id @default(autoincrement())
+  codigo_inventario String       @unique
+  numero_serie      String       @unique
+  marca             String
+  modelo            String
+  estado            String       // "Activo", "Mantenimiento", "En reserva", "Baja"
+  descripcion       String?      @db.Text
+  especificaciones     Json         // Almacenamiento flexible de atributos específicos (ej. RAM, procesador, autonomía)
+  fecha_adquisicion    DateTime?
+  programa_adquisicion String?      // Programa o fondo de compra (ej. "Programa U079")
+  valor_estimado       Float?
+  imagen_url           String?      @db.Text
+  eliminado            Boolean      @default(false)  // Soft delete: true = dado de baja lógicamente
+  eliminadoEn          DateTime?                     // Fecha en que se dio de baja
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+
+  // Relaciones
+  categoriaId       Int
+  categoria         Categoria    @relation(fields: [categoriaId], references: [id])
+  ubicacionId       Int
+  ubicacion         Ubicacion    @relation(fields: [ubicacionId], references: [id])
+  departamentoId    Int?         // Departamento administrativo
+  departamento      Departamento? @relation(fields: [departamentoId], references: [id])
+  asignaciones      Asignacion[]
+  mantenimientos    Mantenimiento[]
+
+  // Índices para acelerar las consultas más frecuentes
+  @@index([eliminado, estado])
+  @@index([eliminado, categoriaId])
+  @@index([eliminado, departamentoId])
+}
+
+model Categoria {
+  id          Int      @id @default(autoincrement())
+  nombre      String   @unique // "Cómputo", "Monitores", "Redes", "Drones", "Cámaras", etc.
+  descripcion String?  @db.Text
+  icono       String?  @default("🏷️")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  bienes      Bien[]
+}
+
+model Ubicacion {
+  id          Int      @id @default(autoincrement())
+  nombre      String   @unique // "Laboratorio A", "Aula 5", "Biblioteca", etc.
+  edificio    String?  // "Edificio A", "Edificio B", etc.
+  encargado   String?  // Nombre del docente o administrativo encargado de la LLAVE/Espacio
+  icono       String?  @default("🏫")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  bienes      Bien[]
+  departamentos Departamento[]
+}
+
+model Departamento {
+  id          Int      @id @default(autoincrement())
+  nombre      String   @unique // "Ciencias Básicas", "Ingeniería", "Rectoría", etc.
+  jefe        String?  // Nombre del titular o jefe de departamento
+  icono       String?  @default("🏢")
+  ubicacionId Int?     // Ubicación física de la oficina principal
+  ubicacion   Ubicacion? @relation(fields: [ubicacionId], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  bienes      Bien[]
+  personal    Personal[]
+}
+
+model Personal {
+  id             Int          @id @default(autoincrement())
+  nombre         String
+  correo         String       @unique
+  puesto         String?      // "Docente", "Jefe de Departamento", "Secretaria", etc.
+  noRegistrado   Boolean      @default(false)
+  departamentoId Int?
+  departamento   Departamento? @relation(fields: [departamentoId], references: [id])
+  asignaciones   Asignacion[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model Usuario {
+  id            Int          @id @default(autoincrement())
+  nombre        String
+  correo        String       @unique
+  rol           String       // "ADMINISTRADOR" o "USUARIO"
+  password_hash String
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+}
+
+model Asignacion {
+  id               Int       @id @default(autoincrement())
+  fecha_asignacion DateTime  @default(now())
+  fecha_retorno    DateTime?
+  observaciones    String?   @db.Text
+  estado_entrega   String    // Estado en el que se entregó ("Activo", "Bueno", etc.)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  // Relaciones
+  bienId           Int
+  bien             Bien      @relation(fields: [bienId], references: [id])
+  personalId       Int
+  personal         Personal  @relation(fields: [personalId], references: [id])
+}
+
+model Configuracion {
+  id          Int      @id @default(autoincrement())
+  clave       String   @unique // Ej. "formato_codigo_inventario"
+  valor       String   // Ej. "UPEN-{CAT}-{YEAR}-{CORRELATIVO}"
+  descripcion String?  @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Mantenimiento {
+  id                    Int       @id @default(autoincrement())
+  bienId                Int
+  bien                  Bien      @relation(fields: [bienId], references: [id], onDelete: Cascade)
+  tipo                  String    // "Preventivo" o "Correctivo"
+  descripcion           String    @db.Text
+  costo                 Float?
+  fecha_mantenimiento   DateTime  @default(now())
+  proximo_mantenimiento DateTime? // Fecha programada para el siguiente mantenimiento preventivo
+  tecnico_encargado     String?   // Nombre de quien realiza la revisión
+  estado                String    // "Programado", "En proceso", "Completado"
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+}
