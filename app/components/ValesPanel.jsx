@@ -502,7 +502,7 @@ export default function ValesPanel({ bienes, personal, configuracion = {}, showT
                       value={motivo} 
                       onChange={e => setMotivo(e.target.value)} 
                       required
-                      style={{ minHeight: 60, resize: 'vertical' }}
+                      style={{ minHeight: 80, resize: 'vertical' }}
                     />
                   </div>
 
@@ -514,7 +514,7 @@ export default function ValesPanel({ bienes, personal, configuracion = {}, showT
                       placeholder="Detalles sobre el estado del empaque, accesorios que salen o condiciones de entrega..."
                       value={observaciones} 
                       onChange={e => setObservaciones(e.target.value)} 
-                      style={{ minHeight: 60, resize: 'vertical' }}
+                      style={{ minHeight: 140, resize: 'vertical' }}
                     />
                   </div>
 
@@ -528,7 +528,7 @@ export default function ValesPanel({ bienes, personal, configuracion = {}, showT
                   </label>
                   
                   {/* Buscador de Bienes */}
-                  <div className="search-input-wrap" style={{ flexShrink: 0 }}>
+                  <div className="search-input-wrap" style={{ flex: 'none' }}>
                     <span className="search-icon">🔍</span>
                     <input 
                       type="text" 
