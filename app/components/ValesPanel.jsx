@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect, useMemo, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { formatDateLong as formatDate } from '@/lib/formatters';
 
 export default function ValesPanel({ bienes, personal, configuracion = {}, showToast, refreshBienes }) {
@@ -12,6 +13,7 @@ export default function ValesPanel({ bienes, personal, configuracion = {}, showT
   const [showNuevoModal, setShowNuevoModal] = useState(false);
   const [selectedVale, setSelectedVale] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
   // Campos del Formulario de Nuevo Vale
   const [responsableId, setResponsableId] = useState('');
@@ -56,6 +58,7 @@ export default function ValesPanel({ bienes, personal, configuracion = {}, showT
   };
 
   useEffect(() => {
+    setIsMounted(true);
     fetchVales();
   }, []);
 
@@ -398,7 +401,7 @@ export default function ValesPanel({ bienes, personal, configuracion = {}, showT
       {/* ========================================== */}
       {/* MODAL: REGISTRAR NUEVO VALE DE SALIDA     */}
       {/* ========================================== */}
-      {showNuevoModal && (
+      {isMounted && showNuevoModal && createPortal(
         <div className="modal-overlay" onClick={() => setShowNuevoModal(false)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
           <div className="modal-box" onClick={e => e.stopPropagation()} style={{ maxWidth: 850, width: '95%', maxHeight: '90vh', display: 'flex', flexDirection: 'column' }}>
             
@@ -613,13 +616,14 @@ export default function ValesPanel({ bienes, personal, configuracion = {}, showT
             </form>
 
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* ========================================== */}
       {/* MODAL: VER DETALLE / VALE DE SALIDA IMPRIMIBLE */}
       {/* ========================================== */}
-      {selectedVale && (
+      {isMounted && selectedVale && createPortal(
         <div className="modal-overlay modal-vale-print-overlay" onClick={() => setSelectedVale(null)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
           <div className="modal-box modal-vale-print-box" onClick={e => e.stopPropagation()} style={{ maxWidth: 800, width: '95%', maxHeight: '90vh', display: 'flex', flexDirection: 'column' }}>
             
@@ -837,7 +841,8 @@ export default function ValesPanel({ bienes, personal, configuracion = {}, showT
             </div>
 
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
     </div>

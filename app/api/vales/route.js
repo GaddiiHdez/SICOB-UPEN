@@ -28,6 +28,13 @@ export async function GET(request) {
           }
         }
       });
+      if (vale && vale.bienes) {
+        vale.bienes = vale.bienes.map(b => ({
+          ...b,
+          nombre: `${b.marca} ${b.modelo}`,
+          icono: b.categoria?.icono || '🔧'
+        }));
+      }
       return NextResponse.json(vale);
     }
 
@@ -45,16 +52,32 @@ export async function GET(request) {
         bienes: {
           select: {
             id: true,
-            nombre: true,
+            marca: true,
+            modelo: true,
             codigo_inventario: true,
             numero_serie: true,
-            icono: true
+            categoria: {
+              select: {
+                icono: true
+              }
+            }
           }
         }
       }
     });
 
-    return NextResponse.json(vales);
+    const formattedVales = vales.map(v => ({
+      ...v,
+      bienes: v.bienes.map(b => ({
+        id: b.id,
+        nombre: `${b.marca} ${b.modelo}`,
+        codigo_inventario: b.codigo_inventario,
+        numero_serie: b.numero_serie,
+        icono: b.categoria?.icono || '🔧'
+      }))
+    }));
+
+    return NextResponse.json(formattedVales);
   } catch (error) {
     console.error('❌ Error en GET /api/vales:', error);
     return NextResponse.json({ error: 'Error al listar los vales de salida.' }, { status: 500 });
@@ -113,9 +136,21 @@ export async function POST(request) {
       },
       include: {
         personal: true,
-        bienes: true
+        bienes: {
+          include: {
+            categoria: true
+          }
+        }
       }
     });
+
+    if (nuevoVale && nuevoVale.bienes) {
+      nuevoVale.bienes = nuevoVale.bienes.map(b => ({
+        ...b,
+        nombre: `${b.marca} ${b.modelo}`,
+        icono: b.categoria?.icono || '🔧'
+      }));
+    }
 
     return NextResponse.json(nuevoVale);
   } catch (error) {
@@ -168,9 +203,21 @@ export async function PUT(request) {
       data: updateData,
       include: {
         personal: true,
-        bienes: true
+        bienes: {
+          include: {
+            categoria: true
+          }
+        }
       }
     });
+
+    if (valeActualizado && valeActualizado.bienes) {
+      valeActualizado.bienes = valeActualizado.bienes.map(b => ({
+        ...b,
+        nombre: `${b.marca} ${b.modelo}`,
+        icono: b.categoria?.icono || '🔧'
+      }));
+    }
 
     return NextResponse.json(valeActualizado);
   } catch (error) {
