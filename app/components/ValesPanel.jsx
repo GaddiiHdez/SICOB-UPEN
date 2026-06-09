@@ -729,6 +729,12 @@ export default function ValesPanel({ bienes, personal, configuracion = {}, showT
                     <td style={{ padding: '6px 8px', border: '1px solid #ddd', background: '#f9f9f9', fontWeight: 'bold' }}>Motivo de Comisión:</td>
                     <td style={{ padding: '6px 8px', border: '1px solid #ddd' }} colSpan={3}>{selectedVale.motivo}</td>
                   </tr>
+                  {selectedVale.observaciones && (
+                    <tr>
+                      <td style={{ padding: '6px 8px', border: '1px solid #ddd', background: '#f9f9f9', fontWeight: 'bold' }}>Observaciones:</td>
+                      <td style={{ padding: '6px 8px', border: '1px solid #ddd' }} colSpan={3}>{selectedVale.observaciones}</td>
+                    </tr>
+                  )}
                   {selectedVale.fecha_retorno && (
                     <tr>
                       <td style={{ padding: '6px 8px', border: '1px solid #ddd', background: 'rgba(16, 185, 129, 0.08)', color: '#10B981', fontWeight: 'bold' }}>Fecha de Retorno Real:</td>
