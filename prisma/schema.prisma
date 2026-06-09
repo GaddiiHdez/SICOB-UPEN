@@ -37,6 +37,7 @@ model Bien {
   departamento      Departamento? @relation(fields: [departamentoId], references: [id])
   asignaciones      Asignacion[]
   mantenimientos    Mantenimiento[]
+  vales             ValeSalida[] @relation("ValesBienes")
 
   // Índices para acelerar las consultas más frecuentes
   @@index([eliminado, estado])
@@ -88,6 +89,7 @@ model Personal {
   departamentoId Int?
   departamento   Departamento? @relation(fields: [departamentoId], references: [id])
   asignaciones   Asignacion[]
+  vales          ValeSalida[]
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 }
@@ -140,4 +142,20 @@ model Mantenimiento {
   estado                String    // "Programado", "En proceso", "Completado"
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
+}
+
+model ValeSalida {
+  id               Int       @id @default(autoincrement())
+  folio            String    @unique
+  personalId       Int
+  personal         Personal  @relation(fields: [personalId], references: [id])
+  bienes           Bien[]    @relation("ValesBienes")
+  fecha_salida     DateTime  @default(now())
+  fecha_estimada   DateTime
+  fecha_retorno    DateTime?
+  motivo           String    @db.Text
+  estado           String    @default("PENDIENTE") // "PENDIENTE", "DEVUELTO", "VENCIDO"
+  observaciones    String?   @db.Text
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 }

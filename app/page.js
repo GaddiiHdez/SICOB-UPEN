@@ -18,6 +18,7 @@ import ModalImportador from '@/app/components/ModalImportador';
 import ModalAutogenerarLote from '@/app/components/ModalAutogenerarLote';
 import ModalConfirmarBorrado from '@/app/components/ModalConfirmarBorrado';
 import AuditoriaPanel from '@/app/components/auditoria/AuditoriaPanel';
+import ValesPanel from '@/app/components/ValesPanel';
 import { generateBarcodeSVG } from '@/lib/barcode';
 import { useInventarioData } from '@/hooks/useInventarioData';
 import { useNotifications }  from '@/hooks/useNotifications';
@@ -972,6 +973,17 @@ export default function HomePage() {
             <AuditoriaPanel
               bienes={bienes}
               ubicaciones={ubicaciones}
+              showToast={showToast}
+              refreshBienes={fetchData}
+            />
+          )}
+
+          {/* ── VALES DE SALIDA Y PRÉSTAMOS TEMPORALES ───────────── */}
+          {activeNav === 'vales' && (
+            <ValesPanel
+              bienes={bienes}
+              personal={personal}
+              configuracion={configuracion}
               showToast={showToast}
               refreshBienes={fetchData}
             />

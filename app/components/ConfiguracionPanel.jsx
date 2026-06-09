@@ -280,7 +280,7 @@ export default function ConfiguracionPanel({ bienes, showToast, configuracion = 
       <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '24px', boxShadow: 'var(--shadow-card)', display: 'flex', flexDirection: 'column', gap: 8 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div className="content-panel-label">Parámetros Globales</div>
-          <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>v0.10.0 (Pre-lanzamiento)</span>
+          <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>v0.11.0 (Pre-lanzamiento)</span>
         </div>
         <h2 style={{ fontSize: 24, fontWeight: 700, letterSpacing: '-0.03em', marginTop: 4 }}>Configuración General del Sistema</h2>
         <p style={{ color: 'var(--text-secondary)', fontSize: 13, marginTop: 4 }}>
