@@ -48,6 +48,14 @@ export default function ConfiguracionPanel({ bienes, showToast, configuracion = 
   const [logoBase64, setLogoBase64]   = useState('');
   const [savingIdentity, setSavingIdentity] = useState(false);
 
+  // Estados de Firmas Oficiales
+  const [firmaPatrimonioNombre, setFirmaPatrimonioNombre] = useState('Arq. Ricardo A.');
+  const [firmaPatrimonioPuesto, setFirmaPatrimonioPuesto] = useState('Jefe del Departamento de Adquisiciones y Control Patrimonial');
+  const [firmaJefeNombre, setFirmaJefeNombre] = useState('Ing. Lya Paola Estrada Ramirez');
+  const [firmaJefePuesto, setFirmaJefePuesto] = useState('Jefa del Departamento de Informática');
+  const [firmaTecnicoNombre, setFirmaTecnicoNombre] = useState('Henry Gaddiel Hernandez Cortes');
+  const [firmaTecnicoPuesto, setFirmaTecnicoPuesto] = useState('Ingeniero en Sistemas');
+
   // ── Estado compartido: Respaldos ──────────────────────────
   const [backupsList, setBackupsList]           = useState([]);
   const [loadingBackups, setLoadingBackups]     = useState(false);
@@ -79,6 +87,12 @@ export default function ConfiguracionPanel({ bienes, showToast, configuracion = 
       if (configuracion?.nombre_institucion)          setUnivName(configuracion.nombre_institucion);
       if (configuracion?.siglas_institucion)          setUnivAcronym(configuracion.siglas_institucion);
       if (configuracion?.logo_institucion)            setLogoBase64(configuracion.logo_institucion);
+      if (configuracion?.firma_patrimonio_nombre)     setFirmaPatrimonioNombre(configuracion.firma_patrimonio_nombre);
+      if (configuracion?.firma_patrimonio_puesto)     setFirmaPatrimonioPuesto(configuracion.firma_patrimonio_puesto);
+      if (configuracion?.firma_jefe_nombre)           setFirmaJefeNombre(configuracion.firma_jefe_nombre);
+      if (configuracion?.firma_jefe_puesto)           setFirmaJefePuesto(configuracion.firma_jefe_puesto);
+      if (configuracion?.firma_tecnico_nombre)         setFirmaTecnicoNombre(configuracion.firma_tecnico_nombre);
+      if (configuracion?.firma_tecnico_puesto)         setFirmaTecnicoPuesto(configuracion.firma_tecnico_puesto);
       if (configuracion?.cabecera_etiqueta_impresion) setCabecera(configuracion.cabecera_etiqueta_impresion);
       setEtiquetaMostrarCabecera(configuracion?.etiqueta_mostrar_cabecera !== 'false');
       setEtiquetaMostrarMarcaModelo(configuracion?.etiqueta_mostrar_marca_modelo !== 'false');
@@ -164,7 +178,17 @@ export default function ConfiguracionPanel({ bienes, showToast, configuracion = 
     try {
       const res = await fetch('/api/configuracion', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nombre_institucion: univName.trim(), siglas_institucion: univAcronym.trim(), logo_institucion: logoBase64 })
+        body: JSON.stringify({ 
+          nombre_institucion: univName.trim(), 
+          siglas_institucion: univAcronym.trim(), 
+          logo_institucion: logoBase64,
+          firma_patrimonio_nombre: firmaPatrimonioNombre.trim(),
+          firma_patrimonio_puesto: firmaPatrimonioPuesto.trim(),
+          firma_jefe_nombre: firmaJefeNombre.trim(),
+          firma_jefe_puesto: firmaJefePuesto.trim(),
+          firma_tecnico_nombre: firmaTecnicoNombre.trim(),
+          firma_tecnico_puesto: firmaTecnicoPuesto.trim()
+        })
       });
       if (!res.ok) throw new Error('Error al guardar');
       if (showToast) showToast('¡Identidad institucional guardada exitosamente!', 'success');
@@ -280,7 +304,7 @@ export default function ConfiguracionPanel({ bienes, showToast, configuracion = 
       <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '24px', boxShadow: 'var(--shadow-card)', display: 'flex', flexDirection: 'column', gap: 8 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div className="content-panel-label">Parámetros Globales</div>
-          <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>v0.11.0 (Pre-lanzamiento)</span>
+          <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>v0.12.0 (Pre-lanzamiento)</span>
         </div>
         <h2 style={{ fontSize: 24, fontWeight: 700, letterSpacing: '-0.03em', marginTop: 4 }}>Configuración General del Sistema</h2>
         <p style={{ color: 'var(--text-secondary)', fontSize: 13, marginTop: 4 }}>
@@ -341,6 +365,12 @@ export default function ConfiguracionPanel({ bienes, showToast, configuracion = 
             logoBase64={logoBase64} setLogoBase64={setLogoBase64}
             saving={savingIdentity}
             onSave={handleSaveIdentity}
+            firmaPatrimonioNombre={firmaPatrimonioNombre} setFirmaPatrimonioNombre={setFirmaPatrimonioNombre}
+            firmaPatrimonioPuesto={firmaPatrimonioPuesto} setFirmaPatrimonioPuesto={setFirmaPatrimonioPuesto}
+            firmaJefeNombre={firmaJefeNombre} setFirmaJefeNombre={setFirmaJefeNombre}
+            firmaJefePuesto={firmaJefePuesto} setFirmaJefePuesto={setFirmaJefePuesto}
+            firmaTecnicoNombre={firmaTecnicoNombre} setFirmaTecnicoNombre={setFirmaTecnicoNombre}
+            firmaTecnicoPuesto={firmaTecnicoPuesto} setFirmaTecnicoPuesto={setFirmaTecnicoPuesto}
           />
         )}
         {activeTab === 'sistema' && (

@@ -12,7 +12,8 @@ export default function AuditoriaPanel({
   bienes = [], 
   ubicaciones = [], 
   showToast, 
-  refreshBienes 
+  refreshBienes,
+  configuracion = {}
 }) {
   const [step, setStep] = useState('select'); // 'select' | 'audit' | 'report'
   const [ubicacionSeleccionada, setUbicacionSeleccionada] = useState(null);
@@ -242,6 +243,7 @@ export default function AuditoriaPanel({
             setScannedCodes([]);
           }}
           showToast={showToast}
+          configuracion={configuracion}
         />
       )}
     </div>

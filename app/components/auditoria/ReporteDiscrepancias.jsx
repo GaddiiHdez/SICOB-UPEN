@@ -13,7 +13,8 @@ export default function ReporteDiscrepancias({
   onFixLocation, 
   onFixAll, 
   onReset,
-  showToast
+  showToast,
+  configuracion = {}
 }) {
   const [activeTab, setActiveTab] = useState('resumen');
   const [isFixing, setIsFixing] = useState(false);
@@ -550,7 +551,8 @@ export default function ReporteDiscrepancias({
         <div style={{ textAlign: 'center', width: '40%' }}>
           <div style={{ height: 60, borderBottom: '1px solid #000' }}></div>
           <div style={{ fontSize: 11, fontWeight: 700, marginTop: 6 }}>Firma Técnico Auditor</div>
-          <div style={{ fontSize: 9, color: '#555', marginTop: 2 }}>Auditor de Bienes Informáticos</div>
+          <div style={{ fontSize: 9, fontWeight: 600, color: '#000', marginTop: 2 }}>{configuracion.firma_tecnico_nombre || "Técnico Auditor"}</div>
+          <div style={{ fontSize: 8, color: '#6B7280' }}>{configuracion.firma_tecnico_puesto || "Auditor de Bienes Informáticos"}</div>
         </div>
         <div style={{ textAlign: 'center', width: '40%' }}>
           <div style={{ height: 60, borderBottom: '1px solid #000' }}></div>

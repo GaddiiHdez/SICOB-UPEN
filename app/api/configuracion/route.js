@@ -23,6 +23,24 @@ export async function GET() {
     if (!configMap['logo_institucion']) {
       configMap['logo_institucion'] = '';
     }
+    if (!configMap['firma_patrimonio_nombre']) {
+      configMap['firma_patrimonio_nombre'] = 'Arq. Ricardo A.';
+    }
+    if (!configMap['firma_patrimonio_puesto']) {
+      configMap['firma_patrimonio_puesto'] = 'Jefe del Departamento de Adquisiciones y Control Patrimonial';
+    }
+    if (!configMap['firma_jefe_nombre']) {
+      configMap['firma_jefe_nombre'] = 'Ing. Lya Paola Estrada Ramirez';
+    }
+    if (!configMap['firma_jefe_puesto']) {
+      configMap['firma_jefe_puesto'] = 'Jefa del Departamento de Informática';
+    }
+    if (!configMap['firma_tecnico_nombre']) {
+      configMap['firma_tecnico_nombre'] = 'Henry Gaddiel Hernandez Cortes';
+    }
+    if (!configMap['firma_tecnico_puesto']) {
+      configMap['firma_tecnico_puesto'] = 'Ingeniero en Sistemas';
+    }
     if (!configMap['etiqueta_mostrar_cabecera']) {
       configMap['etiqueta_mostrar_cabecera'] = 'true';
     }

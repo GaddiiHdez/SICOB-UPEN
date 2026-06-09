@@ -506,11 +506,11 @@ export default function ResguardosPanel({ bienes, showToast, refreshBienes, conf
                 <div style={{ flex: 1, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                   <div style={{ height: 48, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
                     <span style={{ fontFamily: 'monospace', fontSize: 11, borderBottom: '1px solid #111827', paddingBottom: 4, width: 180 }}>
-                      Arq. Ricardo A.
+                      {configuracion.firma_patrimonio_nombre || "Arq. Ricardo A."}
                     </span>
                   </div>
                   <div style={{ fontSize: 10, fontWeight: 700, color: '#111827', marginTop: 8 }}>Entrega y Autoriza</div>
-                  <div style={{ fontSize: 9, color: '#6B7280' }}>Jefe de Control Patrimonial UPEN</div>
+                  <div style={{ fontSize: 9, color: '#6B7280' }}>{configuracion.firma_patrimonio_puesto || "Jefe de Control Patrimonial UPEN"}</div>
                 </div>
 
                 <div style={{ flex: 1, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>

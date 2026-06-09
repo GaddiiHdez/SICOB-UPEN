@@ -106,7 +106,7 @@ export default function Login({ onLoginSuccess }) {
             <span>•</span>
             <a href="#" onClick={(e) => e.preventDefault()}>Soporte Técnico</a>
             <span>•</span>
-            <span style={{ fontWeight: 600, color: 'var(--accent)' }}>v0.11.0 (Pre-lanzamiento)</span>
+            <span style={{ fontWeight: 600, color: 'var(--accent)' }}>v0.12.0 (Pre-lanzamiento)</span>
           </div>
         </footer>
       </div>

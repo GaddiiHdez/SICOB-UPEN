@@ -975,6 +975,7 @@ export default function HomePage() {
               ubicaciones={ubicaciones}
               showToast={showToast}
               refreshBienes={fetchData}
+              configuracion={configuracion}
             />
           )}
 

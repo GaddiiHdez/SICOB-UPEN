@@ -789,7 +789,8 @@ export default function ValesPanel({ bienes, personal, configuracion = {}, showT
                 <div>
                   <div style={{ height: 45, borderBottom: '1px solid #000', width: '85%', margin: '0 auto' }}></div>
                   <div style={{ fontWeight: 'bold', marginTop: 8 }}>Entregó / Autorizó</div>
-                  <div style={{ fontSize: 9, color: '#666' }}>Control Operativo de Bienes</div>
+                  <div style={{ fontSize: 9, fontWeight: 600, color: '#000' }}>{configuracion.firma_patrimonio_nombre || "Control de Bienes"}</div>
+                  <div style={{ fontSize: 8, color: '#666' }}>{configuracion.firma_patrimonio_puesto || "Control Operativo de Bienes"}</div>
                 </div>
 
                 <div>
@@ -811,7 +812,8 @@ export default function ValesPanel({ bienes, personal, configuracion = {}, showT
                     )}
                   </div>
                   <div style={{ fontWeight: 'bold', marginTop: 8 }}>Recibió de Retorno</div>
-                  <div style={{ fontSize: 9, color: '#666' }}>Control Operativo de Bienes</div>
+                  <div style={{ fontSize: 9, fontWeight: 600, color: '#000' }}>{configuracion.firma_patrimonio_nombre || "Control de Bienes"}</div>
+                  <div style={{ fontSize: 8, color: '#666' }}>{configuracion.firma_patrimonio_puesto || "Control Operativo de Bienes"}</div>
                   <div style={{ fontSize: 8, color: '#999', marginTop: 2 }}>
                     {selectedVale.fecha_retorno ? `Fecha: ${new Date(selectedVale.fecha_retorno).toLocaleDateString('es-MX')}` : '(Firma al regresar)'}
                   </div>

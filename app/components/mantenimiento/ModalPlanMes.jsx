@@ -129,14 +129,14 @@ export default function ModalPlanMes({ planMes, mantenimientos, configuracion, g
             <div style={{ flex: 1, textAlign: 'center' }}>
               <div style={{ borderTop: '1px solid #111827', width: '200px', margin: '0 auto', paddingTop: 6 }}></div>
               <div style={{ fontSize: 10, fontWeight: 700, color: '#111827' }}>Elaboró</div>
-              <div style={{ fontSize: 9, color: '#4B5563', marginTop: 2 }}>Encargado de Soporte Técnico</div>
-              <div style={{ fontSize: 8, color: '#6B7280' }}>Departamento de Informática</div>
+              <div style={{ fontSize: 9, color: '#4B5563', marginTop: 2 }}>{configuracion.firma_tecnico_nombre || "Encargado de Soporte Técnico"}</div>
+              <div style={{ fontSize: 8, color: '#6B7280' }}>{configuracion.firma_tecnico_puesto || "Departamento de Informática"}</div>
             </div>
             <div style={{ flex: 1, textAlign: 'center' }}>
               <div style={{ borderTop: '1px solid #111827', width: '200px', margin: '0 auto', paddingTop: 6 }}></div>
               <div style={{ fontSize: 10, fontWeight: 700, color: '#111827' }}>Autorizó</div>
-              <div style={{ fontSize: 9, color: '#4B5563', marginTop: 2 }}>Jefe del Departamento de Informática</div>
-              <div style={{ fontSize: 8, color: '#6B7280' }}>{configuracion?.nombre_institucion || 'Universidad Politécnica del Estado'}</div>
+              <div style={{ fontSize: 9, color: '#4B5563', marginTop: 2 }}>{configuracion.firma_jefe_nombre || "Jefe del Departamento de Informática"}</div>
+              <div style={{ fontSize: 8, color: '#6B7280' }}>{configuracion.firma_jefe_puesto || "Departamento de Informática"}</div>
             </div>
           </div>
         </div>

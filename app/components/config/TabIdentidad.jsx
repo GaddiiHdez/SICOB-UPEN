@@ -21,7 +21,13 @@ export default function TabIdentidad({
   univName, setUnivName,
   univAcronym, setUnivAcronym,
   logoBase64, setLogoBase64,
-  saving, onSave
+  saving, onSave,
+  firmaPatrimonioNombre, setFirmaPatrimonioNombre,
+  firmaPatrimonioPuesto, setFirmaPatrimonioPuesto,
+  firmaJefeNombre, setFirmaJefeNombre,
+  firmaJefePuesto, setFirmaJefePuesto,
+  firmaTecnicoNombre, setFirmaTecnicoNombre,
+  firmaTecnicoPuesto, setFirmaTecnicoPuesto
 }) {
   const logoInputRef = useRef(null);
 
@@ -117,6 +123,58 @@ export default function TabIdentidad({
                 <div style={{ fontSize: 10, color: 'var(--text-secondary)', marginTop: 6 }}>
                   PNG o JPG recomendado con fondo transparente. Máx 2MB.
                 </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Firmas y Cargos Oficiales */}
+          <div style={{ borderTop: '1px solid var(--border)', paddingTop: 14, marginTop: 4, display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div>
+              <h4 style={{ fontSize: 13, fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>Firmas y Cargos Oficiales</h4>
+              <p style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 2 }}>
+                Configura los nombres y puestos oficiales que aparecerán al calzar las firmas en actas, vales y constancias.
+              </p>
+            </div>
+
+            {/* 1. Control de Bienes / Almacén */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div>
+                <label className="form-label">Firma: Control de Bienes (Nombre)</label>
+                <input className="form-input" value={firmaPatrimonioNombre} onChange={e => setFirmaPatrimonioNombre(e.target.value)}
+                  placeholder="Nombre del responsable" />
+              </div>
+              <div>
+                <label className="form-label">Puesto / Cargo</label>
+                <input className="form-input" value={firmaPatrimonioPuesto} onChange={e => setFirmaPatrimonioPuesto(e.target.value)}
+                  placeholder="Cargo del responsable" />
+              </div>
+            </div>
+
+            {/* 2. Jefe del Departamento */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div>
+                <label className="form-label">Firma: Jefa/e de Departamento (Nombre)</label>
+                <input className="form-input" value={firmaJefeNombre} onChange={e => setFirmaJefeNombre(e.target.value)}
+                  placeholder="Nombre de la/el jefa/e" />
+              </div>
+              <div>
+                <label className="form-label">Puesto / Cargo</label>
+                <input className="form-input" value={firmaJefePuesto} onChange={e => setFirmaJefePuesto(e.target.value)}
+                  placeholder="Cargo oficial" />
+              </div>
+            </div>
+
+            {/* 3. Técnico de Soporte */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div>
+                <label className="form-label">Firma: Técnico de Soporte (Nombre)</label>
+                <input className="form-input" value={firmaTecnicoNombre} onChange={e => setFirmaTecnicoNombre(e.target.value)}
+                  placeholder="Nombre del técnico" />
+              </div>
+              <div>
+                <label className="form-label">Puesto / Cargo</label>
+                <input className="form-input" value={firmaTecnicoPuesto} onChange={e => setFirmaTecnicoPuesto(e.target.value)}
+                  placeholder="Cargo del técnico" />
               </div>
             </div>
           </div>
