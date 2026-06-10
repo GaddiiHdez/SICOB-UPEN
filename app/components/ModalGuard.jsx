@@ -1,40 +1,79 @@
 "use client";
-import { useEffect } from "react";
+import { useEffect, useState, useRef } from "react";
 
 /**
  * ModalGuard — Protector Global contra cierres accidentales de ventanas emergentes.
  *
  * 1. Detecta si el usuario escribe o modifica campos (input/change) dentro de un modal y marca el modal como sucio (data-dirty="true").
- * 2. Intercepta clics de cierre en la fase de captura para pedir confirmación si hay datos sin guardar.
+ * 2. Intercepta clics de cierre en la fase de captura para pedir confirmación si hay datos sin guardar mediante un diálogo personalizado premium.
  * 3. Protege la navegación nativa hacia atrás en dispositivos móviles (gesto swipe back / botón físico back) mediante historial de navegación (History API).
  */
 export default function ModalGuard() {
-  useEffect(() => {
-    let isHandlingPopState = false;
+  const [showConfirm, setShowConfirm] = useState(false);
+  const pendingActionRef = useRef(null);
+  const isHandlingPopStateRef = useRef(false);
 
-    // Helper para buscar y simular clic en el botón de cerrar/cancelar del modal
-    const clickCloseButton = (overlay) => {
-      const buttons = overlay.querySelectorAll("button, .btn-close, .close-btn, .modal-close, [data-close]");
-      for (const btn of buttons) {
-        const text = btn.textContent?.trim().toLowerCase() || "";
-        if (
-          text === "cancelar" ||
-          text === "cerrar" ||
-          text === "✕" ||
-          text === "x" ||
-          btn.classList.contains("btn-close") ||
-          btn.classList.contains("close-btn") ||
-          btn.classList.contains("modal-close") ||
-          btn.hasAttribute("data-close")
-        ) {
-          btn.click();
-          return;
-        }
+  // Helper para buscar y simular clic en el botón de cerrar/cancelar del modal
+  const clickCloseButton = (overlay) => {
+    const buttons = overlay.querySelectorAll("button, .btn-close, .close-btn, .modal-close, [data-close]");
+    for (const btn of buttons) {
+      const text = btn.textContent?.trim().toLowerCase() || "";
+      if (
+        text === "cancelar" ||
+        text === "cerrar" ||
+        text === "✕" ||
+        text === "x" ||
+        btn.classList.contains("btn-close") ||
+        btn.classList.contains("close-btn") ||
+        btn.classList.contains("modal-close") ||
+        btn.hasAttribute("data-close")
+      ) {
+        btn.click();
+        return;
       }
-      // Fallback: clic directo al overlay de fondo
-      overlay.click();
-    };
+    }
+    // Fallback: clic directo al overlay de fondo
+    overlay.click();
+  };
 
+  const handleAcceptConfirm = () => {
+    setShowConfirm(false);
+    if (!pendingActionRef.current) return;
+
+    const { trigger, overlay, isPopState, topOverlay } = pendingActionRef.current;
+
+    if (isPopState) {
+      isHandlingPopStateRef.current = true;
+      topOverlay.setAttribute("data-dirty", "false");
+      
+      const closeBtn = topOverlay.querySelector("button, .btn-close, .close-btn, .modal-close, [data-close]") || topOverlay;
+      closeBtn.click();
+      
+      window.history.back();
+      
+      setTimeout(() => {
+        isHandlingPopStateRef.current = false;
+      }, 100);
+    } else {
+      overlay.setAttribute("data-dirty", "false");
+      trigger.click();
+    }
+
+    pendingActionRef.current = null;
+  };
+
+  const handleCancelConfirm = () => {
+    setShowConfirm(false);
+    
+    if (pendingActionRef.current?.isPopState) {
+      // Re-insertar estado de modal en la historia para deshacer la navegación atrás
+      window.history.pushState({ modalOpen: true }, "");
+    }
+    
+    pendingActionRef.current = null;
+  };
+
+  useEffect(() => {
     // 1. Detectar cambios en campos del formulario dentro del modal
     const handleInput = (event) => {
       const target = event.target;
@@ -86,13 +125,15 @@ export default function ModalGuard() {
       if (isCloseAction && overlay) {
         const isDirty = overlay.getAttribute("data-dirty") === "true";
         if (isDirty) {
-          const confirmed = window.confirm(
-            "⚠️ Tienes información redactada o cambios sin guardar en este formulario.\n\n¿Estás seguro de que deseas salir? Perderás todos los datos ingresados."
-          );
-          if (!confirmed) {
-            event.preventDefault();
-            event.stopPropagation();
-          }
+          event.preventDefault();
+          event.stopPropagation();
+
+          pendingActionRef.current = {
+            trigger: target.closest("button, .btn-close, .close-btn, .modal-close, [data-close]") || overlay,
+            overlay,
+            isPopState: false
+          };
+          setShowConfirm(true);
         }
       }
     };
@@ -105,30 +146,22 @@ export default function ModalGuard() {
         const isDirty = topOverlay.getAttribute("data-dirty") === "true";
 
         if (isDirty) {
-          const confirmed = window.confirm(
-            "⚠️ Tienes información redactada o cambios sin guardar en este formulario.\n\n¿Estás seguro de que deseas salir? Perderás todos los datos ingresados."
-          );
-          if (confirmed) {
-            isHandlingPopState = true;
-            clickCloseButton(topOverlay);
-            setTimeout(() => {
-              isHandlingPopState = false;
-            }, 100);
-          } else {
-            // Re-insertar estado de modal en la historia para deshacer la navegación atrás
-            window.history.pushState({ modalOpen: true }, "");
-          }
+          pendingActionRef.current = {
+            isPopState: true,
+            topOverlay
+          };
+          setShowConfirm(true);
         } else {
-          isHandlingPopState = true;
+          isHandlingPopStateRef.current = true;
           clickCloseButton(topOverlay);
           setTimeout(() => {
-            isHandlingPopState = false;
+            isHandlingPopStateRef.current = false;
           }, 100);
         }
       }
     };
 
-    // 4. MutationObserver para sincronizar el historial cuando los modales se abren/cierran por otros medios
+    // 4. MutationObserver para sincronizar el historial
     const observer = new MutationObserver((mutations) => {
       for (const mutation of mutations) {
         for (const node of mutation.addedNodes) {
@@ -143,7 +176,7 @@ export default function ModalGuard() {
           if (node.nodeType === 1) {
             const isOverlay = node.classList.contains("modal-overlay") || node.querySelector(".modal-overlay");
             if (isOverlay) {
-              if (window.history.state?.modalOpen && !isHandlingPopState) {
+              if (window.history.state?.modalOpen && !isHandlingPopStateRef.current) {
                 window.history.back();
               }
             }
@@ -168,5 +201,119 @@ export default function ModalGuard() {
     };
   }, []);
 
-  return null;
+  return (
+    <>
+      {showConfirm && (
+        <div className="custom-confirm-overlay">
+          <div className="custom-confirm-box">
+            <div className="confirm-icon-wrap">
+              ⚠️
+            </div>
+            <h3>Cambios sin guardar</h3>
+            <p>
+              Tienes información redactada o cambios sin guardar en este formulario. ¿Estás seguro de que deseas salir? Perderás todos los datos ingresados.
+            </p>
+            <div className="confirm-buttons-wrap">
+              <button 
+                type="button" 
+                className="btn btn-ghost" 
+                onClick={handleCancelConfirm}
+              >
+                Permanecer
+              </button>
+              <button 
+                type="button" 
+                className="btn btn-primary btn-destructive" 
+                onClick={handleAcceptConfirm}
+              >
+                Descartar cambios
+              </button>
+            </div>
+          </div>
+          
+          <style jsx>{`
+            .custom-confirm-overlay {
+              position: fixed;
+              top: 0;
+              left: 0;
+              width: 100vw;
+              height: 100vh;
+              background: rgba(0, 0, 0, 0.4);
+              backdrop-filter: blur(8px);
+              -webkit-backdrop-filter: blur(8px);
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              z-index: 999999;
+              animation: confirmFadeIn 0.2s ease-out;
+            }
+            .custom-confirm-box {
+              background: var(--bg-card);
+              border: 1px solid var(--border);
+              border-radius: var(--radius-lg);
+              box-shadow: var(--shadow-lg);
+              max-width: 420px;
+              width: 90%;
+              padding: 28px;
+              text-align: center;
+              animation: confirmScaleIn 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            }
+            .confirm-icon-wrap {
+              width: 56px;
+              height: 56px;
+              border-radius: 50%;
+              background: rgba(245, 158, 11, 0.1);
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              margin: 0 auto 16px;
+              color: #F59E0B;
+              font-size: 24px;
+            }
+            .custom-confirm-box h3 {
+              font-size: 18px;
+              font-weight: 800;
+              margin: 0 0 10px;
+              color: var(--text-primary);
+            }
+            .custom-confirm-box p {
+              font-size: 13.5px;
+              color: var(--text-secondary);
+              line-height: 1.5;
+              margin: 0 0 24px;
+            }
+            .confirm-buttons-wrap {
+              display: flex;
+              gap: 12px;
+              justify-content: center;
+            }
+            .confirm-buttons-wrap :global(.btn) {
+              flex: 1;
+              font-size: 13px;
+              font-weight: 700;
+              padding: 10px 16px;
+              height: auto;
+            }
+            .confirm-buttons-wrap :global(.btn-destructive) {
+              background: #EF4444 !important;
+              border-color: #EF4444 !important;
+              color: #FFFFFF !important;
+            }
+            .confirm-buttons-wrap :global(.btn-destructive:hover) {
+              background: #DC2626 !important;
+              border-color: #DC2626 !important;
+            }
+            @keyframes confirmFadeIn {
+              from { opacity: 0; }
+              to { opacity: 1; }
+            }
+            @keyframes confirmScaleIn {
+              from { transform: scale(0.95); opacity: 0; }
+              to { transform: scale(1); opacity: 1; }
+            }
+          `}</style>
+        </div>
+      )}
+    </>
+  );
 }
