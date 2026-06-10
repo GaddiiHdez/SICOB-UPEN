@@ -496,7 +496,7 @@ export default function HomePage() {
   const scalePad = anchoMm / 30;
 
   return (
-    <div style={{ display: 'flex', height: '100vh', width: '100vw', overflow: 'hidden' }}>
+    <div className="root-layout-wrapper" style={{ display: 'flex', height: '100vh', width: '100vw', overflow: 'hidden' }}>
       <style dangerouslySetInnerHTML={{ __html: `
         @media print {
           body.printing-labels .printable-label {

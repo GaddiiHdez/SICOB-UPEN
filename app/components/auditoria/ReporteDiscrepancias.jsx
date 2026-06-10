@@ -634,6 +634,19 @@ export default function ReporteDiscrepancias({
 
       <style jsx global>{`
         @media print {
+          /* Resetear body y html para permitir múltiples páginas */
+          html, body {
+            height: auto !important;
+            overflow: visible !important;
+          }
+
+          /* Resetear el contenedor raíz de la página (con inline styles de 100vh y overflow hidden) */
+          body:not(.printing-labels) .root-layout-wrapper {
+            height: auto !important;
+            overflow: visible !important;
+            display: block !important;
+          }
+
           /* Resetear contenedores padres del layout Next.js y Caddy */
           body:not(.printing-labels) .main-layout {
             margin-left: 0 !important;
