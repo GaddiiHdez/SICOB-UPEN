@@ -19,15 +19,6 @@ const cleanDesc = (desc) => {
   return clean;
 };
 
-// ── Datos simulados de actividad reciente ────────────────────
-const ACTIVIDAD_RECIENTE = [
-  { id: 1, tipo: 'registro',     icono: '📦', texto: 'Dell Latitude 5420 registrado en inventario',      tiempo: 'Hace 2 horas',   color: 'green'  },
-  { id: 2, tipo: 'asignacion',   icono: '👤', texto: 'HP ProDesk 400 G7 asignado a Ana Martínez',        tiempo: 'Hace 4 horas',   color: 'blue'   },
-  { id: 3, tipo: 'mantenimiento',icono: '🔧', texto: 'Epson PowerLite X49 enviado a mantenimiento',      tiempo: 'Hace 1 día',     color: 'orange' },
-  { id: 4, tipo: 'baja',         icono: '⚠️', texto: 'DJI Mini 3 Pro dado de baja por daño irreparable', tiempo: 'Hace 2 días',    color: 'rose'   },
-  { id: 5, tipo: 'registro',     icono: '📦', texto: 'iPad Pro 12.9 registrado en Dirección',            tiempo: 'Hace 3 días',    color: 'green'  },
-];
-
 /**
  * Dashboard — Tablero principal del sistema de inventario UPEN.
  * Muestra KPIs, gráficos interactivos (SVG puro), accesos rápidos
@@ -189,12 +180,139 @@ export default function Dashboard({ bienes, categorias = [], ubicaciones = [], m
     return Object.entries(conteo)
       .map(([areaName, val]) => ({
         area: areaName,
+        amount: val, // Changed to val to preserve structure or maps
         cantidad: val,
         icono: ubicaciones.find(u => u.nombre === areaName)?.icono || '🏫'
       }))
       .sort((a, b) => b.cantidad - a.cantidad)
       .slice(0, 5);
   }, [bienes, ubicaciones]);
+
+  // ── Historial de Actividad Dinámico ───────────────────────────────
+  const actividadReciente = useMemo(() => {
+    const list = [];
+
+    // Helper interno para formatear tiempo relativo en español
+    const getRelativeTime = (dateInput) => {
+      if (!dateInput) return '';
+      const date = new Date(dateInput);
+      if (isNaN(date.getTime())) return '';
+      const now = new Date();
+      const diffMs = now - date;
+      
+      if (diffMs < 5000) return 'Hace unos momentos';
+      
+      const diffSecs = Math.floor(diffMs / 1000);
+      const diffMins = Math.floor(diffSecs / 60);
+      const diffHours = Math.floor(diffMins / 60);
+      const diffDays = Math.floor(diffHours / 24);
+
+      if (diffDays > 0) {
+        if (diffDays === 1) return 'Hace 1 día';
+        return `Hace ${diffDays} días`;
+      }
+      if (diffHours > 0) {
+        if (diffHours === 1) return 'Hace 1 hora';
+        return `Hace ${diffHours} horas`;
+      }
+      if (diffMins > 0) {
+        if (diffMins === 1) return 'Hace 1 minuto';
+        return `Hace ${diffMins} minutos`;
+      }
+      return `Hace ${diffSecs} segundos`;
+    };
+
+    // 1. Registros
+    bienes.forEach(b => {
+      if (b.createdAt) {
+        list.push({
+          id: `reg-${b.id}`,
+          date: new Date(b.createdAt),
+          tipo: 'registro',
+          icono: '📦',
+          texto: `${b.nombre} registrado en ${b.area && b.area !== 'Desconocida' ? b.area : 'inventario'}`,
+          color: 'green'
+        });
+      }
+    });
+
+    // 2. Asignaciones
+    bienes.forEach(b => {
+      if (b.fechaAsignacion && b.responsable && b.responsable !== 'Sin asignar') {
+        list.push({
+          id: `asig-${b.id}`,
+          date: new Date(b.fechaAsignacion),
+          tipo: 'asignacion',
+          icono: '👤',
+          texto: `${b.nombre} asignado a ${b.responsable}`,
+          color: 'blue'
+        });
+      }
+    });
+
+    // 3. Mantenimientos
+    mantenimientos.forEach(m => {
+      const bName = m.bien ? `${m.bien.marca} ${m.bien.modelo}` : 'Equipo';
+      const dateVal = m.fecha_mantenimiento || m.createdAt;
+      if (dateVal) {
+        if (m.estado === 'En proceso') {
+          list.push({
+            id: `mant-proc-${m.id}`,
+            date: new Date(dateVal),
+            tipo: 'mantenimiento',
+            icono: '🔧',
+            texto: `${bName} enviado a mantenimiento`,
+            color: 'orange'
+          });
+        } else if (m.estado === 'Completado') {
+          list.push({
+            id: `mant-comp-${m.id}`,
+            date: new Date(m.updatedAt || dateVal),
+            tipo: 'mantenimiento',
+            icono: '🔧',
+            texto: `${bName} - Mantenimiento completado`,
+            color: 'orange'
+          });
+        } else if (m.estado === 'Programado') {
+          list.push({
+            id: `mant-prog-${m.id}`,
+            date: new Date(m.createdAt || dateVal),
+            tipo: 'mantenimiento',
+            icono: '🔧',
+            texto: `${bName} - Mantenimiento programado`,
+            color: 'orange'
+          });
+        }
+      }
+    });
+
+    // 4. Bajas
+    bienes.forEach(b => {
+      if (b.eliminado || b.estado === 'Baja') {
+        const dateStr = b.eliminadoEn || b.updatedAt || b.createdAt;
+        if (dateStr) {
+          const reason = b.descripcion && b.descripcion.length < 50 ? ` por ${b.descripcion}` : '';
+          list.push({
+            id: `baja-${b.id}`,
+            date: new Date(dateStr),
+            tipo: 'baja',
+            icono: '⚠️',
+            texto: `${b.nombre} dado de baja${reason}`,
+            color: 'rose'
+          });
+        }
+      }
+    });
+
+    // Ordenar por fecha descendente (más recientes primero)
+    list.sort((a, b) => b.date - a.date);
+
+    // Tomar los 5 más recientes y asignar el tiempo relativo
+    return list.slice(0, 5).map(item => ({
+      ...item,
+      tiempo: getRelativeTime(item.date)
+    }));
+  }, [bienes, mantenimientos]);
 
   // ── KPIs ───────────────────────────────────────────────────
   const kpis = [
@@ -518,21 +636,27 @@ export default function Dashboard({ bienes, categorias = [], ubicaciones = [], m
             </div>
 
             <div className="dash-timeline">
-              {ACTIVIDAD_RECIENTE.map((a, i) => (
-                <div key={a.id} className="dash-timeline-item fade-in" style={{ animationDelay: `${0.55 + i * 0.06}s` }}>
-                  <div className="dash-timeline-line">
-                    <div className={`dash-timeline-dot dash-timeline-dot-${a.color}`}></div>
-                    {i < ACTIVIDAD_RECIENTE.length - 1 && <div className="dash-timeline-connector"></div>}
-                  </div>
-                  <div className="dash-timeline-content">
-                    <div className="dash-timeline-icon">{a.icono}</div>
-                    <div className="dash-timeline-body">
-                      <div className="dash-timeline-text">{a.texto}</div>
-                      <div className="dash-timeline-time">{a.tiempo}</div>
+              {actividadReciente.length === 0 ? (
+                <div style={{ fontSize: 12, color: 'var(--text-secondary)', fontStyle: 'italic', textAlign: 'center', padding: '24px 0' }}>
+                  📋 Sin actividad reciente registrada en el sistema.
+                </div>
+              ) : (
+                actividadReciente.map((a, i) => (
+                  <div key={a.id} className="dash-timeline-item fade-in" style={{ animationDelay: `${0.55 + i * 0.06}s` }}>
+                    <div className="dash-timeline-line">
+                      <div className={`dash-timeline-dot dash-timeline-dot-${a.color}`}></div>
+                      {i < actividadReciente.length - 1 && <div className="dash-timeline-connector"></div>}
+                    </div>
+                    <div className="dash-timeline-content">
+                      <div className="dash-timeline-icon">{a.icono}</div>
+                      <div className="dash-timeline-body">
+                        <div className="dash-timeline-text">{a.texto}</div>
+                        <div className="dash-timeline-time">{a.tiempo}</div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
 

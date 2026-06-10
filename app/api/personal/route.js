@@ -38,6 +38,20 @@ export async function GET() {
               }
             }
           }
+        },
+        inmobiliarios: {
+          where: {
+            eliminado: false
+          },
+          select: {
+            id: true,
+            codigo_inventario: true,
+            descripcion: true,
+            marca: true,
+            modelo: true,
+            estado: true,
+            valor_estimado: true
+          }
         }
       }
     });
@@ -139,7 +153,18 @@ export async function DELETE(request) {
 
     if (asignacionesActivas > 0) {
       return NextResponse.json({ 
-        error: `No se puede eliminar al empleado. Tiene ${asignacionesActivas} bien(es) asignado(s) bajo su resguardo activo.` 
+        error: `No se puede eliminar al empleado. Tiene ${asignacionesActivas} bien(es) tecnológico(s) asignado(s) bajo su resguardo activo.` 
+      }, { status: 400 });
+    }
+
+    // Validar que no tenga resguardos de mobiliario activos
+    const inmobiliariosActivos = await prisma.inmobiliario.count({
+      where: { personalId: idInt, eliminado: false }
+    });
+
+    if (inmobiliariosActivos > 0) {
+      return NextResponse.json({ 
+        error: `No se puede eliminar al empleado. Tiene ${inmobiliariosActivos} bien(es) de mobiliario asignado(s) bajo su resguardo activo.` 
       }, { status: 400 });
     }
 

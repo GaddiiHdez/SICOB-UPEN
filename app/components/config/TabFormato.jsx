@@ -77,11 +77,11 @@ export default function TabFormato({
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {[
                   {
-                    value: 'UPEN 3{CORRELATIVO:6}',
-                    label: '🔢 Formato Numérico Compacto (UPEN 3XXXXXX)',
-                    desc: 'Etiqueta de densidad compacta (30mm x 15mm). Ej: ',
-                    example: 'UPEN 3000042',
-                    active: format === 'UPEN 3{CORRELATIVO:6}'
+                    value: 'UPEN {CORRELATIVO:7}',
+                    label: '🔢 Formato Numérico Compacto (UPEN XXXXXXX)',
+                    desc: 'Etiqueta de densidad compacta (30mm x 15mm) con primer dígito dinámico. Ej: ',
+                    example: 'UPEN 3192110',
+                    active: format === 'UPEN {CORRELATIVO:7}'
                   },
                   {
                     value: 'UPEN-{CAT}-{YEAR}-{CORRELATIVO:4}',

@@ -13,6 +13,7 @@ export default function ReporteDiscrepancias({
   onFixLocation, 
   onFixAll, 
   onReset,
+  onBack,
   showToast,
   configuracion = {}
 }) {
@@ -42,8 +43,8 @@ export default function ReporteDiscrepancias({
       // Buscar si el código coincide con algún bien del sistema (por etiqueta o serie)
       const match = bienes.find(b => 
         !b.eliminado && 
-        ((b.codigo_inventario && b.codigo_inventario.toUpperCase() === upperCode) || 
-         (b.numero_serie && b.numero_serie.toUpperCase() === upperCode))
+        ((b.etiqueta && b.etiqueta.toUpperCase() === upperCode) || 
+         (b.serial && b.serial.toUpperCase() === upperCode))
       );
 
       if (match) {
@@ -84,7 +85,7 @@ export default function ReporteDiscrepancias({
       if (!res.ok) throw new Error(data.error || 'Error al actualizar la ubicación');
       
       showToast(`📍 Se actualizó la ubicación de "${bien.nombre}" a ${ubicacion.nombre} ✓`);
-      onFixLocation(bien.codigo_inventario);
+      onFixLocation(bien.etiqueta);
     } catch (err) {
       console.error(err);
       showToast(err.message || 'Error al corregir ubicación', 'error');
@@ -108,7 +109,7 @@ export default function ReporteDiscrepancias({
       if (!res.ok) throw new Error(data.error || 'Error al actualizar bienes en lote');
       
       showToast(`📍 Se actualizaron ${ids.length} bienes a la ubicación ${ubicacion.nombre} ✓`);
-      onFixAll(desubicados.map(b => b.codigo_inventario));
+      onFixAll(desubicados.map(b => b.etiqueta));
     } catch (err) {
       console.error(err);
       showToast(err.message || 'Error en corrección masiva', 'error');
@@ -128,7 +129,7 @@ export default function ReporteDiscrepancias({
     : 0;
 
   return (
-    <div className="fade-in" style={{ padding: '10px 0' }}>
+    <div className="fade-in printable-audit-area" style={{ padding: '10px 0' }}>
       
       {/* Cabecera del Reporte */}
       <div style={{ 
@@ -152,6 +153,11 @@ export default function ReporteDiscrepancias({
           </p>
         </div>
         <div style={{ display: 'flex', gap: 10 }} className="no-print">
+          {onBack && (
+            <button className="btn btn-ghost" onClick={onBack} style={{ display: 'flex', alignItems: 'center', gap: 6, borderColor: 'var(--border)' }}>
+              ⬅️ Volver a Escanear
+            </button>
+          )}
           <button className="btn btn-ghost" onClick={handlePrint} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             🖨️ Imprimir Reporte
           </button>
@@ -235,8 +241,7 @@ export default function ReporteDiscrepancias({
       <div className="report-content-print">
 
         {/* 1. SECCIÓN: RESUMEN (Gráfica de Barra de Conciliación + Conclusión) */}
-        {(activeTab === 'resumen' || typeof window === 'undefined') && (
-          <div className="print-section" style={{ display: activeTab === 'resumen' ? 'block' : 'none' }}>
+        <div className="print-section resumen-section" style={{ display: activeTab === 'resumen' ? 'block' : 'none' }}>
             <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: 20, marginBottom: 20 }}>
               <h3 style={{ fontSize: 15, fontWeight: 800, margin: '0 0 16px', color: 'var(--text-primary)' }}>
                 Estado General del Espacio
@@ -308,11 +313,9 @@ export default function ReporteDiscrepancias({
               {/* Se inserta por css en @media print */}
             </div>
           </div>
-        )}
 
         {/* 2. SECCIÓN: CORRECTOS */}
-        {(activeTab === 'correctos' || typeof window === 'undefined') && (
-          <div className="print-section" style={{ display: activeTab === 'correctos' ? 'block' : 'none', marginBottom: 24 }}>
+        <div className="print-section correctos-section" style={{ display: activeTab === 'correctos' ? 'block' : 'none', marginBottom: 24 }}>
             <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: 20 }}>
               <h3 style={{ fontSize: 14, fontWeight: 800, margin: '0 0 14px', color: 'var(--text-primary)' }}>
                 Equipos Físicos en Ubicación Correcta ({correctos.length})
@@ -337,14 +340,14 @@ export default function ReporteDiscrepancias({
                     {correctos.map(b => (
                       <tr key={b.id}>
                         <td style={{ fontFamily: 'monospace', fontWeight: 700 }}>
-                          {b.codigo_inventario.startsWith('SIN-NUMERO-') ? 'S/N' : b.codigo_inventario}
+                          {b.etiqueta.startsWith('SIN-NUMERO-') ? 'S/N' : b.etiqueta}
                         </td>
                         <td>
                           <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{b.nombre}</div>
-                          <div style={{ fontSize: 10, color: 'var(--text-secondary)' }}>Categoría: {b.categoria?.nombre || 'General'}</div>
+                          <div style={{ fontSize: 10, color: 'var(--text-secondary)' }}>Categoría: {b.categoria || 'General'}</div>
                         </td>
                         <td>{b.marca} {b.modelo}</td>
-                        <td style={{ fontFamily: 'monospace' }}>{b.numero_serie || 'N/S'}</td>
+                        <td style={{ fontFamily: 'monospace' }}>{b.serial || 'N/S'}</td>
                         <td>
                           <span className={`badge ${b.estado === 'Activo' ? 'badge-active' : 'badge-warning'}`} style={{ fontSize: 10 }}>
                             {b.estado}
@@ -357,11 +360,9 @@ export default function ReporteDiscrepancias({
               )}
             </div>
           </div>
-        )}
 
         {/* 3. SECCIÓN: DESUBICADOS (Otra Área) */}
-        {(activeTab === 'desubicados' || typeof window === 'undefined') && (
-          <div className="print-section" style={{ display: activeTab === 'desubicados' ? 'block' : 'none', marginBottom: 24 }}>
+        <div className="print-section desubicados-section" style={{ display: activeTab === 'desubicados' ? 'block' : 'none', marginBottom: 24 }}>
             <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: 20 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }} className="no-print">
                 <h3 style={{ fontSize: 14, fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>
@@ -411,16 +412,16 @@ export default function ReporteDiscrepancias({
                     {desubicados.map(b => (
                       <tr key={b.id}>
                         <td style={{ fontFamily: 'monospace', fontWeight: 700 }}>
-                          {b.codigo_inventario.startsWith('SIN-NUMERO-') ? 'S/N' : b.codigo_inventario}
+                          {b.etiqueta.startsWith('SIN-NUMERO-') ? 'S/N' : b.etiqueta}
                         </td>
                         <td>
                           <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{b.nombre}</div>
-                          <div style={{ fontSize: 10, color: 'var(--text-secondary)' }}>S/N: {b.numero_serie}</div>
+                          <div style={{ fontSize: 10, color: 'var(--text-secondary)' }}>S/N: {b.serial || 'N/S'}</div>
                         </td>
                         <td>{b.marca} {b.modelo}</td>
                         <td>
                           <div style={{ fontWeight: 600, color: '#F59E0B' }}>
-                            ⚠️ {b.ubicacion?.nombre || 'Bodega'}
+                            ⚠️ {b.area || 'Bodega'}
                           </div>
                         </td>
                         <td style={{ textAlign: 'center' }} className="no-print">
@@ -446,11 +447,9 @@ export default function ReporteDiscrepancias({
               )}
             </div>
           </div>
-        )}
 
         {/* 4. SECCIÓN: FALTANTES */}
-        {(activeTab === 'faltantes' || typeof window === 'undefined') && (
-          <div className="print-section" style={{ display: activeTab === 'faltantes' ? 'block' : 'none', marginBottom: 24 }}>
+        <div className="print-section faltantes-section" style={{ display: activeTab === 'faltantes' ? 'block' : 'none', marginBottom: 24 }}>
             <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: 20 }}>
               <h3 style={{ fontSize: 14, fontWeight: 800, margin: '0 0 14px', color: 'var(--text-primary)' }}>
                 Equipos Faltantes (No encontrados físicamente) ({faltantes.length})
@@ -475,14 +474,14 @@ export default function ReporteDiscrepancias({
                     {faltantes.map(b => (
                       <tr key={b.id} style={{ opacity: 0.85 }}>
                         <td style={{ fontFamily: 'monospace', fontWeight: 700, color: '#EF4444' }}>
-                          {b.codigo_inventario.startsWith('SIN-NUMERO-') ? 'S/N' : b.codigo_inventario}
+                          {b.etiqueta.startsWith('SIN-NUMERO-') ? 'S/N' : b.etiqueta}
                         </td>
                         <td>
                           <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{b.nombre}</div>
-                          <div style={{ fontSize: 10, color: 'var(--text-secondary)' }}>Categoría: {b.categoria?.nombre || 'General'}</div>
+                          <div style={{ fontSize: 10, color: 'var(--text-secondary)' }}>Categoría: {b.categoria || 'General'}</div>
                         </td>
                         <td>{b.marca} {b.modelo}</td>
-                        <td style={{ fontFamily: 'monospace' }}>{b.numero_serie || 'N/S'}</td>
+                        <td style={{ fontFamily: 'monospace' }}>{b.serial || 'N/S'}</td>
                         <td>
                           <span className={`badge ${b.estado === 'Activo' ? 'badge-active' : 'badge-warning'}`} style={{ fontSize: 10 }}>
                             {b.estado}
@@ -495,54 +494,51 @@ export default function ReporteDiscrepancias({
               )}
             </div>
           </div>
-        )}
 
         {/* 5. SECCIÓN: NO REGISTRADOS */}
-        {noRegistrados.length > 0 && activeTab === 'noregistrados' && (
-          <div className="print-section no-print" style={{ display: 'block', marginBottom: 24 }}>
-            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: 20 }}>
-              <h3 style={{ fontSize: 14, fontWeight: 800, margin: '0 0 14px', color: 'var(--text-primary)' }}>
-                Códigos Escaneados No Registrados en el Sistema ({noRegistrados.length})
-              </h3>
-              
-              <div style={{
-                background: 'rgba(139, 92, 246, 0.05)',
-                border: '1px solid rgba(139, 92, 246, 0.15)',
-                borderRadius: 'var(--radius-md)',
-                padding: '12px 16px',
-                fontSize: 12,
-                color: 'var(--text-secondary)',
-                marginBottom: 16,
-                lineHeight: 1.5
-              }}>
-                ℹ️ Los siguientes códigos de barras o números de serie fueron detectados por el lector pero no coinciden con ningún bien registrado en la base de datos de <strong>GDI UPEN</strong>. Puedes registrar un nuevo bien o verificar si la etiqueta está maltratada.
-              </div>
-
-              <table className="inventory-table" style={{ width: '100%', fontSize: 12 }}>
-                <thead>
-                  <tr>
-                    <th style={{ textAlign: 'left' }}>Código / Serie Escaneado</th>
-                    <th style={{ textAlign: 'center', width: '25%' }}>Acción</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {noRegistrados.map((code, idx) => (
-                    <tr key={`${code}-${idx}`}>
-                      <td style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: 13, color: '#8B5CF6' }}>
-                        {code}
-                      </td>
-                      <td style={{ textAlign: 'center' }}>
-                        <span style={{ fontSize: 11, color: 'var(--text-secondary)', fontStyle: 'italic' }}>
-                          Usa la opción "+ Nuevo bien" en la cabecera e ingresa este código.
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+        <div className="print-section no-print" style={{ display: activeTab === 'noregistrados' ? 'block' : 'none', marginBottom: 24 }}>
+          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: 20 }}>
+            <h3 style={{ fontSize: 14, fontWeight: 800, margin: '0 0 14px', color: 'var(--text-primary)' }}>
+              Códigos Escaneados No Registrados en el Sistema ({noRegistrados.length})
+            </h3>
+            
+            <div style={{
+              background: 'rgba(139, 92, 246, 0.05)',
+              border: '1px solid rgba(139, 92, 246, 0.15)',
+              borderRadius: 'var(--radius-md)',
+              padding: '12px 16px',
+              fontSize: 12,
+              color: 'var(--text-secondary)',
+              marginBottom: 16,
+              lineHeight: 1.5
+            }}>
+              ℹ️ Los siguientes códigos de barras o números de serie fueron detectados por el lector pero no coinciden con ningún bien registrado en la base de datos de <strong>GDI UPEN</strong>. Puedes registrar un nuevo bien o verificar si la etiqueta está maltratada.
             </div>
+
+            <table className="inventory-table" style={{ width: '100%', fontSize: 12 }}>
+              <thead>
+                <tr>
+                  <th style={{ textAlign: 'left' }}>Código / Serie Escaneado</th>
+                  <th style={{ textAlign: 'center', width: '25%' }}>Acción</th>
+                </tr>
+              </thead>
+              <tbody>
+                {noRegistrados.map((code, idx) => (
+                  <tr key={`${code}-${idx}`}>
+                    <td style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: 13, color: '#8B5CF6' }}>
+                      {code}
+                    </td>
+                    <td style={{ textAlign: 'center' }}>
+                      <span style={{ fontSize: 11, color: 'var(--text-secondary)', fontStyle: 'italic' }}>
+                        Usa la opción "+ Nuevo bien" en la cabecera e ingresa este código.
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-        )}
+        </div>
 
       </div>
 
@@ -563,81 +559,107 @@ export default function ReporteDiscrepancias({
 
       <style jsx global>{`
         @media print {
-          body * {
-            visibility: hidden;
-          }
-          .main-content, .main-content * {
-            visibility: hidden;
-          }
-          .report-header-print, .report-header-print * {
-            visibility: visible;
-          }
-          .kpi-grid-print, .kpi-grid-print * {
-            visibility: visible;
-          }
-          .report-content-print, .report-content-print * {
-            visibility: visible;
-          }
-          .signature-area, .signature-area * {
-            visibility: visible;
-            display: flex !important;
+          /* Hacer visible el contenedor de la auditoría y sus descendientes */
+          body:not(.printing-labels) .printable-audit-area,
+          body:not(.printing-labels) .printable-audit-area * {
+            visibility: visible !important;
           }
           
-          /* Forzar layouts de impresión limpios */
-          .no-print {
+          /* Ocultar elementos de navegación y de la interfaz general */
+          .no-print,
+          body:not(.printing-labels) .sidebar,
+          body:not(.printing-labels) .main-header,
+          body:not(.printing-labels) .no-print,
+          body:not(.printing-labels) .toast {
             display: none !important;
           }
+
+          /* Forzar elementos exclusivos de impresión */
           .print-only {
             display: block !important;
           }
+          
+          .signature-area {
+            display: flex !important;
+            margin-top: 40px !important;
+            justify-content: space-between !important;
+            padding: 0 40px !important;
+            page-break-inside: avoid;
+          }
+
+          /* Estilos de diseño para impresión en flujo normal (sin absolute positioning) */
+          .printable-audit-area {
+            position: relative !important;
+            width: 100% !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            background: #ffffff !important;
+            color: #000000 !important;
+          }
+
           .report-header-print {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
             border: none !important;
             box-shadow: none !important;
             padding: 0 0 16px 0 !important;
             border-bottom: 2px solid #333 !important;
+            margin-bottom: 20px !important;
+            background: transparent !important;
           }
+
+          .report-header-print h2 {
+            color: #000000 !important;
+          }
+
           .kpi-grid-print {
-            position: absolute;
-            left: 0;
-            top: 100px;
-            width: 100%;
             display: grid !important;
             grid-template-columns: repeat(4, 1fr) !important;
             gap: 12px !important;
+            margin-bottom: 24px !important;
           }
+
+          .stat-card {
+            border: 1px solid #ccc !important;
+            box-shadow: none !important;
+            padding: 10px !important;
+            background: transparent !important;
+            border-left: 1px solid #ccc !important;
+          }
+
+          .stat-card * {
+            color: #000000 !important;
+          }
+
           .report-content-print {
-            position: absolute;
-            left: 0;
-            top: 220px;
-            width: 100%;
+            width: 100% !important;
           }
+
           .print-section {
             display: block !important;
             page-break-inside: avoid;
             margin-bottom: 30px !important;
           }
+
           .print-section table {
             border-collapse: collapse !important;
             width: 100% !important;
             margin-top: 10px;
           }
+
           .print-section th, .print-section td {
             border: 1px solid #ddd !important;
             padding: 8px !important;
             font-size: 10pt !important;
+            color: #000000 !important;
           }
+
           .print-section th {
             background-color: #f5f5f5 !important;
-            color: #000 !important;
+            color: #000000 !important;
+            font-weight: bold !important;
           }
-          .stat-card {
-            border: 1px solid #ccc !important;
-            box-shadow: none !important;
-            padding: 10px !important;
+
+          .print-section td {
+            background-color: transparent !important;
           }
         }
       `}</style>

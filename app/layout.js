@@ -1,4 +1,5 @@
 import "./globals.css";
+import ModalGuard from "./components/ModalGuard";
 
 export const metadata = {
   title: "GDI UPEN - Gestor de Inventario Tecnológico",
@@ -19,6 +20,7 @@ export default function RootLayout({ children }) {
         />
       </head>
       <body>
+        <ModalGuard />
         {children}
       </body>
     </html>

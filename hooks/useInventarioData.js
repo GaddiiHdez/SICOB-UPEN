@@ -86,7 +86,11 @@ export function useInventarioData(isAuthenticated, showToast) {
         programa_adquisicion: b.programa_adquisicion,
         valor_estimado:    b.valor_estimado,
         imagen_url:        b.imagen_url,
-        eliminado:         b.eliminado
+        eliminado:         b.eliminado,
+        eliminadoEn:       b.eliminadoEn,
+        createdAt:         b.createdAt,
+        updatedAt:         b.updatedAt,
+        fechaAsignacion:   b.asignaciones?.[0]?.fecha_asignacion || null
       }));
 
       setBienes(bienesTransformados);

@@ -1,9 +1,11 @@
 'use client';
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { ESTADOS_BIEN, ESTADO_BADGE } from '@/lib/constants';
+import ModalExportador from '@/app/components/ModalExportador';
 
 export default function ReportesPanel({ bienes = [], categorias = [], ubicaciones = [], departamentos = [], mantenimientos = [], showToast, configuracion = {} }) {
   const [activeTab, setActiveTab] = useState('hoja-vida');
+  const [showExportModal, setShowExportModal] = useState(false);
 
   // ── ESTADOS PESTAÑA: HOJA DE VIDA ───────────────────────────
   const [selectedBienId, setSelectedBienId] = useState('');
@@ -238,45 +240,13 @@ export default function ReportesPanel({ bienes = [], categorias = [], ubicacione
     return found ? found.nombre : 'Todos';
   }, [departamentos, filterDepId]);
 
-  // Exportación a CSV
+  // Exportación a Excel/PDF
   const handleExportCSV = () => {
     if (bienesReportados.length === 0) {
       alert('No hay registros en el reporte actual para exportar.');
       return;
     }
-
-    // Construir cabeceras
-    const headers = ['ID', 'No. de Inventario', 'Serie', 'Nombre', 'Categoria', 'Ubicacion', 'Depto. / Coordinación', 'Estado', 'Valor Estimado', 'Programa Adquisicion', 'Responsable'];
-    const rows = bienesReportados.map(b => [
-      b.id,
-      b.etiqueta.startsWith('SIN-NUMERO-') ? 'S/N' : b.etiqueta,
-      b.serial,
-      b.nombre,
-      b.categoria || 'Otro',
-      b.area || 'Desconocida',
-      b.departamento || 'Sin departamento',
-      b.estado,
-      b.valor_estimado || 0,
-      b.programa_adquisicion || 'General',
-      b.responsable || 'Sin asignar'
-    ]);
-
-    // Unir en formato CSV seguro (UTF-8 con BOM para Excel)
-    const csvContent = "\uFEFF" + [
-      headers.join(','),
-      ...rows.map(r => r.map(val => `"${String(val).replace(/"/g, '""')}"`).join(','))
-    ].join('\n');
-
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.setAttribute('href', url);
-    link.setAttribute('download', `reporte_inventario_${new Date().toISOString().split('T')[0]}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
-    if (showToast) showToast('Reporte descargado como Excel/CSV ✓');
+    setShowExportModal(true);
   };
 
   const handlePrint = () => {
@@ -1007,6 +977,16 @@ export default function ReportesPanel({ bienes = [], categorias = [], ubicacione
             </div>
           </div>
         </div>
+      )}
+
+      {showExportModal && (
+        <ModalExportador
+          onClose={() => setShowExportModal(false)}
+          data={bienesReportados}
+          selectedIds={[]}
+          configuracion={configuracion}
+          type="bienes"
+        />
       )}
     </div>
   );

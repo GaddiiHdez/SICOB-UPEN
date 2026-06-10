@@ -120,8 +120,14 @@ export default function PersonalExplorer({ departamentos, showToast, refreshBien
 
   // Calcular valor acumulado de los bienes a cargo de una persona
   const getValorAcumulado = (empleado) => {
-    if (!empleado || !empleado.asignaciones) return 0;
-    return empleado.asignaciones.reduce((sum, item) => sum + (item.bien?.valor_estimado || 0), 0);
+    if (!empleado) return 0;
+    const bienesValor = empleado.asignaciones
+      ? empleado.asignaciones.reduce((sum, item) => sum + (item.bien?.valor_estimado || 0), 0)
+      : 0;
+    const inmobValor = empleado.inmobiliarios
+      ? empleado.inmobiliarios.reduce((sum, item) => sum + (item.valor_estimado || 0), 0)
+      : 0;
+    return bienesValor + inmobValor;
   };
 
   // Formatear valor como moneda
@@ -197,6 +203,7 @@ export default function PersonalExplorer({ departamentos, showToast, refreshBien
                 personal.map(p => {
                   const isSelected = selectedEmpleado?.id === p.id;
                   const totalBienes = p.asignaciones?.length || 0;
+                  const totalInmob = p.inmobiliarios?.length || 0;
                   const valorTotal = getValorAcumulado(p);
                   return (
                     <tr
@@ -266,16 +273,30 @@ export default function PersonalExplorer({ departamentos, showToast, refreshBien
                         </div>
                       </td>
                       <td style={{ textAlign: 'center' }}>
-                        <span style={{
-                          fontSize: 11,
-                          fontWeight: 600,
-                          padding: '3px 8px',
-                          borderRadius: 10,
-                          background: totalBienes > 0 ? 'rgba(59, 130, 246, 0.1)' : 'var(--border)',
-                          color: totalBienes > 0 ? '#3B82F6' : 'var(--text-secondary)'
-                        }}>
-                          {totalBienes} equipo{totalBienes !== 1 ? 's' : ''}
-                        </span>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'center' }}>
+                          <span style={{
+                            fontSize: 10.5,
+                            fontWeight: 600,
+                            padding: '2px 6px',
+                            borderRadius: 8,
+                            background: totalBienes > 0 ? 'rgba(59, 130, 246, 0.1)' : 'var(--border)',
+                            color: totalBienes > 0 ? '#3B82F6' : 'var(--text-secondary)',
+                            display: 'inline-block'
+                          }}>
+                            💻 {totalBienes} eq.
+                          </span>
+                          <span style={{
+                            fontSize: 10.5,
+                            fontWeight: 600,
+                            padding: '2px 6px',
+                            borderRadius: 8,
+                            background: totalInmob > 0 ? 'rgba(20, 184, 166, 0.1)' : 'var(--border)',
+                            color: totalInmob > 0 ? '#14B8A6' : 'var(--text-secondary)',
+                            display: 'inline-block'
+                          }}>
+                            🪑 {totalInmob} mob.
+                          </span>
+                        </div>
                       </td>
                       <td style={{ textAlign: 'right', fontSize: 12, fontWeight: 600 }}>
                         {formatCurrency(valorTotal)}
@@ -397,53 +418,102 @@ export default function PersonalExplorer({ departamentos, showToast, refreshBien
             </div>
 
             {/* Listado de Bienes en Custodia */}
-            <div>
-              <h4 style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 12 }}>
-                📋 Bienes Tecnológicos bajo su Resguardo ({selectedEmpleado.asignaciones?.length || 0})
-              </h4>
-              <div style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 10,
-                maxHeight: '40vh',
-                overflowY: 'auto',
-                paddingRight: 4
-              }}>
-                {(!selectedEmpleado.asignaciones || selectedEmpleado.asignaciones.length === 0) ? (
-                  <div style={{ padding: '40px 0', textTransform: 'uppercase', fontSize: 10, letterSpacing: '0.05em', color: 'var(--text-secondary)', textAlign: 'center', fontStyle: 'italic' }}>
-                    Este empleado no tiene bienes asignados actualmente.
-                  </div>
-                ) : (
-                  selectedEmpleado.asignaciones.map(item => {
-                    if (!item.bien) return null;
-                    return (
-                      <div
-                        key={item.id}
-                        style={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                          padding: '12px 14px',
-                          borderRadius: 'var(--radius-md)',
-                          border: '1px solid var(--border)',
-                          background: 'var(--bg-body)'
-                        }}
-                      >
-                        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                          <span style={{ fontSize: 16 }}>💻</span>
-                          <div>
-                            <div style={{ fontSize: 12, fontWeight: 600 }}>{item.bien.marca} {item.bien.modelo}</div>
-                            <div style={{ fontSize: 10, color: 'var(--text-secondary)', fontFamily: 'monospace', marginTop: 2 }}>{item.bien.codigo_inventario}</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <div>
+                <h4 style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 8, display: 'flex', justifyContent: 'space-between' }}>
+                  <span>💻 Bienes Tecnológicos ({selectedEmpleado.asignaciones?.length || 0})</span>
+                </h4>
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 8,
+                  maxHeight: '20vh',
+                  overflowY: 'auto',
+                  paddingRight: 4
+                }}>
+                  {(!selectedEmpleado.asignaciones || selectedEmpleado.asignaciones.length === 0) ? (
+                    <div style={{ padding: '15px 0', textTransform: 'uppercase', fontSize: 9, letterSpacing: '0.05em', color: 'var(--text-secondary)', textAlign: 'center', fontStyle: 'italic', border: '1px dashed var(--border)', borderRadius: 6 }}>
+                      Sin bienes tecnológicos asignados
+                    </div>
+                  ) : (
+                    selectedEmpleado.asignaciones.map(item => {
+                      if (!item.bien) return null;
+                      return (
+                        <div
+                          key={item.id}
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            padding: '8px 10px',
+                            borderRadius: 'var(--radius-md)',
+                            border: '1px solid var(--border)',
+                            background: 'var(--bg-body)'
+                          }}
+                        >
+                          <div style={{ display: 'flex', gap: 8, alignItems: 'center', minWidth: 0, flex: 1 }}>
+                            <span style={{ fontSize: 14 }}>💻</span>
+                            <div style={{ minWidth: 0, flex: 1 }}>
+                              <div style={{ fontSize: 11, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.bien.marca} {item.bien.modelo}</div>
+                              <div style={{ fontSize: 9, color: 'var(--text-secondary)', fontFamily: 'monospace', marginTop: 1 }}>{item.bien.codigo_inventario}</div>
+                            </div>
+                          </div>
+                          <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                            <div style={{ fontSize: 11, fontWeight: 600 }}>{formatCurrency(item.bien.valor_estimado)}</div>
                           </div>
                         </div>
-                        <div style={{ textAlign: 'right' }}>
-                          <div style={{ fontSize: 11, fontWeight: 600 }}>{formatCurrency(item.bien.valor_estimado)}</div>
-                          <div style={{ fontSize: 9, color: 'var(--text-secondary)', marginTop: 4 }}>Entregado: {item.estado_entrega}</div>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <h4 style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 8, display: 'flex', justifyContent: 'space-between' }}>
+                  <span>🪑 Mobiliario e Inmobiliario ({selectedEmpleado.inmobiliarios?.length || 0})</span>
+                </h4>
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 8,
+                  maxHeight: '20vh',
+                  overflowY: 'auto',
+                  paddingRight: 4
+                }}>
+                  {(!selectedEmpleado.inmobiliarios || selectedEmpleado.inmobiliarios.length === 0) ? (
+                    <div style={{ padding: '15px 0', textTransform: 'uppercase', fontSize: 9, letterSpacing: '0.05em', color: 'var(--text-secondary)', textAlign: 'center', fontStyle: 'italic', border: '1px dashed var(--border)', borderRadius: 6 }}>
+                      Sin mobiliario asignado
+                    </div>
+                  ) : (
+                    selectedEmpleado.inmobiliarios.map(item => {
+                      return (
+                        <div
+                          key={item.id}
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            padding: '8px 10px',
+                            borderRadius: 'var(--radius-md)',
+                            border: '1px solid var(--border)',
+                            background: 'var(--bg-body)'
+                          }}
+                        >
+                          <div style={{ display: 'flex', gap: 8, alignItems: 'center', minWidth: 0, flex: 1 }}>
+                            <span style={{ fontSize: 14 }}>🪑</span>
+                            <div style={{ minWidth: 0, flex: 1 }}>
+                              <div style={{ fontSize: 11, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.descripcion}</div>
+                              <div style={{ fontSize: 9, color: 'var(--text-secondary)', fontFamily: 'monospace', marginTop: 1 }}>{item.codigo_inventario}</div>
+                            </div>
+                          </div>
+                          <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                            <div style={{ fontSize: 11, fontWeight: 600 }}>{formatCurrency(item.valor_estimado)}</div>
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })
-                )}
+                      );
+                    })
+                  )}
+                </div>
               </div>
             </div>
 

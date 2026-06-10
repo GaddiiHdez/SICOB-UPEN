@@ -129,13 +129,28 @@ export default function ScannerPanel({
       return;
     }
 
+    // Configurar formatos y detector experimental para maximizar velocidad en móviles
+    const formatsToSupport = window.Html5QrcodeSupportedFormats ? [
+      window.Html5QrcodeSupportedFormats.CODE_128,
+      window.Html5QrcodeSupportedFormats.CODE_39,
+      window.Html5QrcodeSupportedFormats.EAN_13,
+      window.Html5QrcodeSupportedFormats.EAN_8,
+      window.Html5QrcodeSupportedFormats.UPC_A,
+      window.Html5QrcodeSupportedFormats.QR_CODE
+    ] : [];
+
     html5QrCode.start(
       { facingMode: "environment" },
       {
-        fps: 15,
+        fps: 20,
         qrbox: (width, height) => {
-          const size = Math.min(width, height) * 0.75;
-          return { width: size, height: size * 0.45 };
+          const w = Math.min(width * 0.85, 320);
+          const h = Math.min(height * 0.3, 100);
+          return { width: w, height: h };
+        },
+        formatsToSupport: formatsToSupport,
+        experimentalFeatures: {
+          useBarCodeDetectorIfSupported: true
         }
       },
       (decodedText) => {
@@ -194,8 +209,8 @@ export default function ScannerPanel({
     
     // Buscar coincidencia en bienes
     const match = bienes.find(b => 
-      (b.codigo_inventario && b.codigo_inventario.toUpperCase() === cleanCode.toUpperCase()) || 
-      (b.numero_serie && b.numero_serie.toUpperCase() === cleanCode.toUpperCase())
+      (b.etiqueta && b.etiqueta.toUpperCase() === cleanCode.toUpperCase()) || 
+      (b.serial && b.serial.toUpperCase() === cleanCode.toUpperCase())
     );
 
     if (isDuplicate) {
@@ -211,9 +226,9 @@ export default function ScannerPanel({
         triggerFlashMessage(`✅ Correcto: ${match.nombre} (${match.marca})`, 'success');
       } else {
         playAudioCue('warning');
-        triggerFlashMessage(`⚠️ Otra área: ${match.nombre} (Registrado en: ${match.ubicacion?.nombre || 'Bodega'})`, 'warning');
+        triggerFlashMessage(`⚠️ Otra área: ${match.nombre} (Registrado en: ${match.area || 'Bodega'})`, 'warning');
       }
-      onScanCode(match.codigo_inventario); // Guardar por código de inventario
+      onScanCode(match.etiqueta); // Guardar por código de inventario
     } else {
       playAudioCue('warning');
       triggerFlashMessage(`❓ No registrado: "${cleanCode}" no existe en el sistema`, 'not_found');
@@ -245,8 +260,8 @@ export default function ScannerPanel({
   // Mapear los códigos escaneados a sus datos reales para mostrarlos en el feed lateral
   const scannedBienesDetails = scannedCodes.map(code => {
     const match = bienes.find(b => 
-      (b.codigo_inventario && b.codigo_inventario.toUpperCase() === code.toUpperCase()) || 
-      (b.numero_serie && b.numero_serie.toUpperCase() === code.toUpperCase())
+      (b.etiqueta && b.etiqueta.toUpperCase() === code.toUpperCase()) || 
+      (b.serial && b.serial.toUpperCase() === code.toUpperCase())
     );
     if (match) {
       return {
@@ -255,9 +270,9 @@ export default function ScannerPanel({
         nombre: match.nombre,
         marca: match.marca,
         modelo: match.modelo,
-        serial: match.numero_serie,
+        serial: match.serial,
         esCorrecto: match.ubicacionId === ubicacion.id,
-        areaRegistrada: match.ubicacion?.nombre || 'Sin ubicación',
+        areaRegistrada: match.area || 'Sin ubicación',
         status: 'registered'
       };
     }

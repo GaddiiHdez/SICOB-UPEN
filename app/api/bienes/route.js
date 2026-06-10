@@ -87,6 +87,7 @@ export async function GET(request) {
         programa_adquisicion: true,
         valor_estimado: true,
         eliminado: true,
+        eliminadoEn: true,
         createdAt: true,
         updatedAt: true,
         categoriaId: true,

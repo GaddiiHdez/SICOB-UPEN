@@ -19,6 +19,8 @@ import ModalAutogenerarLote from '@/app/components/ModalAutogenerarLote';
 import ModalConfirmarBorrado from '@/app/components/ModalConfirmarBorrado';
 import AuditoriaPanel from '@/app/components/auditoria/AuditoriaPanel';
 import ValesPanel from '@/app/components/ValesPanel';
+import InmobiliarioPanel from '@/app/components/InmobiliarioPanel';
+import ConsumiblesPanel from '@/app/components/ConsumiblesPanel';
 import { generateBarcodeSVG } from '@/lib/barcode';
 import { useInventarioData } from '@/hooks/useInventarioData';
 import { useNotifications }  from '@/hooks/useNotifications';
@@ -876,6 +878,7 @@ export default function HomePage() {
               onPrintBulkLabels={handlePrintBulkLabels}
               onStatusChange={handleUpdateStatus}
               isAdmin={usuario?.rol === 'ADMINISTRADOR'}
+              configuracion={configuracion}
             />
           )}
 
@@ -987,6 +990,29 @@ export default function HomePage() {
               configuracion={configuracion}
               showToast={showToast}
               refreshBienes={fetchData}
+            />
+          )}
+
+          {/* ── MOBILIARIO E INMOBILIARIO ─────────────────────────── */}
+          {activeNav === 'inmobiliario' && (
+            <InmobiliarioPanel
+              personal={personal}
+              ubicaciones={ubicaciones}
+              departamentos={departamentos}
+              configuracion={configuracion}
+              showToast={showToast}
+            />
+          )}
+
+          {/* ── CONSUMIBLES Y SUMINISTROS ─────────────────────────── */}
+          {activeNav === 'consumibles' && (
+            <ConsumiblesPanel
+              personal={personal}
+              ubicaciones={ubicaciones}
+              departamentos={departamentos}
+              configuracion={configuracion}
+              showToast={showToast}
+              bienes={bienes}
             />
           )}
 

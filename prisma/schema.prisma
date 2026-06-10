@@ -38,6 +38,7 @@ model Bien {
   asignaciones      Asignacion[]
   mantenimientos    Mantenimiento[]
   vales             ValeSalida[] @relation("ValesBienes")
+  movimientosConsumibles MovimientoConsumible[]
 
   // Índices para acelerar las consultas más frecuentes
   @@index([eliminado, estado])
@@ -65,6 +66,8 @@ model Ubicacion {
   updatedAt   DateTime @updatedAt
   bienes      Bien[]
   departamentos Departamento[]
+  inmobiliarios Inmobiliario[]
+  consumibles   Consumible[]
 }
 
 model Departamento {
@@ -78,6 +81,8 @@ model Departamento {
   updatedAt   DateTime @updatedAt
   bienes      Bien[]
   personal    Personal[]
+  inmobiliarios Inmobiliario[]
+  movimientosConsumibles MovimientoConsumible[]
 }
 
 model Personal {
@@ -90,6 +95,8 @@ model Personal {
   departamento   Departamento? @relation(fields: [departamentoId], references: [id])
   asignaciones   Asignacion[]
   vales          ValeSalida[]
+  inmobiliarios  Inmobiliario[]
+  movimientosConsumibles MovimientoConsumible[]
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 }
@@ -159,3 +166,99 @@ model ValeSalida {
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 }
+
+model CategoriaInmobiliario {
+  id            Int            @id @default(autoincrement())
+  nombre        String         @unique // "Sillas", "Escritorios", etc.
+  descripcion   String?        @db.Text
+  icono         String?        @default("🪑")
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  inmobiliarios Inmobiliario[]
+}
+
+model Inmobiliario {
+  id                      Int                   @id @default(autoincrement())
+  codigo_inventario       String                @unique
+  descripcion             String                @db.Text
+  marca                   String?
+  modelo                  String?
+  estado                  String                // "Nuevo", "Bueno", "Regular", "Malo", "Baja"
+  valor_estimado          Float?
+  fecha_adquisicion       DateTime?
+  programa_adquisicion    String?               // Programa de compra (ej. "Programa U079")
+  observaciones           String?               @db.Text
+  eliminado               Boolean               @default(false)
+  eliminadoEn             DateTime?
+  createdAt               DateTime              @default(now())
+  updatedAt               DateTime              @updatedAt
+
+  // Relaciones
+  categoriaInmobiliarioId Int
+  categoriaInmobiliario   CategoriaInmobiliario @relation(fields: [categoriaInmobiliarioId], references: [id])
+  ubicacionId             Int
+  ubicacion               Ubicacion             @relation(fields: [ubicacionId], references: [id])
+  departamentoId          Int?
+  departamento            Departamento?         @relation(fields: [departamentoId], references: [id])
+  personalId              Int?                  // Custodio responsable actual
+  personal                Personal?             @relation(fields: [personalId], references: [id])
+
+  @@index([eliminado, estado])
+  @@index([eliminado, ubicacionId])
+}
+
+model CategoriaConsumible {
+  id            Int          @id @default(autoincrement())
+  nombre        String       @unique // "Papelería", "Tóners", etc.
+  descripcion   String?      @db.Text
+  icono         String?      @default("📦")
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  consumibles   Consumible[]
+}
+
+model Consumible {
+  id                    Int                   @id @default(autoincrement())
+  nombre                String                @unique
+  marca                 String?
+  modelo                String?
+  stock_actual          Int                   @default(0)
+  stock_minimo          Int                   @default(5)
+  unidad_medida         String                @default("Pieza") // "Pieza", "Caja", etc.
+  color                 String?               // "Negro", "Cyan", "Magenta", "Amarillo", "Tricolor", "N/A"
+  compatibilidad        String?               // Impresoras compatibles
+  rendimiento           Int?                  // Rendimiento de páginas
+  observaciones         String?               @db.Text
+  eliminado             Boolean               @default(false)
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+
+  // Relaciones
+  categoriaConsumibleId Int
+  categoriaConsumible   CategoriaConsumible   @relation(fields: [categoriaConsumibleId], references: [id])
+  ubicacionId           Int?                  // Dónde se almacena
+  ubicacion             Ubicacion?            @relation(fields: [ubicacionId], references: [id])
+  movimientos           MovimientoConsumible[]
+}
+
+model MovimientoConsumible {
+  id             Int          @id @default(autoincrement())
+  tipo           String       // "ENTRADA" o "SALIDA"
+  cantidad       Int
+  fecha          DateTime     @default(now())
+  motivo         String?      @db.Text // Ej. "Surtido de almacén", "Entrega a docente"
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  // Relaciones
+  consumibleId   Int
+  consumible     Consumible   @relation(fields: [consumibleId], references: [id], onDelete: Cascade)
+  personalId     Int?         // Custodio / Persona que recibe (para salidas)
+  personal       Personal?    @relation(fields: [personalId], references: [id])
+  departamentoId Int?         // Departamento de destino
+  departamento   Departamento? @relation(fields: [departamentoId], references: [id])
+  usuarioId      Int?         // Usuario que registra el movimiento (opcional)
+  bienId         Int?         // Impresora asociada al cambio
+  bien           Bien?        @relation(fields: [bienId], references: [id], onDelete: SetNull)
+}
+

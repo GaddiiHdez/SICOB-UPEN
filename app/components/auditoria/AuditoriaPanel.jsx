@@ -242,6 +242,7 @@ export default function AuditoriaPanel({
             setUbicacionSeleccionada(null);
             setScannedCodes([]);
           }}
+          onBack={() => setStep('audit')}
           showToast={showToast}
           configuracion={configuracion}
         />

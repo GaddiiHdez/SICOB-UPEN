@@ -82,13 +82,28 @@ export default function ModalLectorCodigos({ onClose, onScan, bienes }) {
       return;
     }
 
+    // Configurar formatos y detector experimental para maximizar velocidad en móviles
+    const formatsToSupport = window.Html5QrcodeSupportedFormats ? [
+      window.Html5QrcodeSupportedFormats.CODE_128,
+      window.Html5QrcodeSupportedFormats.CODE_39,
+      window.Html5QrcodeSupportedFormats.EAN_13,
+      window.Html5QrcodeSupportedFormats.EAN_8,
+      window.Html5QrcodeSupportedFormats.UPC_A,
+      window.Html5QrcodeSupportedFormats.QR_CODE
+    ] : [];
+
     html5QrCode.start(
       { facingMode: "environment" },
       {
-        fps: 10,
+        fps: 20,
         qrbox: (width, height) => {
-          const size = Math.min(width, height) * 0.75;
-          return { width: size, height: size * 0.5 };
+          const w = Math.min(width * 0.85, 320);
+          const h = Math.min(height * 0.3, 100);
+          return { width: w, height: h };
+        },
+        formatsToSupport: formatsToSupport,
+        experimentalFeatures: {
+          useBarCodeDetectorIfSupported: true
         }
       },
       (decodedText) => {

@@ -1,5 +1,5 @@
 'use client';
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 
 /**
  * ResguardosPanel — Gestor Profesional de Resguardos Colectivos e Individuales
@@ -17,10 +17,58 @@ export default function ResguardosPanel({ bienes, showToast, refreshBienes, conf
   const [signatureFont, setSignatureFont] = useState('cursive');
   const [processingUnassignId, setProcessingUnassignId] = useState(null);
 
+  // Estados Mobiliario
+  const [resguardoTipo, setResguardoTipo] = useState('tecnologico'); // 'tecnologico' | 'mobiliario'
+  const [inmobiliarios, setInmobiliarios] = useState([]);
+  const [loadingInmob, setLoadingInmob] = useState(false);
+
+  const fetchInmobiliarios = useCallback(async () => {
+    setLoadingInmob(true);
+    try {
+      const res = await fetch(`/api/inmobiliario?_=${Date.now()}`);
+      if (res.ok) {
+        const data = await res.json();
+        setInmobiliarios(data);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingInmob(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (resguardoTipo === 'mobiliario') {
+      fetchInmobiliarios();
+    }
+  }, [resguardoTipo, fetchInmobiliarios]);
+
   // Agrupar los bienes que tienen un responsable activo por cada empleado/custodio
   const custodiosConResguardos = useMemo(() => {
     const map = {};
-    bienes.forEach(b => {
+    const list = resguardoTipo === 'tecnologico' 
+      ? bienes 
+      : inmobiliarios.map(i => ({
+          id: i.id,
+          codigo_inventario: i.codigo_inventario,
+          etiqueta: i.codigo_inventario || '',
+          marca: i.marca || 'S/M',
+          modelo: i.modelo || 'S/M',
+          serial: (i.marca && i.modelo) ? `${i.marca} / ${i.modelo}` : (i.marca || i.modelo || 'S/M'),
+          descripcion: i.descripcion,
+          nombre: i.descripcion,
+          tipo: i.categoriaInmobiliario?.nombre || 'Mobiliario',
+          estado: i.estado,
+          area: i.ubicacion?.nombre || 'Desconocida',
+          valor_estimado: i.valor_estimado || 0,
+          responsable: i.personal?.nombre,
+          responsableId: i.personal?.id,
+          departamento: i.departamento?.nombre || 'Sin departamento',
+          icono: i.categoriaInmobiliario?.icono || '🪑',
+          fecha_adquisicion: i.fecha_adquisicion
+        }));
+
+    list.forEach(b => {
       if (b.responsableId && b.responsable && b.responsable !== 'Sin asignar') {
         const cId = String(b.responsableId);
         if (!map[cId]) {
@@ -53,7 +101,7 @@ export default function ResguardosPanel({ bienes, showToast, refreshBienes, conf
         c.departamento.toLowerCase().includes(q)
       );
     });
-  }, [bienes, search]);
+  }, [bienes, inmobiliarios, resguardoTipo, search]);
 
   // Si hay un custodio seleccionado, mantener sus bienes actualizados al recargar bienes
   const activeCustodioDetails = useMemo(() => {
@@ -119,6 +167,29 @@ export default function ResguardosPanel({ bienes, showToast, refreshBienes, conf
     }
   };
 
+  // Desasignar un mobiliario en tiempo real
+  const handleUnassignInmobiliario = async (id, desc) => {
+    if (!confirm(`¿Estás seguro de desasignar el mobiliario "${desc}" y devolverlo a bodega?`)) return;
+    setProcessingUnassignId(id);
+    try {
+      const res = await fetch('/api/inmobiliario', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, personalId: null, estado: 'Bodega' })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error al desasignar el mobiliario');
+
+      if (showToast) showToast(`"${desc}" devuelto a bodega con éxito ✓`);
+      await fetchInmobiliarios();
+    } catch (err) {
+      console.error(err);
+      alert(err.message || 'Error al desasignar el mobiliario');
+    } finally {
+      setProcessingUnassignId(null);
+    }
+  };
+
   const handlePrintPDF = () => {
     if (showToast) showToast('Preparando documento oficial para impresión PDF...', 'info');
     setTimeout(() => {
@@ -172,6 +243,32 @@ export default function ResguardosPanel({ bienes, showToast, refreshBienes, conf
               <strong>{custodiosConResguardos.length}</strong> custodio{custodiosConResguardos.length !== 1 ? 's' : ''} activo{custodiosConResguardos.length !== 1 ? 's' : ''}
             </span>
           </div>
+        </div>
+
+        {/* Selector de Tipo de Resguardo */}
+        <div style={{ display: 'flex', gap: 10, borderBottom: '1px solid var(--border)', paddingBottom: 12, marginTop: 4 }}>
+          <button 
+            type="button"
+            className={`btn ${resguardoTipo === 'tecnologico' ? 'btn-primary' : 'btn-ghost'}`}
+            style={{ fontSize: 12, padding: '6px 12px', display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', border: resguardoTipo === 'tecnologico' ? 'none' : '1px solid var(--border)' }}
+            onClick={() => {
+              setResguardoTipo('tecnologico');
+              setSelectedCustodio(null);
+            }}
+          >
+            <span>💻</span> Resguardos Tecnológicos
+          </button>
+          <button 
+            type="button"
+            className={`btn ${resguardoTipo === 'mobiliario' ? 'btn-primary' : 'btn-ghost'}`}
+            style={{ fontSize: 12, padding: '6px 12px', display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', border: resguardoTipo === 'mobiliario' ? 'none' : '1px solid var(--border)' }}
+            onClick={() => {
+              setResguardoTipo('mobiliario');
+              setSelectedCustodio(null);
+            }}
+          >
+            <span>🪑</span> Resguardos de Mobiliario
+          </button>
         </div>
 
         {/* Buscador */}
@@ -389,14 +486,18 @@ export default function ResguardosPanel({ bienes, showToast, refreshBienes, conf
               {/* Título Oficial */}
               <div style={{ textAlign: 'center', marginBottom: 20 }}>
                 <h2 style={{ fontSize: 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', textDecoration: 'underline' }}>
-                  ACTA DE RESGUARDO COLECTIVO DE BIENES TECNOLÓGICOS
+                  {resguardoTipo === 'tecnologico' 
+                    ? 'ACTA DE RESGUARDO COLECTIVO DE BIENES TECNOLÓGICOS' 
+                    : 'ACTA DE RESGUARDO COLECTIVO DE MOBILIARIO E INMOBILIARIO'}
                 </h2>
               </div>
 
               {/* Declaración Legal de Custodia */}
               <div style={{ fontSize: 11.5, lineHeight: 1.6, color: '#1F2937', marginBottom: 20 }}>
                 <p style={{ textIndent: '24px' }}>
-                  Por medio de la presente acta oficial de inventario, se hace constar la entrega física, resguardo administrativo e incorporación bajo responsabilidad patrimonial del personal universitario cuyos datos generales se detallan a continuación. El firmante declara haber recibido de conformidad los bienes informáticos, electrónicos y tecnológicos que se enlistan en este documento, comprometiéndose a velar por su adecuado uso técnico, conservación e integridad dentro de la institución académica.
+                  {resguardoTipo === 'tecnologico'
+                    ? 'Por medio de la presente acta oficial de inventario, se hace constar la entrega física, resguardo administrativo e incorporación bajo responsabilidad patrimonial del personal universitario cuyos datos generales se detallan a continuación. El firmante declara haber recibido de conformidad los bienes informáticos, electrónicos y tecnológicos que se enlistan en este documento, comprometiéndose a velar por su adecuado uso técnico, conservación e integridad dentro de la institución académica.'
+                    : 'Por medio de la presente acta oficial de inventario, se hace constar la entrega física, resguardo administrativo e incorporación bajo responsabilidad patrimonial del personal universitario cuyos datos generales se detallan a continuación. El firmante declara haber recibido de conformidad los bienes de mobiliario e inmobiliario que se enlistan en este documento, comprometiéndose a velar por su adecuado uso, conservación e integridad dentro de la institución académica.'}
                 </p>
               </div>
 
@@ -433,7 +534,9 @@ export default function ResguardosPanel({ bienes, showToast, refreshBienes, conf
               {/* TABLA COMPACTA OPTIMIZADA PARA IMPRESIÓN MULTIPÁGINA */}
               <div style={{ flex: 1, marginBottom: 28 }}>
                 <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 10, color: '#111827' }}>
-                  Listado de Bienes Tecnológicos Asignados ({activeCustodioDetails.bienes.length} equipos):
+                  {resguardoTipo === 'tecnologico'
+                    ? `Listado de Bienes Tecnológicos Asignados (${activeCustodioDetails.bienes.length} equipos):`
+                    : `Listado de Bienes de Mobiliario e Inmobiliario Asignados (${activeCustodioDetails.bienes.length} piezas):`}
                 </div>
                 <div style={{ border: '1px solid #D1D5DB', borderRadius: 4, overflow: 'hidden' }}>
                   <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11 }} className="print-table-compact">
@@ -442,8 +545,12 @@ export default function ResguardosPanel({ bienes, showToast, refreshBienes, conf
                         <th style={{ padding: '8px 10px', textAlign: 'center', fontWeight: 700, width: 35, borderRight: '1px solid #D1D5DB' }}>N°</th>
                         <th style={{ padding: '8px 10px', textAlign: 'left', fontWeight: 700, width: 140, borderRight: '1px solid #D1D5DB' }}>Inv. Código</th>
                         <th style={{ padding: '8px 10px', textAlign: 'left', fontWeight: 700, width: 80, borderRight: '1px solid #D1D5DB' }}>Categoría</th>
-                        <th style={{ padding: '8px 10px', textAlign: 'left', fontWeight: 700, borderRight: '1px solid #D1D5DB' }}>Descripción del Equipo</th>
-                        <th style={{ padding: '8px 10px', textAlign: 'left', fontWeight: 700, width: 100, borderRight: '1px solid #D1D5DB' }}>N/S</th>
+                        <th style={{ padding: '8px 10px', textAlign: 'left', fontWeight: 700, borderRight: '1px solid #D1D5DB' }}>
+                          {resguardoTipo === 'tecnologico' ? 'Descripción del Equipo' : 'Descripción del Mobiliario'}
+                        </th>
+                        <th style={{ padding: '8px 10px', textAlign: 'left', fontWeight: 700, width: 100, borderRight: '1px solid #D1D5DB' }}>
+                          {resguardoTipo === 'tecnologico' ? 'N/S' : 'Marca / Modelo'}
+                        </th>
                         <th style={{ padding: '8px 10px', textAlign: 'center', fontWeight: 700, width: 70, borderRight: '1px solid #D1D5DB' }}>Estatus</th>
                         <th style={{ padding: '8px 10px', textAlign: 'right', fontWeight: 700, width: 90, borderRight: '1px solid #D1D5DB' }}>Valor Est.</th>
                         <th className="no-print" style={{ padding: '8px 10px', textAlign: 'center', width: 90 }}>Acción</th>
@@ -468,7 +575,13 @@ export default function ResguardosPanel({ bienes, showToast, refreshBienes, conf
                           <td style={{ padding: '8px 10px', textAlign: 'right', fontWeight: 600, borderRight: '1px solid #E5E7EB' }}>{formatCurrency(bien.valor_estimado)}</td>
                           <td className="no-print" style={{ padding: '6px 8px', textAlign: 'center' }}>
                             <button
-                              onClick={() => handleUnassignBien(bien.id, bien.nombre)}
+                              onClick={() => {
+                                if (resguardoTipo === 'tecnologico') {
+                                  handleUnassignBien(bien.id, bien.nombre);
+                                } else {
+                                  handleUnassignInmobiliario(bien.id, bien.nombre);
+                                }
+                              }}
                               disabled={processingUnassignId === bien.id}
                               className="btn"
                               style={{

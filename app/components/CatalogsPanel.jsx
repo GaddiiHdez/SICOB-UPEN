@@ -26,9 +26,11 @@ export default function CatalogsPanel({ showToast }) {
   }, []);
 
   const tabs = [
-    { id: 'areas',          label: 'Áreas / Ubicaciones',    icon: '🏫', desc: 'Edificios, salones y bodegas' },
-    { id: 'departamentos',  label: 'Departamentos y Coordinaciones', icon: '🏢', desc: 'Organigrama institucional' },
-    { id: 'categorias',     label: 'Categorías de Bienes',   icon: '🏷️', desc: 'Familias de equipos' },
+    { id: 'areas',                  label: 'Áreas / Ubicaciones',    icon: '🏫', desc: 'Edificios, salones y bodegas' },
+    { id: 'departamentos',          label: 'Departamentos y Coordinaciones', icon: '🏢', desc: 'Organigrama institucional' },
+    { id: 'categorias',             label: 'Categorías de Bienes',   icon: '🏷️', desc: 'Familias de equipos' },
+    { id: 'categorias_inmobiliario', label: 'Categorías de Mobiliario', icon: '🪑', desc: 'Familias de mobiliario' },
+    { id: 'categorias_consumibles',  label: 'Categorías de Consumibles', icon: '📦', desc: 'Familias de consumibles' },
   ];
 
   return (
@@ -140,6 +142,34 @@ export default function CatalogsPanel({ showToast }) {
               { name: 'nombre', label: 'Nombre de la Categoría', required: true },
               { name: 'descripcion', label: 'Descripción de los Equipos', type: 'textarea' },
               { name: 'icono', label: 'Icono / Emoji Distintivo', defaultValue: '🏷️', type: 'emoji' }
+            ]}
+          />
+        )}
+
+        {activeTab === 'categorias_inmobiliario' && (
+          <CatalogManager 
+            title="Categorías de Mobiliario" 
+            subtitle="Familias de clasificación de mobiliario e inmobiliario" 
+            icon="🪑" 
+            endpoint="/api/categorias-inmobiliario"
+            fields={[
+              { name: 'nombre', label: 'Nombre de la Categoría', required: true },
+              { name: 'descripcion', label: 'Descripción de los Artículos', type: 'textarea' },
+              { name: 'icono', label: 'Icono / Emoji Distintivo', defaultValue: '🪑', type: 'emoji' }
+            ]}
+          />
+        )}
+
+        {activeTab === 'categorias_consumibles' && (
+          <CatalogManager 
+            title="Categorías de Consumibles" 
+            subtitle="Familias de clasificación de consumibles y suministros" 
+            icon="📦" 
+            endpoint="/api/categorias-consumibles"
+            fields={[
+              { name: 'nombre', label: 'Nombre de la Categoría', required: true },
+              { name: 'descripcion', label: 'Descripción de los Suministros', type: 'textarea' },
+              { name: 'icono', label: 'Icono / Emoji Distintivo', defaultValue: '📦', type: 'emoji' }
             ]}
           />
         )}
