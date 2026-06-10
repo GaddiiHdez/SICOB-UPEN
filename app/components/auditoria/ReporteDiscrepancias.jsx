@@ -131,7 +131,82 @@ export default function ReporteDiscrepancias({
   return (
     <div className="fade-in printable-audit-area" style={{ padding: '10px 0' }}>
       
-      {/* Cabecera del Reporte */}
+      {/* Cabecera Oficial Institucional (Visible solo al imprimir) */}
+      <div className="print-only" style={{ 
+        display: 'none', 
+        borderBottom: '2px solid #00716A', 
+        paddingBottom: 12, 
+        marginBottom: 16 
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            {configuracion?.logo_institucion ? (
+              <img
+                src={configuracion.logo_institucion}
+                alt="Logo Oficial"
+                style={{ width: 60, height: 60, objectFit: 'contain' }}
+              />
+            ) : (
+              <div style={{
+                width: 60,
+                height: 60,
+                borderRadius: 4,
+                background: '#00716A',
+                color: '#FFF',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: 18,
+                fontWeight: 800
+              }}>
+                {configuracion?.siglas_institucion || 'UPEN'}
+              </div>
+            )}
+            <div>
+              <h1 style={{ fontSize: 16, fontWeight: 800, color: '#000', margin: 0, textTransform: 'uppercase' }}>
+                {configuracion?.nombre_institucion || 'Universidad Politécnica del Estado'}
+              </h1>
+              <h2 style={{ fontSize: 12, fontWeight: 700, color: '#4B5563', margin: '2px 0 0 0' }}>
+                {configuracion?.firma_jefe_puesto ? configuracion.firma_jefe_puesto.replace(/^(Jefe|Jefa)\s+del\s+/i, '') : 'Departamento de Informática'}
+              </h2>
+            </div>
+          </div>
+          <div style={{ textAlign: 'right', fontSize: 10, color: '#4B5563' }}>
+            <div><strong>Documento:</strong> Reporte de Discrepancias de Inventario</div>
+            <div><strong>Fecha de Auditoría:</strong> {new Date().toLocaleDateString('es-MX', { dateStyle: 'long' })}</div>
+            <div><strong>Ubicación:</strong> {ubicacion.nombre}</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Tabla de Metadatos Compacta de la Auditoría (Solo visible al imprimir) */}
+      <div className="print-only" style={{ display: 'none', marginBottom: 16 }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', border: '1px solid #D1D5DB', fontSize: '10px' }}>
+          <tbody>
+            <tr>
+              <td style={{ padding: '4px 8px', border: '1px solid #D1D5DB', background: '#F9FAFB', fontWeight: 'bold', width: '20%' }}>Área Auditada:</td>
+              <td style={{ padding: '4px 8px', border: '1px solid #D1D5DB', width: '80%' }}>
+                <strong>{ubicacion.nombre}</strong> {ubicacion.edificio ? `(${ubicacion.edificio})` : ''}
+              </td>
+            </tr>
+            <tr>
+              <td style={{ padding: '4px 8px', border: '1px solid #D1D5DB', background: '#F9FAFB', fontWeight: 'bold' }}>Responsable de Área:</td>
+              <td style={{ padding: '4px 8px', border: '1px solid #D1D5DB' }}>{ubicacion.encargado || 'Sin asignar'}</td>
+            </tr>
+            <tr>
+              <td style={{ padding: '4px 8px', border: '1px solid #D1D5DB', background: '#F9FAFB', fontWeight: 'bold' }}>Resumen Físico:</td>
+              <td style={{ padding: '4px 8px', border: '1px solid #D1D5DB' }}>
+                <strong>Esperados en Sistema:</strong> {expectedBienes.length} | &nbsp;
+                <strong>Físicos Correctos:</strong> {correctos.length} ({pctCorrectos}%) | &nbsp;
+                <strong>Fuera de Área (Desubicados):</strong> {desubicados.length} | &nbsp;
+                <strong>Faltantes:</strong> {faltantes.length}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      {/* Cabecera del Reporte (Pantalla) */}
       <div style={{ 
         display: 'flex', 
         justifyContent: 'space-between', 
@@ -142,7 +217,7 @@ export default function ReporteDiscrepancias({
         borderRadius: 'var(--radius-lg)',
         padding: '20px',
         boxShadow: '0 2px 8px rgba(0,0,0,0.01)'
-      }} className="report-header-print">
+      }} className="report-header-print no-print">
         <div>
           <span style={{ fontSize: 10, color: 'var(--primary)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Conciliación de Inventario</span>
           <h2 style={{ fontSize: 20, fontWeight: 800, margin: '2px 0 0', color: 'var(--text-primary)' }}>
@@ -559,6 +634,32 @@ export default function ReporteDiscrepancias({
 
       <style jsx global>{`
         @media print {
+          /* Resetear contenedores padres del layout Next.js y Caddy */
+          body:not(.printing-labels) .main-layout {
+            margin-left: 0 !important;
+            width: 100% !important;
+            height: auto !important;
+            overflow: visible !important;
+            background: #FFFFFF !important;
+          }
+
+          body:not(.printing-labels) .main-content {
+            padding: 0 !important;
+            overflow: visible !important;
+            height: auto !important;
+          }
+
+          body:not(.printing-labels) .content-panel {
+            overflow: visible !important;
+            height: auto !important;
+            min-height: 0 !important;
+            border: none !important;
+            box-shadow: none !important;
+            background: transparent !important;
+            padding: 0 !important;
+            margin: 0 !important;
+          }
+
           /* Hacer visible el contenedor de la auditoría y sus descendientes */
           body:not(.printing-labels) .printable-audit-area,
           body:not(.printing-labels) .printable-audit-area * {
@@ -584,7 +685,7 @@ export default function ReporteDiscrepancias({
             margin-top: 40px !important;
             justify-content: space-between !important;
             padding: 0 40px !important;
-            page-break-inside: avoid;
+            page-break-inside: avoid !important;
           }
 
           /* Estilos de diseño para impresión en flujo normal (sin absolute positioning) */
@@ -597,32 +698,20 @@ export default function ReporteDiscrepancias({
             color: #000000 !important;
           }
 
-          .report-header-print {
-            border: none !important;
-            box-shadow: none !important;
-            padding: 0 0 16px 0 !important;
-            border-bottom: 2px solid #333 !important;
-            margin-bottom: 20px !important;
-            background: transparent !important;
-          }
-
-          .report-header-print h2 {
-            color: #000000 !important;
-          }
-
           .kpi-grid-print {
             display: grid !important;
             grid-template-columns: repeat(4, 1fr) !important;
             gap: 12px !important;
             margin-bottom: 24px !important;
+            page-break-inside: avoid !important;
           }
 
           .stat-card {
-            border: 1px solid #ccc !important;
+            border: 1px solid #D1D5DB !important;
             box-shadow: none !important;
             padding: 10px !important;
             background: transparent !important;
-            border-left: 1px solid #ccc !important;
+            border-left: 1px solid #D1D5DB !important;
           }
 
           .stat-card * {
@@ -633,33 +722,72 @@ export default function ReporteDiscrepancias({
             width: 100% !important;
           }
 
+          /* Permitir saltos de página entre secciones de forma natural */
           .print-section {
             display: block !important;
-            page-break-inside: avoid;
-            margin-bottom: 30px !important;
+            page-break-inside: auto !important;
+            margin-bottom: 24px !important;
+          }
+
+          /* Evitar que los títulos queden solos al final de la página (orphan) */
+          .print-section h3,
+          .print-section h4 {
+            page-break-after: avoid !important;
+            color: #000000 !important;
+            margin-top: 10px !important;
+            margin-bottom: 10px !important;
           }
 
           .print-section table {
             border-collapse: collapse !important;
             width: 100% !important;
-            margin-top: 10px;
+            margin-top: 8px !important;
+            page-break-inside: auto !important;
           }
 
-          .print-section th, .print-section td {
-            border: 1px solid #ddd !important;
-            padding: 8px !important;
-            font-size: 10pt !important;
+          /* Evitar que las filas se rompan a la mitad entre páginas */
+          .print-section tr {
+            page-break-inside: avoid !important;
+            page-break-after: auto !important;
+          }
+
+          .print-section th, 
+          .print-section td {
+            border: 1px solid #D1D5DB !important;
+            padding: 6px 8px !important;
+            font-size: 8.5pt !important;
             color: #000000 !important;
+            line-height: 1.2 !important;
           }
 
           .print-section th {
-            background-color: #f5f5f5 !important;
+            background-color: #F3F4F6 !important;
             color: #000000 !important;
-            font-weight: bold !important;
+            font-weight: 700 !important;
+            text-transform: uppercase !important;
+            font-size: 8.5pt !important;
           }
 
           .print-section td {
             background-color: transparent !important;
+          }
+
+          /* Estilizar badges en impresión */
+          .print-section td span.badge {
+            font-size: 7.5pt !important;
+            padding: 1px 4px !important;
+            border: 1px solid #9CA3AF !important;
+            background: #F9FAFB !important;
+            color: #000000 !important;
+            border-radius: 3px !important;
+            display: inline-block !important;
+          }
+
+          /* Estilo de diagnóstico en impresión */
+          .resumen-section div {
+            border: 1px solid #D1D5DB !important;
+            background: transparent !important;
+            box-shadow: none !important;
           }
         }
       `}</style>
