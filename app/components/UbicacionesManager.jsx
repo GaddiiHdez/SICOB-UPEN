@@ -2,11 +2,11 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 
 /**
- * UbicacionesManager — Gestor Avanzado de Áreas y Edificios
+ * UbicacionesManager — Gestor Avanzado de Áreas y Edificios (Diseño Premium)
  * Permite agrupar y visualizar las áreas físicas por Bloque/Edificio de forma gráfica,
- * previniendo redundancias y facilitando la administración del campus.
+ * integrando relación visual con departamentos y ocultando campos no utilizados.
  */
-export default function UbicacionesManager({ showToast }) {
+export default function UbicacionesManager({ showToast, isAdmin = false }) {
   const [data, setData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [viewMode, setViewMode] = useState('grid'); // 'grid' (bloques) | 'table' (lista plana)
@@ -23,7 +23,6 @@ export default function UbicacionesManager({ showToast }) {
   const [formId, setFormId] = useState(null);
   const [formNombre, setFormNombre] = useState('');
   const [formEdificio, setFormEdificio] = useState('');
-  const [formEncargado, setFormEncargado] = useState('');
   const [formIcono, setFormIcono] = useState('🏫');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
@@ -83,7 +82,7 @@ export default function UbicacionesManager({ showToast }) {
       list = list.filter(u =>
         u.nombre.toLowerCase().includes(q) ||
         (u.edificio || '').toLowerCase().includes(q) ||
-        (u.encargado || '').toLowerCase().includes(q)
+        (u.departamentos && u.departamentos.some(d => d.nombre.toLowerCase().includes(q)))
       );
     }
     return list;
@@ -120,14 +119,12 @@ export default function UbicacionesManager({ showToast }) {
       setFormId(item.id);
       setFormNombre(item.nombre);
       setFormEdificio(item.edificio || '');
-      setFormEncargado(item.encargado || '');
       setFormIcono(item.icono || '🏫');
     } else {
       setIsEdit(false);
       setFormId(null);
       setFormNombre('');
       setFormEdificio(presetEdificio);
-      setFormEncargado('');
       setFormIcono('🏫');
     }
     setShowEmojiPicker(false);
@@ -147,7 +144,6 @@ export default function UbicacionesManager({ showToast }) {
       const payload = {
         nombre: formNombre.trim(),
         edificio: formEdificio.trim() || null,
-        encargado: formEncargado.trim() || null,
         icono: formIcono.trim() || '🏫'
       };
       if (isEdit) {
@@ -244,24 +240,27 @@ export default function UbicacionesManager({ showToast }) {
   };
 
   return (
-    <div style={{ padding: '24px', width: '100%' }}>
-      {/* ── BARRA SUPERIOR DE ACCIONES ────────────────────────── */}
+    <div style={{ padding: '0 24px 24px', width: '100%' }}>
+      
+      {/* Header del Catálogo */}
       <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        flexWrap: 'wrap',
-        gap: 16,
-        marginBottom: 24
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        background: 'linear-gradient(135deg, rgba(13,148,136,0.06) 0%, transparent 60%)',
+        border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)',
+        padding: '20px 28px', marginBottom: 24, gap: 16, flexWrap: 'wrap'
       }}>
-        {/* Título */}
         <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
-          <div style={{ fontSize: 40, opacity: 0.9 }}>🏫</div>
+          <div style={{
+            width: 46, height: 46, borderRadius: 'var(--radius-md)',
+            background: 'linear-gradient(135deg, var(--primary) 0%, #0f766e 100%)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 22, boxShadow: '0 4px 12px rgba(13,148,136,0.3)', flexShrink: 0
+          }}>🏫</div>
           <div>
-            <h2 style={{ fontSize: 22, fontWeight: 700, marginBottom: 4, letterSpacing: '-0.02em' }}>
+            <h2 style={{ fontSize: 18, fontWeight: 700, margin: 0, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
               Bloques, Edificios y Aulas
             </h2>
-            <div style={{ color: 'var(--text-secondary)', fontSize: 13 }}>
+            <div style={{ color: 'var(--text-secondary)', fontSize: 12, marginTop: 4 }}>
               Gestión visual y jerárquica de la estructura física del campus
             </div>
           </div>
@@ -274,7 +273,7 @@ export default function UbicacionesManager({ showToast }) {
             <span className="search-icon">🔍</span>
             <input
               className="search-input"
-              placeholder="Buscar área o bloque..."
+              placeholder="Buscar área, bloque o depto..."
               value={search}
               onChange={e => setSearch(e.target.value)}
             />
@@ -300,7 +299,8 @@ export default function UbicacionesManager({ showToast }) {
                 borderRadius: 'calc(var(--radius-md) - 2px)',
                 cursor: 'pointer',
                 transition: 'all 0.2s',
-                boxShadow: viewMode === 'grid' ? 'var(--shadow-sm)' : 'none'
+                boxShadow: viewMode === 'grid' ? 'var(--shadow-sm)' : 'none',
+                outline: 'none'
               }}
               title="Vista de bloques agrupados por Edificio"
             >
@@ -318,7 +318,8 @@ export default function UbicacionesManager({ showToast }) {
                 borderRadius: 'calc(var(--radius-md) - 2px)',
                 cursor: 'pointer',
                 transition: 'all 0.2s',
-                boxShadow: viewMode === 'table' ? 'var(--shadow-sm)' : 'none'
+                boxShadow: viewMode === 'table' ? 'var(--shadow-sm)' : 'none',
+                outline: 'none'
               }}
               title="Vista de lista plana estándar"
             >
@@ -326,9 +327,22 @@ export default function UbicacionesManager({ showToast }) {
             </button>
           </div>
 
-          <button className="btn btn-primary" onClick={() => handleOpenModal()}>
-            ＋ Nueva Área
-          </button>
+          {isAdmin && (
+            <button
+              onClick={() => handleOpenModal()}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                padding: '10px 18px', borderRadius: 'var(--radius-md)',
+                background: 'linear-gradient(135deg, var(--primary) 0%, #0f766e 100%)',
+                border: 'none', color: '#fff', fontSize: 13, fontWeight: 700,
+                cursor: 'pointer', boxShadow: '0 4px 14px rgba(13,148,136,0.3)',
+                transition: 'all 0.2s ease', whiteSpace: 'nowrap'
+              }}
+              className="btn-create-area"
+            >
+              ＋ Nueva Área
+            </button>
+          )}
         </div>
       </div>
 
@@ -346,13 +360,14 @@ export default function UbicacionesManager({ showToast }) {
         </div>
       ) : viewMode === 'table' ? (
         /* VISTA LISTA PLANA ESTÁNDAR */
-        <div style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', background: 'var(--bg-card)', overflow: 'hidden' }}>
+        <div style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', background: 'var(--bg-card)', overflow: 'hidden', boxShadow: 'var(--shadow-card)' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
             <thead>
               <tr style={{ background: 'var(--bg-body)', borderBottom: '1px solid var(--border)' }}>
-                <th style={{ padding: '16px 24px', fontSize: '12px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Nombre del Área / Aula</th>
-                <th style={{ padding: '16px 24px', fontSize: '12px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Edificio / Bloque</th>
-                <th style={{ padding: '16px 24px', fontSize: '12px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', width: 240, textAlign: 'right' }}>Acciones</th>
+                <th style={{ padding: '14px 24px', fontSize: '11px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Nombre del Área / Aula</th>
+                <th style={{ padding: '14px 24px', fontSize: '11px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Edificio / Bloque</th>
+                <th style={{ padding: '14px 24px', fontSize: '11px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Departamentos Residiendo</th>
+                {isAdmin && <th style={{ padding: '14px 24px', fontSize: '11px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', width: 240, textAlign: 'right' }}>Acciones</th>}
               </tr>
             </thead>
             <tbody>
@@ -365,75 +380,109 @@ export default function UbicacionesManager({ showToast }) {
                   }}
                   className="hover-highlight"
                 >
-                  <td style={{ padding: '20px 24px', fontSize: '14px', fontWeight: '600', color: 'var(--text-primary)' }}>
+                  <td style={{ padding: '14px 24px', fontSize: '13.5px', fontWeight: '600', color: 'var(--text-primary)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                      <span style={{ fontSize: '18px' }}>{row.icono || '🏫'}</span>
+                      <div style={{
+                        width: 32, height: 32, borderRadius: '50%',
+                        background: 'rgba(13,148,136,0.08)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: 16, border: '1px solid rgba(13,148,136,0.2)', flexShrink: 0
+                      }}>
+                        {row.icono || '🏫'}
+                      </div>
                       <span>{row.nombre}</span>
                     </div>
                   </td>
-                  <td style={{ padding: '20px 24px', fontSize: '13px', color: 'var(--text-secondary)' }}>
+                  <td style={{ padding: '14px 24px', fontSize: '13px', color: 'var(--text-secondary)' }}>
                     <span style={{ 
                       background: 'rgba(13, 148, 136, 0.08)', 
                       color: 'var(--primary)', 
                       padding: '4px 10px', 
                       borderRadius: 'var(--radius-md)',
-                      fontWeight: '500',
+                      fontWeight: '600',
                       fontSize: '12px',
                       display: 'inline-flex',
                       alignItems: 'center',
                       gap: 6
                     }}>
-                      🏫 {row.edificio || 'Sin Edificio'}
+                      🏢 {row.edificio || 'Otros'}
                     </span>
                   </td>
-                  <td style={{ padding: '20px 24px', textAlign: 'right' }}>
-                    <div style={{ display: 'inline-flex', gap: 8, justifyContent: 'flex-end', alignItems: 'center' }}>
-                      <button 
-                        onClick={() => handleOpenModal(row)}
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: 6,
-                          padding: '8px 14px',
-                          borderRadius: 'var(--radius-md)',
-                          border: '1px solid rgba(13, 148, 136, 0.2)',
-                          background: 'rgba(13, 148, 136, 0.1)',
-                          color: 'var(--primary)',
-                          fontSize: '12px',
-                          fontWeight: '600',
-                          cursor: 'pointer',
-                          transition: 'all 0.2s ease',
-                          outline: 'none'
-                        }}
-                        className="btn-edit-action"
-                        title="Editar área"
-                      >
-                        ✏️ Editar
-                      </button>
-                      <button 
-                        onClick={() => handleDelete(row.id, row.nombre)}
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: 6,
-                          padding: '8px 14px',
-                          borderRadius: 'var(--radius-md)',
-                          border: '1px solid rgba(239, 68, 68, 0.2)',
-                          background: 'rgba(239, 68, 68, 0.1)',
-                          color: '#EF4444',
-                          fontSize: '12px',
-                          fontWeight: '600',
-                          cursor: 'pointer',
-                          transition: 'all 0.2s ease',
-                          outline: 'none'
-                        }}
-                        className="btn-delete-action"
-                        title="Eliminar área"
-                      >
-                        🗑️ Eliminar
-                      </button>
+                  <td style={{ padding: '14px 24px', fontSize: '13px' }}>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                      {row.departamentos && row.departamentos.length > 0 ? (
+                        row.departamentos.map(d => (
+                          <span key={d.id} style={{
+                            fontSize: '11px',
+                            fontWeight: '600',
+                            background: 'rgba(13, 148, 136, 0.08)',
+                            color: 'var(--primary)',
+                            padding: '3px 8px',
+                            borderRadius: 'var(--radius-sm)',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 4,
+                            border: '1px solid rgba(13, 148, 136, 0.15)'
+                          }}>
+                            <span>{d.icono || '🏢'}</span>
+                            <span>{d.nombre}</span>
+                          </span>
+                        ))
+                      ) : (
+                        <span style={{ color: 'var(--text-secondary)', fontStyle: 'italic', fontSize: 11 }}>Ninguno</span>
+                      )}
                     </div>
                   </td>
+                  {isAdmin && (
+                    <td style={{ padding: '14px 24px', textAlign: 'right' }}>
+                      <div style={{ display: 'inline-flex', gap: 8, justifyContent: 'flex-end', alignItems: 'center' }}>
+                        <button 
+                          onClick={() => handleOpenModal(row)}
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 6,
+                            padding: '6px 12px',
+                            borderRadius: 'var(--radius-md)',
+                            border: '1px solid rgba(13, 148, 136, 0.2)',
+                            background: 'rgba(13, 148, 136, 0.08)',
+                            color: 'var(--primary)',
+                            fontSize: '12px',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease',
+                            outline: 'none'
+                          }}
+                          className="btn-action-teal"
+                          title="Editar área"
+                        >
+                          ✏️ Editar
+                        </button>
+                        <button 
+                          onClick={() => handleDelete(row.id, row.nombre)}
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 6,
+                            padding: '6px 12px',
+                            borderRadius: 'var(--radius-md)',
+                            border: '1px solid rgba(239, 68, 68, 0.2)',
+                            background: 'rgba(239, 68, 68, 0.08)',
+                            color: '#EF4444',
+                            fontSize: '12px',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease',
+                            outline: 'none'
+                          }}
+                          className="btn-action-red"
+                          title="Eliminar área"
+                        >
+                          🗑️ Eliminar
+                        </button>
+                      </div>
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>
@@ -443,7 +492,7 @@ export default function UbicacionesManager({ showToast }) {
         /* VISTA VISUAL AGRUPADA POR BLOQUES (EDIFICIOS) */
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))',
           gap: 24
         }}>
           {agrupadoPorEdificio.map(building => (
@@ -457,10 +506,9 @@ export default function UbicacionesManager({ showToast }) {
                 display: 'flex',
                 flexDirection: 'column',
                 overflow: 'hidden',
-                transition: 'transform 0.2s, box-shadow 0.2s',
-                animation: 'slideUp 0.3s ease-out'
+                transition: 'transform 0.2s, box-shadow 0.2s'
               }}
-              className="hover-card-effect"
+              className="hover-card-effect fade-in"
             >
               {/* Encabezado del Edificio */}
               <div style={{
@@ -478,13 +526,12 @@ export default function UbicacionesManager({ showToast }) {
                   </span>
 
                   {/* Botones de acción rápidos para el Bloque/Edificio */}
-                  {!building.esOtros && (
+                  {isAdmin && !building.esOtros && (
                     <div style={{ display: 'inline-flex', gap: 6, marginLeft: 6 }}>
                       <button
                         onClick={() => handleOpenRenameBlockModal(building.nombre)}
                         style={{ border: 'none', background: 'transparent', cursor: 'pointer', opacity: 0.6, fontSize: 11, padding: '2px 4px', outline: 'none' }}
                         title="Renombrar bloque / edificio"
-                        className="btn-edit-action"
                       >
                         ✏️
                       </button>
@@ -492,7 +539,6 @@ export default function UbicacionesManager({ showToast }) {
                         onClick={() => handleDeleteEdificio(building.nombre)}
                         style={{ border: 'none', background: 'transparent', cursor: 'pointer', opacity: 0.6, fontSize: 11, padding: '2px 4px', color: '#EF4444', outline: 'none' }}
                         title="Eliminar bloque / edificio completo"
-                        className="btn-delete-action"
                       >
                         🗑️
                       </button>
@@ -526,9 +572,9 @@ export default function UbicacionesManager({ showToast }) {
                     key={area.id}
                     style={{
                       display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      padding: '8px 12px',
+                      flexDirection: 'column',
+                      gap: 6,
+                      padding: '10px 12px',
                       background: 'var(--bg-body)',
                       borderRadius: 'var(--radius-md)',
                       border: '1px solid var(--border)',
@@ -536,56 +582,84 @@ export default function UbicacionesManager({ showToast }) {
                     }}
                     className="hover-highlight"
                   >
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                      <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{area.icono || '🏫'} {area.nombre}</span>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: 12.5 }}>{area.icono || '🏫'} {area.nombre}</span>
+                      
+                      {/* Botones de acción rápidos */}
+                      {isAdmin && (
+                        <div style={{ display: 'flex', gap: 4 }}>
+                          <button
+                            onClick={() => handleOpenModal(area)}
+                            style={{ border: 'none', background: 'transparent', cursor: 'pointer', opacity: 0.7, padding: 4 }}
+                            title="Editar área"
+                          >
+                            ✏️
+                          </button>
+                          <button
+                            onClick={() => handleDelete(area.id, area.nombre)}
+                            style={{ border: 'none', background: 'transparent', cursor: 'pointer', opacity: 0.7, padding: 4, color: '#EF4444' }}
+                            title="Eliminar área"
+                          >
+                            🗑️
+                          </button>
+                        </div>
+                      )}
                     </div>
-                    {/* Botones de acción rápidos */}
-                    <div style={{ display: 'flex', gap: 4 }}>
-                      <button
-                        onClick={() => handleOpenModal(area)}
-                        style={{ border: 'none', background: 'transparent', cursor: 'pointer', opacity: 0.7, padding: 4 }}
-                        title="Editar área"
-                      >
-                        ✏️
-                      </button>
-                      <button
-                        onClick={() => handleDelete(area.id, area.nombre)}
-                        style={{ border: 'none', background: 'transparent', cursor: 'pointer', opacity: 0.7, padding: 4, color: '#EF4444' }}
-                        title="Eliminar área"
-                      >
-                        🗑️
-                      </button>
-                    </div>
+
+                    {/* Departamentos ubicados en esta área */}
+                    {area.departamentos && area.departamentos.length > 0 && (
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 2 }}>
+                        {area.departamentos.map(d => (
+                          <span key={d.id} style={{
+                            fontSize: '9.5px',
+                            fontWeight: '600',
+                            background: 'rgba(13, 148, 136, 0.06)',
+                            color: 'var(--primary)',
+                            padding: '1px 5px',
+                            borderRadius: '4px',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 3,
+                            border: '1px solid rgba(13, 148, 136, 0.1)'
+                          }}>
+                            <span>{d.icono || '🏢'}</span>
+                            <span>{d.nombre}</span>
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
 
               {/* Botón rápido para agregar área en este edificio */}
-              <div style={{
-                padding: '12px 20px',
-                borderTop: '1px solid var(--border)',
-                background: 'var(--bg-card)',
-                textAlign: 'center'
-              }}>
-                <button
-                  onClick={() => handleOpenModal(null, building.esOtros ? '' : building.nombre)}
-                  style={{
-                    width: '100%',
-                    padding: '8px',
-                    borderRadius: 'var(--radius-md)',
-                    border: '1px dashed var(--border)',
-                    background: 'transparent',
-                    color: 'var(--text-secondary)',
-                    fontSize: 11,
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    transition: 'all 0.2s'
-                  }}
-                  className="hover-highlight"
-                >
-                  ＋ Agregar Área en este Bloque
-                </button>
-              </div>
+              {isAdmin && (
+                <div style={{
+                  padding: '12px 20px',
+                  borderTop: '1px solid var(--border)',
+                  background: 'var(--bg-card)',
+                  textAlign: 'center'
+                }}>
+                  <button
+                    onClick={() => handleOpenModal(null, building.esOtros ? '' : building.nombre)}
+                    style={{
+                      width: '100%',
+                      padding: '8px',
+                      borderRadius: 'var(--radius-md)',
+                      border: '1px dashed var(--border)',
+                      background: 'transparent',
+                      color: 'var(--text-secondary)',
+                      fontSize: 11,
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                    className="hover-highlight"
+                  >
+                    ＋ Agregar Área en este Bloque
+                  </button>
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -593,25 +667,39 @@ export default function UbicacionesManager({ showToast }) {
 
       {/* ── MODAL DE ADMINISTRACIÓN ───────────────────────────── */}
       {showModal && (
-        <div className="modal-overlay" onClick={() => setShowModal(false)}>
-          <div className="modal-box" onClick={e => e.stopPropagation()} style={{ maxWidth: 450 }}>
-            <div className="modal-header">
+        <div className="modal-overlay" onClick={() => setShowModal(false)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', zIndex: 1000 }}>
+          <div className="modal-box" onClick={e => e.stopPropagation()} style={{ maxWidth: 440, background: 'var(--bg-card)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border)', overflow: 'hidden', boxShadow: '0 32px 80px rgba(0,0,0,0.5)' }}>
+            <div className="modal-header" style={{
+              padding: '20px 24px',
+              background: 'linear-gradient(135deg, rgba(13,148,136,0.06) 0%, transparent 60%)',
+              borderBottom: '1px solid var(--border)',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between'
+            }}>
               <div>
-                <h3 className="modal-title">{isEdit ? '✏️ Editar Área / Ubicación' : '🏫 Registrar Nueva Ubicación'}</h3>
-                <p className="modal-sub">Define las propiedades del espacio físico en el campus</p>
+                <h3 className="modal-title" style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
+                  {isEdit ? '✏️ Editar Área' : '🏫 Nueva Ubicación'}
+                </h3>
+                <p className="modal-sub" style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 4 }}>
+                  Define las propiedades del espacio físico en el campus
+                </p>
               </div>
-              <button className="btn-icon" onClick={() => setShowModal(false)} disabled={saving}>✕</button>
+              <button onClick={() => setShowModal(false)} disabled={saving} style={{
+                background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border)',
+                borderRadius: 'var(--radius-md)', cursor: 'pointer',
+                width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 14, color: 'var(--text-secondary)', transition: 'all 0.15s'
+              }}>✕</button>
             </div>
 
             <form onSubmit={handleSubmit}>
-              <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <div className="modal-body" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
                 {/* Nombre de la Ubicación */}
-                <div>
-                  <label className="form-label">Nombre del Área / Salón / Oficina</label>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <label className="form-label" style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)' }}>Nombre del Área / Salón / Oficina</label>
                   <input
                     type="text"
                     className="form-input"
-                    placeholder="Ej. Aula 102, Laboratorio de Redes, Cubículo A"
+                    placeholder="Ej. Aula 102, Laboratorio de Redes..."
                     value={formNombre}
                     onChange={e => setFormNombre(e.target.value)}
                     required
@@ -620,8 +708,8 @@ export default function UbicacionesManager({ showToast }) {
                 </div>
 
                 {/* Edificio / Pabellón con Autocomplete (datalist) */}
-                <div>
-                  <label className="form-label">Edificio / Bloque / Pabellón</label>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <label className="form-label" style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)' }}>Edificio / Bloque / Pabellón</label>
                   <input
                     type="text"
                     className="form-input"
@@ -636,13 +724,10 @@ export default function UbicacionesManager({ showToast }) {
                       <option key={edif} value={edif} />
                     ))}
                   </datalist>
-                  <span style={{ fontSize: 10, color: 'var(--text-secondary)', marginTop: 4, display: 'block' }}>
-                    El agrupamiento gráfico se realiza según el nombre exacto del edificio.
-                  </span>
                 </div>
 
                 {/* Icono / Emoji de la Ubicación */}
-                <div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                   <button
                     type="button"
                     onClick={() => setShowEmojiPicker(!showEmojiPicker)}
@@ -666,7 +751,7 @@ export default function UbicacionesManager({ showToast }) {
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                       <span style={{ fontSize: '18px' }}>{formIcono}</span>
-                      <span>Personalizar Icono / Emoji</span>
+                      <span style={{ fontWeight: 600 }}>Personalizar Icono / Emoji</span>
                     </div>
                     <span>{showEmojiPicker ? '▲ Ocultar' : '▼ Personalizar'}</span>
                   </button>
@@ -712,11 +797,16 @@ export default function UbicacionesManager({ showToast }) {
                 </div>
               </div>
 
-              <div className="modal-footer">
+              <div className="modal-footer" style={{ padding: '16px 24px', background: 'var(--bg-body)', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
                 <button type="button" className="btn btn-ghost" onClick={() => setShowModal(false)} disabled={saving}>
                   Cancelar
                 </button>
-                <button type="submit" className="btn btn-primary" disabled={saving}>
+                <button type="submit" style={{
+                  padding: '10px 22px', borderRadius: 'var(--radius-md)',
+                  background: 'linear-gradient(135deg, var(--primary) 0%, #0f766e 100%)',
+                  border: 'none', color: '#fff', fontSize: 13, fontWeight: 700,
+                  cursor: 'pointer', transition: 'all 0.2s'
+                }} disabled={saving}>
                   {saving ? '⏳ Guardando...' : '💾 Guardar'}
                 </button>
               </div>
@@ -727,20 +817,30 @@ export default function UbicacionesManager({ showToast }) {
 
       {/* Modal Premium para Renombrar Bloque / Edificio */}
       {showRenameBlockModal && (
-        <div className="modal-overlay" onClick={() => setShowRenameBlockModal(false)}>
-          <div className="modal-box" onClick={e => e.stopPropagation()} style={{ maxWidth: 400 }}>
-            <div className="modal-header">
+        <div className="modal-overlay" onClick={() => setShowRenameBlockModal(false)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', zIndex: 1000 }}>
+          <div className="modal-box" onClick={e => e.stopPropagation()} style={{ maxWidth: 400, background: 'var(--bg-card)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border)', overflow: 'hidden', boxShadow: '0 32px 80px rgba(0,0,0,0.5)' }}>
+            <div className="modal-header" style={{
+              padding: '20px 24px',
+              background: 'linear-gradient(135deg, rgba(13,148,136,0.06) 0%, transparent 60%)',
+              borderBottom: '1px solid var(--border)',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between'
+            }}>
               <div>
-                <h3 className="modal-title">✏️ Renombrar Edificio / Bloque</h3>
-                <p className="modal-sub">Cambia el nombre agrupador para todas las áreas asociadas</p>
+                <h3 className="modal-title" style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>✏️ Renombrar Edificio</h3>
+                <p className="modal-sub" style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 4 }}>Cambia el nombre agrupador para todas las áreas asociadas</p>
               </div>
-              <button className="btn-icon" onClick={() => setShowRenameBlockModal(false)} disabled={renamingBlock}>✕</button>
+              <button onClick={() => setShowRenameBlockModal(false)} disabled={renamingBlock} style={{
+                background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border)',
+                borderRadius: 'var(--radius-md)', cursor: 'pointer',
+                width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 14, color: 'var(--text-secondary)', transition: 'all 0.15s'
+              }}>✕</button>
             </div>
 
             <form onSubmit={handleRenameBlockSubmit}>
-              <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                <div>
-                  <label className="form-label">Nombre Anterior:</label>
+              <div className="modal-body" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <label className="form-label" style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)' }}>Nombre Anterior:</label>
                   <input
                     type="text"
                     className="form-input"
@@ -750,8 +850,8 @@ export default function UbicacionesManager({ showToast }) {
                   />
                 </div>
 
-                <div>
-                  <label className="form-label">Nuevo Nombre:</label>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <label className="form-label" style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)' }}>Nuevo Nombre:</label>
                   <input
                     type="text"
                     className="form-input"
@@ -759,17 +859,22 @@ export default function UbicacionesManager({ showToast }) {
                     onChange={e => setNewBlockName(e.target.value)}
                     required
                     disabled={renamingBlock}
-                    placeholder="Ej. Edificio de Ciencias, Biblioteca General..."
+                    placeholder="Ej. Edificio de Ciencias..."
                     autoFocus
                   />
                 </div>
               </div>
 
-              <div className="modal-footer">
+              <div className="modal-footer" style={{ padding: '16px 24px', background: 'var(--bg-body)', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
                 <button type="button" className="btn btn-ghost" onClick={() => setShowRenameBlockModal(false)} disabled={renamingBlock}>
                   Cancelar
                 </button>
-                <button type="submit" className="btn btn-primary" disabled={renamingBlock}>
+                <button type="submit" style={{
+                  padding: '10px 22px', borderRadius: 'var(--radius-md)',
+                  background: 'linear-gradient(135deg, var(--primary) 0%, #0f766e 100%)',
+                  border: 'none', color: '#fff', fontSize: 13, fontWeight: 700,
+                  cursor: 'pointer', transition: 'all 0.2s'
+                }} disabled={renamingBlock}>
                   {renamingBlock ? '⏳ Guardando...' : '💾 Guardar'}
                 </button>
               </div>
@@ -782,6 +887,14 @@ export default function UbicacionesManager({ showToast }) {
       {toast && (
         <div className={`toast toast-${toast.type}`}>{toast.msg}</div>
       )}
+
+      <style>{`
+        .btn-create-area:hover { opacity: 0.88; transform: translateY(-1px); }
+        .btn-action-teal:hover { background: rgba(13,148,136,0.18) !important; }
+        .btn-action-red:hover { background: rgba(239,68,68,0.15) !important; }
+        .emoji-quick-picker:hover { transform: scale(1.08); background: rgba(13, 148, 136, 0.1) !important; border-color: var(--primary) !important; }
+        .hover-card-effect:hover { transform: translateY(-2px); box-shadow: 0 12px 24px rgba(0,0,0,0.08) !important; }
+      `}</style>
     </div>
   );
 }

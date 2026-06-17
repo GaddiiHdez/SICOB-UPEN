@@ -6,7 +6,7 @@ import { parsePeriodo, cleanDescription } from './utils';
 /**
  * ModalCalendario — Modal de detalles del evento del calendario
  */
-export default function ModalCalendario({ event, onClose, onDelete, onStart, onFinalize }) {
+export default function ModalCalendario({ event, onClose, onDelete, onStart, onFinalize, isAdmin = false }) {
   if (!event) return null;
   const periodo = parsePeriodo(event.descripcion);
 
@@ -95,24 +95,32 @@ export default function ModalCalendario({ event, onClose, onDelete, onStart, onF
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, borderTop: '1px solid var(--border)', paddingTop: 16, marginTop: 8 }}>
-            <button type="button" onClick={onDelete}
-              className="btn"
-              style={{ background: 'rgba(239, 68, 68, 0.08)', color: '#EF4444', border: '1px solid rgba(239, 68, 68, 0.15)', padding: '8px 14px', fontSize: 12 }}>
-              🗑️ Eliminar
-            </button>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <button type="button" className="btn btn-ghost" onClick={onClose}>Cerrar</button>
-              {event.estado === 'Programado' && (
-                <button type="button" onClick={onStart} className="btn btn-primary" style={{ padding: '8px 14px', fontSize: 12 }}>
-                  🛠️ Iniciar Reparación
+            {isAdmin ? (
+              <>
+                <button type="button" onClick={onDelete}
+                  className="btn"
+                  style={{ background: 'rgba(239, 68, 68, 0.08)', color: '#EF4444', border: '1px solid rgba(239, 68, 68, 0.15)', padding: '8px 14px', fontSize: 12 }}>
+                  🗑️ Eliminar
                 </button>
-              )}
-              {event.estado === 'En proceso' && (
-                <button type="button" onClick={onFinalize} className="btn btn-primary" style={{ padding: '8px 14px', fontSize: 12 }}>
-                  ✓ Finalizar
-                </button>
-              )}
-            </div>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button type="button" className="btn btn-ghost" onClick={onClose}>Cerrar</button>
+                  {event.estado === 'Programado' && (
+                    <button type="button" onClick={onStart} className="btn btn-primary" style={{ padding: '8px 14px', fontSize: 12 }}>
+                      🛠️ Iniciar Reparación
+                    </button>
+                  )}
+                  {event.estado === 'En proceso' && (
+                    <button type="button" onClick={onFinalize} className="btn btn-primary" style={{ padding: '8px 14px', fontSize: 12 }}>
+                      ✓ Finalizar
+                    </button>
+                  )}
+                </div>
+              </>
+            ) : (
+              <div style={{ display: 'flex', justifyContent: 'flex-end', width: '100%' }}>
+                <button type="button" className="btn btn-ghost" onClick={onClose}>Cerrar</button>
+              </div>
+            )}
           </div>
         </div>
       </div>

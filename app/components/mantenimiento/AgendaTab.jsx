@@ -29,6 +29,7 @@ export default function AgendaTab({
   onEventClick,
   getUbicacionName,
   getFullBien,
+  isAdmin = false,
 }) {
   return (
     <div>
@@ -82,7 +83,7 @@ export default function AgendaTab({
                   <th>Equipos Programados</th>
                   <th>Fecha / Periodo Programado</th>
                   <th>Estado de Vencimiento</th>
-                  <th>Acciones del Plan</th>
+                  {isAdmin && <th>Acciones del Plan</th>}
                 </tr>
               </thead>
               <tbody>
@@ -137,39 +138,41 @@ export default function AgendaTab({
                         <td style={{ fontSize: 12 }}>
                           <span className={remaining.className}>{remaining.text}</span>
                         </td>
-                        <td>
-                          <div style={{ display: 'flex', gap: 6 }}>
-                            <button
-                              onClick={() => onStartPlan(group)}
-                              className="btn"
-                              style={{ padding: '5px 10px', fontSize: 11, background: 'rgba(13, 148, 136, 0.1)', color: 'var(--primary)', border: '1px solid rgba(13, 148, 136, 0.2)' }}
-                              title="Iniciar todos los mantenimientos del plan"
-                            >
-                              🛠️ Iniciar
-                            </button>
-                            <button
-                              onClick={() => onEditPlan(group)}
-                              className="btn"
-                              style={{ padding: '5px 10px', fontSize: 11, background: 'rgba(59, 130, 246, 0.08)', color: '#2563EB', border: '1px solid rgba(59, 130, 246, 0.15)' }}
-                              title="Editar plan de mantenimiento"
-                            >
-                              ✏️ Editar
-                            </button>
-                            <button
-                              onClick={() => onDeletePlan(group)}
-                              className="btn"
-                              style={{ padding: '5px 10px', fontSize: 11, background: 'rgba(239, 68, 68, 0.05)', color: '#EF4444', border: '1px solid rgba(239, 68, 68, 0.1)' }}
-                              title="Eliminar plan completo"
-                            >
-                              ✕ Borrar
-                            </button>
-                          </div>
-                        </td>
+                        {isAdmin && (
+                           <td>
+                             <div style={{ display: 'flex', gap: 6 }}>
+                               <button
+                                 onClick={() => onStartPlan(group)}
+                                 className="btn"
+                                 style={{ padding: '5px 10px', fontSize: 11, background: 'rgba(13, 148, 136, 0.1)', color: 'var(--primary)', border: '1px solid rgba(13, 148, 136, 0.2)' }}
+                                 title="Iniciar todos los mantenimientos del plan"
+                                >
+                                 🛠️ Iniciar
+                               </button>
+                               <button
+                                 onClick={() => onEditPlan(group)}
+                                 className="btn"
+                                 style={{ padding: '5px 10px', fontSize: 11, background: 'rgba(59, 130, 246, 0.08)', color: '#2563EB', border: '1px solid rgba(59, 130, 246, 0.15)' }}
+                                 title="Editar plan de mantenimiento"
+                               >
+                                 ✏️ Editar
+                               </button>
+                               <button
+                                 onClick={() => onDeletePlan(group)}
+                                 className="btn"
+                                 style={{ padding: '5px 10px', fontSize: 11, background: 'rgba(239, 68, 68, 0.05)', color: '#EF4444', border: '1px solid rgba(239, 68, 68, 0.1)' }}
+                                 title="Eliminar plan completo"
+                               >
+                                 ✕ Borrar
+                               </button>
+                             </div>
+                           </td>
+                         )}
                       </tr>
 
                       {isExpanded && (
                         <tr>
-                          <td colSpan="7" style={{ padding: '12px 24px', background: 'rgba(0,0,0,0.015)', borderTop: 'none' }}>
+                         <td colSpan={isAdmin ? "7" : "6"} style={{ padding: '12px 24px', background: 'rgba(0,0,0,0.015)', borderTop: 'none' }}>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                               {/* Descripción del Plan */}
                               <div style={{ background: 'var(--bg-card)', padding: '12px 16px', borderRadius: 6, border: '1px solid var(--border)' }}>
@@ -186,10 +189,10 @@ export default function AgendaTab({
                                   <table className="inventory-table" style={{ margin: 0, width: '100%' }}>
                                     <thead>
                                       <tr style={{ background: 'var(--bg-body, #F3F4F6)' }}>
-                                        <th style={{ fontSize: 11, padding: '8px 12px' }}>Equipo / Bien</th>
-                                        <th style={{ fontSize: 11, padding: '8px 12px' }}>Etiqueta / Serie</th>
-                                        <th style={{ fontSize: 11, padding: '8px 12px' }}>Ubicación</th>
-                                        <th style={{ fontSize: 11, padding: '8px 12px' }}>Acciones Individuales</th>
+                                         <th style={{ fontSize: 11, padding: '8px 12px' }}>Equipo / Bien</th>
+                                         <th style={{ fontSize: 11, padding: '8px 12px' }}>Etiqueta / Serie</th>
+                                         <th style={{ fontSize: 11, padding: '8px 12px' }}>Ubicación</th>
+                                         {isAdmin && <th style={{ fontSize: 11, padding: '8px 12px' }}>Acciones Individuales</th>}
                                       </tr>
                                     </thead>
                                     <tbody>
@@ -200,24 +203,26 @@ export default function AgendaTab({
                                           <td style={{ padding: '8px 12px', fontSize: 11 }}>
                                             {m.bien?.ubicacion?.nombre || getUbicacionName(getFullBien(m.bienId)?.ubicacionId)}
                                           </td>
-                                          <td style={{ padding: '8px 12px' }}>
-                                            <div style={{ display: 'flex', gap: 6 }}>
-                                              <button
-                                                onClick={() => onStartMaintenance(m)}
-                                                className="btn btn-ghost"
-                                                style={{ padding: '4px 8px', fontSize: 10, border: '1px solid rgba(13, 148, 136, 0.15)', color: 'var(--primary)' }}
-                                              >
-                                                🛠️ Iniciar
-                                              </button>
-                                              <button
-                                                onClick={() => onDeleteMantenimiento(m.id)}
-                                                className="btn btn-ghost"
-                                                style={{ padding: '4px 8px', fontSize: 10, color: '#EF4444' }}
-                                              >
-                                                ✕ Quitar del Plan
-                                              </button>
-                                            </div>
-                                          </td>
+                                           {isAdmin && (
+                                            <td style={{ padding: '8px 12px' }}>
+                                              <div style={{ display: 'flex', gap: 6 }}>
+                                                <button
+                                                  onClick={() => onStartMaintenance(m)}
+                                                  className="btn btn-ghost"
+                                                  style={{ padding: '4px 8px', fontSize: 10, border: '1px solid rgba(13, 148, 136, 0.15)', color: 'var(--primary)' }}
+                                                >
+                                                  🛠️ Iniciar
+                                                </button>
+                                                <button
+                                                  onClick={() => onDeleteMantenimiento(m.id)}
+                                                  className="btn btn-ghost"
+                                                  style={{ padding: '4px 8px', fontSize: 10, color: '#EF4444' }}
+                                                >
+                                                  ✕ Quitar del Plan
+                                                </button>
+                                              </div>
+                                            </td>
+                                          )}
                                         </tr>
                                       ))}
                                     </tbody>
@@ -241,7 +246,7 @@ export default function AgendaTab({
           mantenimientos={mantenimientos}
           onPrevMonth={onPrevMonth}
           onNextMonth={onNextMonth}
-          onDayClick={onDayClick}
+          onDayClick={isAdmin ? onDayClick : null}
           onEventClick={onEventClick}
         />
       )}

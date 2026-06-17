@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/db';
+import { requireAuth } from '@/lib/auth';
 
 // Listar movimientos
 export async function GET(request) {
@@ -65,6 +66,12 @@ export async function GET(request) {
 // Registrar un movimiento de entrada o salida con validación transaccional
 export async function POST(request) {
   try {
+    const { user, errorResponse } = await requireAuth(request);
+    if (errorResponse) return errorResponse;
+    if (user.rol !== 'ADMINISTRADOR') {
+      return NextResponse.json({ error: 'Acceso denegado. Se requieren permisos de administrador.' }, { status: 403 });
+    }
+
     const body = await request.json();
     const {
       consumibleId,

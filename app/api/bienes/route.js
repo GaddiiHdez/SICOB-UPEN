@@ -134,6 +134,12 @@ export async function GET(request) {
 // Registrar un nuevo bien tecnológico
 export async function POST(request) {
   try {
+    const { user, errorResponse } = await requireAuth(request);
+    if (errorResponse) return errorResponse;
+    if (user.rol !== 'ADMINISTRADOR') {
+      return NextResponse.json({ error: 'Acceso denegado. Se requieren permisos de administrador.' }, { status: 403 });
+    }
+
     const body = await request.json();
 
     // ── SOPORTE PARA REGISTRO MASIVO EN LOTE ───────────────────
@@ -429,6 +435,12 @@ export async function POST(request) {
 
 export async function PUT(request) {
   try {
+    const { user, errorResponse } = await requireAuth(request);
+    if (errorResponse) return errorResponse;
+    if (user.rol !== 'ADMINISTRADOR') {
+      return NextResponse.json({ error: 'Acceso denegado. Se requieren permisos de administrador.' }, { status: 403 });
+    }
+
     const body = await request.json();
     const {
       ids, // Para acciones masivas
@@ -861,6 +873,12 @@ export async function PUT(request) {
 // Dar de baja lógica (soft delete) o eliminación permanente (hard delete)
 export async function DELETE(request) {
   try {
+    const { user, errorResponse } = await requireAuth(request);
+    if (errorResponse) return errorResponse;
+    if (user.rol !== 'ADMINISTRADOR') {
+      return NextResponse.json({ error: 'Acceso denegado. Se requieren permisos de administrador.' }, { status: 403 });
+    }
+
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
     const permanent = searchParams.get('permanent') === 'true';
@@ -879,16 +897,6 @@ export async function DELETE(request) {
 
     // ── BORRADO PERMANENTE (HARD DELETE) ────────────────────────
     if (permanent) {
-      // 1. Autorización: verificar sesión y rol de administrador
-      const { user, errorResponse } = await requireAuth(request);
-      if (errorResponse) return errorResponse;
-
-      if (!user || user.rol !== 'ADMINISTRADOR') {
-        return NextResponse.json(
-          { error: 'Solo los usuarios con acceso de administrador pueden borrar de forma permanente.' },
-          { status: 403 }
-        );
-      }
 
       // 2. Validar que el equipo esté dado de baja (eliminado === true)
       if (!bien.eliminado) {

@@ -8,7 +8,8 @@ export default function InmobiliarioPanel({
   ubicaciones = [],
   departamentos = [],
   configuracion = {},
-  showToast
+  showToast,
+  isAdmin = false
 }) {
   const [items, setItems] = useState([]);
   const [categorias, setCategorias] = useState([]);
@@ -293,6 +294,10 @@ export default function InmobiliarioPanel({
   };
 
   const handlePrintLabel = (item) => {
+    if (!item.codigo_inventario || item.codigo_inventario.startsWith('SIN-NUMERO-')) {
+      if (showToast) showToast('Este mobiliario no cuenta con un número de inventario válido para generar un código de barras.', 'warning');
+      return;
+    }
     setPrintItems([item]);
   };
 
@@ -349,9 +354,11 @@ export default function InmobiliarioPanel({
                 </span>
               </div>
             </div>
-            <button onClick={handleOpenCreateModal} className="btn btn-primary">
-              ＋ Registrar Mobiliario
-            </button>
+            {isAdmin && (
+              <button onClick={handleOpenCreateModal} className="btn btn-primary">
+                ＋ Registrar Mobiliario
+              </button>
+            )}
           </div>
 
           {/* Barra de Filtros */}
@@ -600,18 +607,20 @@ export default function InmobiliarioPanel({
                                         </td>
                                         <td style={{ padding: '6px 8px', textAlign: 'right' }}>
                                           <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
-                                            <button 
-                                              type="button"
-                                              onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleOpenEditModal(subItem);
-                                              }} 
-                                              className="btn btn-ghost" 
-                                              style={{ fontSize: 10, padding: '2px 4px', height: 'auto', border: 'none', background: 'transparent' }}
-                                              title="Editar"
-                                            >
-                                              ✏️
-                                            </button>
+                                            {isAdmin && (
+                                              <button 
+                                                type="button"
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  handleOpenEditModal(subItem);
+                                                }} 
+                                                className="btn btn-ghost" 
+                                                style={{ fontSize: 10, padding: '2px 4px', height: 'auto', border: 'none', background: 'transparent' }}
+                                                title="Editar"
+                                              >
+                                                ✏️
+                                              </button>
+                                            )}
                                             <button 
                                               type="button"
                                               onClick={(e) => {
@@ -624,18 +633,20 @@ export default function InmobiliarioPanel({
                                             >
                                               🖨️
                                             </button>
-                                            <button 
-                                              type="button"
-                                              onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleDeleteItem(subItem.id, subItem.descripcion);
-                                              }} 
-                                              className="btn btn-ghost" 
-                                              style={{ fontSize: 10, padding: '2px 4px', height: 'auto', border: 'none', background: 'transparent', color: 'var(--danger)' }}
-                                              title="Dar de baja"
-                                            >
-                                              🗑️
-                                            </button>
+                                            {isAdmin && (
+                                              <button 
+                                                type="button"
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  handleDeleteItem(subItem.id, subItem.descripcion);
+                                                }} 
+                                                className="btn btn-ghost" 
+                                                style={{ fontSize: 10, padding: '2px 4px', height: 'auto', border: 'none', background: 'transparent', color: 'var(--danger)' }}
+                                                title="Dar de baja"
+                                              >
+                                                🗑️
+                                              </button>
+                                            )}
                                           </div>
                                         </td>
                                       </tr>
@@ -670,10 +681,12 @@ export default function InmobiliarioPanel({
               ) : (
                 <span style={{ fontSize: 48, opacity: 0.2 }}>🪑</span>
               )}
-              <label style={{ position: 'absolute', bottom: 8, right: 8, background: 'rgba(0,0,0,0.6)', color: '#fff', borderRadius: '50%', width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: 12 }} title="Cargar foto">
-                📷
-                <input type="file" accept="image/*" onChange={handleImageUpload} style={{ display: 'none' }} />
-              </label>
+              {isAdmin && (
+                <label style={{ position: 'absolute', bottom: 8, right: 8, background: 'rgba(0,0,0,0.6)', color: '#fff', borderRadius: '50%', width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: 12 }} title="Cargar foto">
+                  📷
+                  <input type="file" accept="image/*" onChange={handleImageUpload} style={{ display: 'none' }} />
+                </label>
+              )}
             </div>
 
             {/* Código de barras */}
@@ -734,16 +747,20 @@ export default function InmobiliarioPanel({
             {/* Acciones */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 10 }}>
               <div style={{ display: 'flex', gap: 10 }}>
-                <button onClick={() => handleOpenEditModal(selectedItem)} className="btn btn-ghost" style={{ flex: 1 }}>✏️ Editar</button>
+                {isAdmin && (
+                  <button onClick={() => handleOpenEditModal(selectedItem)} className="btn btn-ghost" style={{ flex: 1 }}>✏️ Editar</button>
+                )}
                 <button onClick={() => handlePrintLabel(selectedItem)} className="btn btn-ghost" style={{ flex: 1 }} title="Imprimir etiqueta de barras">🖨️ Etiqueta</button>
               </div>
-              <button 
-                onClick={() => handleDeleteItem(selectedItem.id, selectedItem.descripcion)}
-                className="btn btn-danger"
-                style={{ width: '100%' }}
-              >
-                🗑️ Dar de Baja Activo
-              </button>
+              {isAdmin && (
+                <button 
+                  onClick={() => handleDeleteItem(selectedItem.id, selectedItem.descripcion)}
+                  className="btn btn-danger"
+                  style={{ width: '100%' }}
+                >
+                  🗑️ Dar de Baja Activo
+                </button>
+              )}
             </div>
           </div>
         )}

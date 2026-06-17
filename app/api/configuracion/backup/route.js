@@ -1,10 +1,16 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs';
 import { createBackup, listBackups, deleteBackup, getBackupPath } from '@/lib/backupService';
+import { requireAuth } from '@/lib/auth';
 
 // GET: Listar archivos de respaldos locales o descargar un archivo específico
 export async function GET(request) {
   try {
+    const { user, errorResponse } = await requireAuth(request);
+    if (errorResponse) return errorResponse;
+    if (user.rol !== 'ADMINISTRADOR') {
+      return NextResponse.json({ error: 'Acceso denegado. Se requieren permisos de administrador.' }, { status: 403 });
+    }
     const { searchParams } = new URL(request.url);
     const filename = searchParams.get('filename');
 
@@ -39,8 +45,13 @@ export async function GET(request) {
 }
 
 // POST: Crear una instantánea de respaldo manual en el servidor
-export async function POST() {
+export async function POST(request) {
   try {
+    const { user, errorResponse } = await requireAuth(request);
+    if (errorResponse) return errorResponse;
+    if (user.rol !== 'ADMINISTRADOR') {
+      return NextResponse.json({ error: 'Acceso denegado. Se requieren permisos de administrador.' }, { status: 403 });
+    }
     const result = await createBackup();
     return NextResponse.json({
       success: true,
@@ -57,6 +68,12 @@ export async function POST() {
 // DELETE: Eliminar una instantánea de respaldo del servidor
 export async function DELETE(request) {
   try {
+    const { user, errorResponse } = await requireAuth(request);
+    if (errorResponse) return errorResponse;
+    if (user.rol !== 'ADMINISTRADOR') {
+      return NextResponse.json({ error: 'Acceso denegado. Se requieren permisos de administrador.' }, { status: 403 });
+    }
+
     const { searchParams } = new URL(request.url);
     const filename = searchParams.get('filename');
 

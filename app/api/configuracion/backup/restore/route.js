@@ -1,10 +1,16 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs';
 import { restoreBackup, getBackupPath } from '@/lib/backupService';
+import { requireAuth } from '@/lib/auth';
 
 // POST: Restaurar base de datos a partir de una instantánea local o un JSON subido
 export async function POST(request) {
   try {
+    const { user, errorResponse } = await requireAuth(request);
+    if (errorResponse) return errorResponse;
+    if (user.rol !== 'ADMINISTRADOR') {
+      return NextResponse.json({ error: 'Acceso denegado. Se requieren permisos de administrador.' }, { status: 403 });
+    }
     const body = await request.json();
     const { filename, backupData } = body;
 

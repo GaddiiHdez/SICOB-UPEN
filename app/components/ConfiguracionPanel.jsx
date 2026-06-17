@@ -3,7 +3,8 @@ import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import TabBar from '@/app/components/shared/TabBar';
 import TabFormato from '@/app/components/config/TabFormato';
 import TabIdentidad from '@/app/components/config/TabIdentidad';
-import TabSistema from '@/app/components/config/TabSistema';
+import TabRespaldos from '@/app/components/config/TabRespaldos';
+import TabAccesos from '@/app/components/config/TabAccesos';
 import {
   getCorrelativoPadding,
   updateCorrelativoPadding
@@ -41,6 +42,25 @@ export default function ConfiguracionPanel({ bienes, showToast, configuracion = 
   const [etiquetaLetraMarcaModeloPt, setEtiquetaLetraMarcaModeloPt] = useState(4.2);
   const [etiquetaLetraCodigoPt, setEtiquetaLetraCodigoPt] = useState(5.5);
   const [etiquetaLetraSerialPt, setEtiquetaLetraSerialPt] = useState(5.0);
+  const [etiquetaFormatoPapel, setEtiquetaFormatoPapel]   = useState('rollo');
+
+  // Ajustes de calibración para papel Avery/Etiquetas
+  const [etiquetaMargenSuperior, setEtiquetaMargenSuperior] = useState(1.0);
+  const [etiquetaMargenInferior, setEtiquetaMargenInferior] = useState(1.0);
+  const [etiquetaMargenIzquierdo, setEtiquetaMargenIzquierdo] = useState(1.0);
+  const [etiquetaMargenDerecho, setEtiquetaMargenDerecho] = useState(1.0);
+  const [etiquetaGapColumnas, setEtiquetaGapColumnas] = useState(0.5);
+  const [etiquetaGapFilas, setEtiquetaGapFilas] = useState(0.0);
+
+  // Estilos de fuentes (Negrita y Cursiva)
+  const [etiquetaCabeceraBold, setEtiquetaCabeceraBold] = useState(true);
+  const [etiquetaCabeceraItalic, setEtiquetaCabeceraItalic] = useState(false);
+  const [etiquetaMarcaBold, setEtiquetaMarcaBold] = useState(false);
+  const [etiquetaMarcaItalic, setEtiquetaMarcaItalic] = useState(false);
+  const [etiquetaCodigoBold, setEtiquetaCodigoBold] = useState(true);
+  const [etiquetaCodigoItalic, setEtiquetaCodigoItalic] = useState(false);
+  const [etiquetaSerialBold, setEtiquetaSerialBold] = useState(false);
+  const [etiquetaSerialItalic, setEtiquetaSerialItalic] = useState(false);
 
   // ── Estado compartido: Identidad Institucional ─────────────
   const [univName, setUnivName]       = useState('Universidad Politécnica del Estado');
@@ -104,6 +124,23 @@ export default function ConfiguracionPanel({ bienes, showToast, configuracion = 
       setEtiquetaLetraMarcaModeloPt(parseFloat(configuracion?.etiqueta_letra_marca_modelo_pt || '4.2'));
       setEtiquetaLetraCodigoPt(parseFloat(configuracion?.etiqueta_letra_codigo_pt || '5.5'));
       setEtiquetaLetraSerialPt(parseFloat(configuracion?.etiqueta_letra_serial_pt || '5.0'));
+      setEtiquetaFormatoPapel(configuracion?.etiqueta_formato_papel || 'rollo');
+      setEtiquetaMargenSuperior(parseFloat(configuracion?.etiqueta_margen_superior || '1.0'));
+      setEtiquetaMargenInferior(parseFloat(configuracion?.etiqueta_margen_inferior || '1.0'));
+      setEtiquetaMargenIzquierdo(parseFloat(configuracion?.etiqueta_margen_izquierdo || '1.0'));
+      setEtiquetaMargenDerecho(parseFloat(configuracion?.etiqueta_margen_derecho || '1.0'));
+      setEtiquetaGapColumnas(parseFloat(configuracion?.etiqueta_gap_columnas || '0.5'));
+      setEtiquetaGapFilas(parseFloat(configuracion?.etiqueta_gap_filas || '0.0'));
+
+      setEtiquetaCabeceraBold(configuracion?.etiqueta_cabecera_bold !== 'false');
+      setEtiquetaCabeceraItalic(configuracion?.etiqueta_cabecera_italic === 'true');
+      setEtiquetaMarcaBold(configuracion?.etiqueta_marca_bold === 'true');
+      setEtiquetaMarcaItalic(configuracion?.etiqueta_marca_italic === 'true');
+      setEtiquetaCodigoBold(configuracion?.etiqueta_codigo_bold !== 'false');
+      setEtiquetaCodigoItalic(configuracion?.etiqueta_codigo_italic === 'true');
+      setEtiquetaSerialBold(configuracion?.etiqueta_serial_bold === 'true');
+      setEtiquetaSerialItalic(configuracion?.etiqueta_serial_italic === 'true');
+
       setLoading(false);
     });
   }, [configuracion]);
@@ -126,7 +163,7 @@ export default function ConfiguracionPanel({ bienes, showToast, configuracion = 
 
   useEffect(() => {
     let active = true;
-    if (activeTab === 'sistema') {
+    if (activeTab === 'respaldos') {
       Promise.resolve().then(() => { if (active) fetchBackups(); });
     }
     return () => { active = false; };
@@ -151,7 +188,22 @@ export default function ConfiguracionPanel({ bienes, showToast, configuracion = 
           etiqueta_letra_cabecera_pt: String(etiquetaLetraCabeceraPt),
           etiqueta_letra_marca_modelo_pt: String(etiquetaLetraMarcaModeloPt),
           etiqueta_letra_codigo_pt: String(etiquetaLetraCodigoPt),
-          etiqueta_letra_serial_pt: String(etiquetaLetraSerialPt)
+          etiqueta_letra_serial_pt: String(etiquetaLetraSerialPt),
+          etiqueta_formato_papel: etiquetaFormatoPapel,
+          etiqueta_cabecera_bold: String(etiquetaCabeceraBold),
+          etiqueta_cabecera_italic: String(etiquetaCabeceraItalic),
+          etiqueta_marca_bold: String(etiquetaMarcaBold),
+          etiqueta_marca_italic: String(etiquetaMarcaItalic),
+          etiqueta_codigo_bold: String(etiquetaCodigoBold),
+          etiqueta_codigo_italic: String(etiquetaCodigoItalic),
+          etiqueta_serial_bold: String(etiquetaSerialBold),
+          etiqueta_serial_italic: String(etiquetaSerialItalic),
+          etiqueta_margen_superior: String(etiquetaMargenSuperior),
+          etiqueta_margen_inferior: String(etiquetaMargenInferior),
+          etiqueta_margen_izquierdo: String(etiquetaMargenIzquierdo),
+          etiqueta_margen_derecho: String(etiquetaMargenDerecho),
+          etiqueta_gap_columnas: String(etiquetaGapColumnas),
+          etiqueta_gap_filas: String(etiquetaGapFilas)
         })
       });
       if (!res.ok) throw new Error('Error al guardar');
@@ -318,9 +370,10 @@ export default function ConfiguracionPanel({ bienes, showToast, configuracion = 
         activeTab={activeTab}
         onChange={setActiveTab}
         tabs={[
-          { id: 'codigos',   label: '🏷️ Formato de Códigos' },
-          { id: 'identidad', label: '🏫 Identidad Institucional' },
-          { id: 'sistema',   label: '🔐 Accesos y Respaldos' }
+          { id: 'codigos',    label: '🏷️ Formato de Códigos' },
+          { id: 'identidad',  label: '🏫 Identidad Institucional' },
+          { id: 'respaldos',  label: '💾 Respaldos' },
+          { id: 'accesos',    label: '🔐 Accesos al Sistema' }
         ]}
       />
 
@@ -356,6 +409,36 @@ export default function ConfiguracionPanel({ bienes, showToast, configuracion = 
             setEtiquetaLetraCodigoPt={setEtiquetaLetraCodigoPt}
             etiquetaLetraSerialPt={etiquetaLetraSerialPt}
             setEtiquetaLetraSerialPt={setEtiquetaLetraSerialPt}
+            etiquetaFormatoPapel={etiquetaFormatoPapel}
+            setEtiquetaFormatoPapel={setEtiquetaFormatoPapel}
+            etiquetaCabeceraBold={etiquetaCabeceraBold}
+            setEtiquetaCabeceraBold={setEtiquetaCabeceraBold}
+            etiquetaCabeceraItalic={etiquetaCabeceraItalic}
+            setEtiquetaCabeceraItalic={setEtiquetaCabeceraItalic}
+            etiquetaMarcaBold={etiquetaMarcaBold}
+            setEtiquetaMarcaBold={setEtiquetaMarcaBold}
+            etiquetaMarcaItalic={etiquetaMarcaItalic}
+            setEtiquetaMarcaItalic={setEtiquetaMarcaItalic}
+            etiquetaCodigoBold={etiquetaCodigoBold}
+            setEtiquetaCodigoBold={setEtiquetaCodigoBold}
+            etiquetaCodigoItalic={etiquetaCodigoItalic}
+            setEtiquetaCodigoItalic={setEtiquetaCodigoItalic}
+            etiquetaSerialBold={etiquetaSerialBold}
+            setEtiquetaSerialBold={setEtiquetaSerialBold}
+            etiquetaSerialItalic={etiquetaSerialItalic}
+            setEtiquetaSerialItalic={setEtiquetaSerialItalic}
+            etiquetaMargenSuperior={etiquetaMargenSuperior}
+            setEtiquetaMargenSuperior={setEtiquetaMargenSuperior}
+            etiquetaMargenInferior={etiquetaMargenInferior}
+            setEtiquetaMargenInferior={setEtiquetaMargenInferior}
+            etiquetaMargenIzquierdo={etiquetaMargenIzquierdo}
+            setEtiquetaMargenIzquierdo={setEtiquetaMargenIzquierdo}
+            etiquetaMargenDerecho={etiquetaMargenDerecho}
+            setEtiquetaMargenDerecho={setEtiquetaMargenDerecho}
+            etiquetaGapColumnas={etiquetaGapColumnas}
+            setEtiquetaGapColumnas={setEtiquetaGapColumnas}
+            etiquetaGapFilas={etiquetaGapFilas}
+            setEtiquetaGapFilas={setEtiquetaGapFilas}
           />
         )}
         {activeTab === 'identidad' && (
@@ -373,8 +456,8 @@ export default function ConfiguracionPanel({ bienes, showToast, configuracion = 
             firmaTecnicoPuesto={firmaTecnicoPuesto} setFirmaTecnicoPuesto={setFirmaTecnicoPuesto}
           />
         )}
-        {activeTab === 'sistema' && (
-          <TabSistema
+        {activeTab === 'respaldos' && (
+          <TabRespaldos
             backupsList={backupsList} loadingBackups={loadingBackups}
             saving={saving} bienesCount={bienes?.length || 0}
             onCreateBackup={handleCreateBackup}
@@ -386,6 +469,9 @@ export default function ConfiguracionPanel({ bienes, showToast, configuracion = 
             onDeleteBackup={handleDeleteBackup}
             fileInputRef={fileInputRef}
           />
+        )}
+        {activeTab === 'accesos' && (
+          <TabAccesos />
         )}
       </div>
 

@@ -1,11 +1,201 @@
 'use client';
 import { useState } from 'react';
 
+// ── Sub-componente: Formulario de restablecimiento ─────────────────────────
+function ForgotPasswordForm({ onBack }) {
+  const [step, setStep] = useState(1); // 1 = ingresar datos, 2 = éxito
+  const [correo, setCorreo] = useState('');
+  const [token, setToken] = useState('');
+  const [nuevaPassword, setNuevaPassword] = useState('');
+  const [confirmarPassword, setConfirmarPassword] = useState('');
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError(null);
+
+    if (nuevaPassword !== confirmarPassword) {
+      setError('Las contraseñas no coinciden.');
+      return;
+    }
+    if (nuevaPassword.length < 6) {
+      setError('La contraseña debe tener al menos 6 caracteres.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch('/api/auth/reset-confirm', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ correo, token: token.trim(), nuevaPassword }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error al restablecer la contraseña');
+      setStep(2);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (step === 2) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 20, textAlign: 'center' }}>
+        <div style={{ fontSize: 48 }}>✅</div>
+        <div>
+          <h2 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
+            ¡Contraseña actualizada!
+          </h2>
+          <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 8 }}>
+            Tu contraseña ha sido restablecida correctamente. Ya puedes iniciar sesión con tu nueva contraseña.
+          </p>
+        </div>
+        <button
+          type="button"
+          className="login-btn-submit"
+          onClick={onBack}
+        >
+          Volver al inicio de sesión
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20, width: '100%' }}>
+      <div>
+        <h2 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
+          Restablecer contraseña
+        </h2>
+        <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 6, lineHeight: 1.5 }}>
+          Ingresa tu correo, el código que te proporcionó el administrador, y tu nueva contraseña.
+        </p>
+      </div>
+
+      {error && (
+        <div className="login-error-box">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
+          <span>{error}</span>
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16, width: '100%' }}>
+        {/* Correo */}
+        <div className="login-field-group">
+          <label className="form-label" style={{ color: '#6B7280', fontWeight: 600 }}>Correo institucional</label>
+          <div className="login-input-wrap">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="login-input-icon"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+            <input
+              id="reset-correo"
+              type="email"
+              className="login-input"
+              value={correo}
+              onChange={(e) => setCorreo(e.target.value)}
+              placeholder="usuario@upnay.edu.mx"
+              required
+              disabled={loading}
+            />
+          </div>
+        </div>
+
+        {/* Código del admin */}
+        <div className="login-field-group">
+          <label className="form-label" style={{ color: '#6B7280', fontWeight: 600 }}>Código de restablecimiento</label>
+          <div className="login-input-wrap">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="login-input-icon"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0 3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+            <input
+              id="reset-token"
+              type="text"
+              className="login-input"
+              value={token}
+              onChange={(e) => setToken(e.target.value.replace(/\D/g, '').slice(0, 6))}
+              placeholder="6 dígitos (ej: 482916)"
+              maxLength={6}
+              required
+              disabled={loading}
+              style={{ letterSpacing: '0.3em', fontWeight: 700 }}
+            />
+          </div>
+          <p style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 4 }}>
+            El administrador del sistema te proporcionó este código.
+          </p>
+        </div>
+
+        {/* Nueva contraseña */}
+        <div className="login-field-group">
+          <label className="form-label" style={{ color: '#6B7280', fontWeight: 600 }}>Nueva contraseña</label>
+          <div className="login-input-wrap">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="login-input-icon"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <input
+              id="reset-nueva-password"
+              type="password"
+              className="login-input"
+              value={nuevaPassword}
+              onChange={(e) => setNuevaPassword(e.target.value)}
+              placeholder="Mínimo 6 caracteres"
+              required
+              disabled={loading}
+            />
+          </div>
+        </div>
+
+        {/* Confirmar contraseña */}
+        <div className="login-field-group">
+          <label className="form-label" style={{ color: '#6B7280', fontWeight: 600 }}>Confirmar contraseña</label>
+          <div className="login-input-wrap">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="login-input-icon"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <input
+              id="reset-confirmar-password"
+              type="password"
+              className="login-input"
+              value={confirmarPassword}
+              onChange={(e) => setConfirmarPassword(e.target.value)}
+              placeholder="Repite tu nueva contraseña"
+              required
+              disabled={loading}
+            />
+          </div>
+        </div>
+
+        <button
+          id="reset-submit-btn"
+          type="submit"
+          className="login-btn-submit"
+          disabled={loading || token.length < 6}
+        >
+          {loading ? (
+            <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span className="sync-pulse" style={{ backgroundColor: '#fff', boxShadow: 'none' }}></span>
+              Verificando...
+            </span>
+          ) : 'Cambiar contraseña'}
+        </button>
+
+        <button
+          type="button"
+          onClick={onBack}
+          style={{
+            background: 'none', border: 'none', cursor: 'pointer',
+            color: 'var(--text-secondary)', fontSize: 13, textDecoration: 'underline'
+          }}
+        >
+          ← Volver al inicio de sesión
+        </button>
+      </form>
+    </div>
+  );
+}
+
+// ── Componente principal: Login ────────────────────────────────────────────
 export default function Login({ onLoginSuccess }) {
   const [correo, setCorreo] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [showForgot, setShowForgot] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -44,59 +234,82 @@ export default function Login({ onLoginSuccess }) {
           <h1 className="login-title">SICOB</h1>
           <p className="login-sub">Sistema de Control y Operación de Bienes</p>
 
-          {error && (
-            <div className="login-error-box">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
-              <span>{error}</span>
-            </div>
+          {/* ── Vista: Formulario de restablecimiento ── */}
+          {showForgot ? (
+            <ForgotPasswordForm onBack={() => setShowForgot(false)} />
+          ) : (
+            <>
+              {error && (
+                <div className="login-error-box">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
+                  <span>{error}</span>
+                </div>
+              )}
+
+              <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px', width: '100%' }}>
+                <div className="login-field-group">
+                  <label className="form-label" style={{ color: '#6B7280', fontWeight: 600 }}>Correo electrónico</label>
+                  <div className="login-input-wrap">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="login-input-icon"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                    <input
+                      type="email"
+                      className="login-input"
+                      value={correo}
+                      onChange={(e) => setCorreo(e.target.value)}
+                      placeholder="usuario@upen.edu.mx"
+                      required
+                      disabled={loading}
+                    />
+                  </div>
+                </div>
+
+                <div className="login-field-group">
+                  <label className="form-label" style={{ color: '#6B7280', fontWeight: 600 }}>Contraseña</label>
+                  <div className="login-input-wrap">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="login-input-icon"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    <input
+                      type="password"
+                      className="login-input"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••"
+                      required
+                      disabled={loading}
+                    />
+                  </div>
+                </div>
+
+                {/* Enlace ¿Olvidaste tu contraseña? */}
+                <div style={{ textAlign: 'right', marginTop: -10 }}>
+                  <button
+                    id="forgot-password-link"
+                    type="button"
+                    onClick={() => { setError(null); setShowForgot(true); }}
+                    style={{
+                      background: 'none', border: 'none', cursor: 'pointer',
+                      color: 'var(--primary)', fontSize: 12, fontWeight: 500,
+                      textDecoration: 'underline', padding: 0
+                    }}
+                  >
+                    ¿Olvidaste tu contraseña?
+                  </button>
+                </div>
+
+                <button
+                  type="submit"
+                  className="login-btn-submit"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span className="sync-pulse" style={{ backgroundColor: '#fff', boxShadow: 'none' }}></span>
+                      Iniciando sesión...
+                    </span>
+                  ) : 'Ingresar al sistema'}
+                </button>
+              </form>
+            </>
           )}
-
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px', width: '100%' }}>
-            <div className="login-field-group">
-              <label className="form-label" style={{ color: '#6B7280', fontWeight: 600 }}>Correo electrónico</label>
-              <div className="login-input-wrap">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="login-input-icon"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
-                <input
-                  type="email"
-                  className="login-input"
-                  value={correo}
-                  onChange={(e) => setCorreo(e.target.value)}
-                  placeholder="usuario@upen.edu.mx"
-                  required
-                  disabled={loading}
-                />
-              </div>
-            </div>
-
-            <div className="login-field-group">
-              <label className="form-label" style={{ color: '#6B7280', fontWeight: 600 }}>Contraseña</label>
-              <div className="login-input-wrap">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="login-input-icon"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                <input
-                  type="password"
-                  className="login-input"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  required
-                  disabled={loading}
-                />
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              className="login-btn-submit"
-              disabled={loading}
-            >
-              {loading ? (
-                <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span className="sync-pulse" style={{ backgroundColor: '#fff', boxShadow: 'none' }}></span>
-                  Iniciando sesión...
-                </span>
-              ) : 'Ingresar al sistema'}
-            </button>
-          </form>
         </div>
 
         <footer className="login-footer">

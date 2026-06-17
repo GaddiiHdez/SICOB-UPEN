@@ -8,7 +8,7 @@ import { useState, useMemo, useEffect, useCallback } from 'react';
  * optimizada para impresión multipágina (PDF), simular la firma de conformidad
  * y desasignar (devolver a bodega) bienes de forma individual en tiempo real.
  */
-export default function ResguardosPanel({ bienes, showToast, refreshBienes, configuracion = {}, activeCustodioId, onClearActiveCustodio }) {
+export default function ResguardosPanel({ bienes, showToast, refreshBienes, configuracion = {}, activeCustodioId, onClearActiveCustodio, isAdmin = false }) {
   const [search, setSearch] = useState('');
   const [selectedCustodio, setSelectedCustodio] = useState(null);
   const [showSignModal, setShowSignModal] = useState(false);
@@ -408,11 +408,12 @@ export default function ResguardosPanel({ bienes, showToast, refreshBienes, conf
                 <button onClick={handlePrintPDF} className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: 12 }}>
                   🖨️ Exportar Acta (PDF)
                 </button>
-                {!isSigned ? (
+                {isAdmin && !isSigned && (
                   <button onClick={() => setShowSignModal(true)} className="btn btn-primary" style={{ padding: '8px 16px', fontSize: 12 }}>
                     ✍️ Firmar Conformidad
                   </button>
-                ) : (
+                )}
+                {isSigned && (
                   <span style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -553,7 +554,7 @@ export default function ResguardosPanel({ bienes, showToast, refreshBienes, conf
                         </th>
                         <th style={{ padding: '8px 10px', textAlign: 'center', fontWeight: 700, width: 70, borderRight: '1px solid #D1D5DB' }}>Estatus</th>
                         <th style={{ padding: '8px 10px', textAlign: 'right', fontWeight: 700, width: 90, borderRight: '1px solid #D1D5DB' }}>Valor Est.</th>
-                        <th className="no-print" style={{ padding: '8px 10px', textAlign: 'center', width: 90 }}>Acción</th>
+                        {isAdmin && <th className="no-print" style={{ padding: '8px 10px', textAlign: 'center', width: 90 }}>Acción</th>}
                       </tr>
                     </thead>
                     <tbody>
@@ -573,36 +574,38 @@ export default function ResguardosPanel({ bienes, showToast, refreshBienes, conf
                           <td style={{ padding: '8px 10px', fontFamily: 'monospace', borderRight: '1px solid #E5E7EB' }}>{bien.serial}</td>
                           <td style={{ padding: '8px 10px', textAlign: 'center', fontWeight: 600, borderRight: '1px solid #E5E7EB' }}>{bien.estado}</td>
                           <td style={{ padding: '8px 10px', textAlign: 'right', fontWeight: 600, borderRight: '1px solid #E5E7EB' }}>{formatCurrency(bien.valor_estimado)}</td>
-                          <td className="no-print" style={{ padding: '6px 8px', textAlign: 'center' }}>
-                            <button
-                              onClick={() => {
-                                if (resguardoTipo === 'tecnologico') {
-                                  handleUnassignBien(bien.id, bien.nombre);
-                                } else {
-                                  handleUnassignInmobiliario(bien.id, bien.nombre);
-                                }
-                              }}
-                              disabled={processingUnassignId === bien.id}
-                              className="btn"
-                              style={{
-                                padding: '4px 8px',
-                                fontSize: 9.5,
-                                background: 'rgba(239, 68, 68, 0.1)',
-                                color: '#EF4444',
-                                border: '1px solid rgba(239, 68, 68, 0.15)',
-                                display: 'inline-flex',
-                                gap: 3
-                              }}
-                            >
-                              {processingUnassignId === bien.id ? '⏳' : '❌ Devolver'}
-                            </button>
-                          </td>
+                          {isAdmin && (
+                            <td className="no-print" style={{ padding: '6px 8px', textAlign: 'center' }}>
+                              <button
+                                onClick={() => {
+                                  if (resguardoTipo === 'tecnologico') {
+                                    handleUnassignBien(bien.id, bien.nombre);
+                                  } else {
+                                    handleUnassignInmobiliario(bien.id, bien.nombre);
+                                  }
+                                }}
+                                disabled={processingUnassignId === bien.id}
+                                className="btn"
+                                style={{
+                                  padding: '4px 8px',
+                                  fontSize: 9.5,
+                                  background: 'rgba(239, 68, 68, 0.1)',
+                                  color: '#EF4444',
+                                  border: '1px solid rgba(239, 68, 68, 0.15)',
+                                  display: 'inline-flex',
+                                  gap: 3
+                                }}
+                              >
+                                {processingUnassignId === bien.id ? '⏳' : '❌ Devolver'}
+                              </button>
+                            </td>
+                          )}
                         </tr>
                       ))}
                       <tr style={{ background: '#F3F4F6', fontWeight: 700, borderTop: '2px solid #D1D5DB' }}>
                         <td colSpan={6} style={{ padding: '10px', textAlign: 'right', borderRight: '1px solid #D1D5DB' }}>VALOR TOTAL ACUMULADO BAJO RESGUARDO:</td>
                         <td style={{ padding: '10px', textAlign: 'right', borderRight: '1px solid #D1D5DB' }}>{formatCurrency(activeCustodioDetails.totalValor)}</td>
-                        <td className="no-print" style={{ background: '#F3F4F6' }}></td>
+                        {isAdmin && <td className="no-print" style={{ background: '#F3F4F6' }}></td>}
                       </tr>
                     </tbody>
                   </table>

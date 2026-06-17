@@ -13,7 +13,8 @@ export default function AuditoriaPanel({
   ubicaciones = [], 
   showToast, 
   refreshBienes,
-  configuracion = {}
+  configuracion = {},
+  isAdmin = false
 }) {
   const [step, setStep] = useState('select'); // 'select' | 'audit' | 'report'
   const [ubicacionSeleccionada, setUbicacionSeleccionada] = useState(null);
@@ -245,6 +246,7 @@ export default function AuditoriaPanel({
           onBack={() => setStep('audit')}
           showToast={showToast}
           configuracion={configuracion}
+          isAdmin={isAdmin}
         />
       )}
     </div>

@@ -92,6 +92,9 @@ export async function POST(request) {
   try {
     const { user, errorResponse } = await requireAuth(request);
     if (errorResponse) return errorResponse;
+    if (user.rol !== 'ADMINISTRADOR') {
+      return NextResponse.json({ error: 'Acceso denegado. Se requieren permisos de administrador.' }, { status: 403 });
+    }
 
     const body = await request.json();
     const { personalId, bienesIds, fecha_estimada, motivo, observaciones } = body;
@@ -167,6 +170,9 @@ export async function PUT(request) {
   try {
     const { user, errorResponse } = await requireAuth(request);
     if (errorResponse) return errorResponse;
+    if (user.rol !== 'ADMINISTRADOR') {
+      return NextResponse.json({ error: 'Acceso denegado. Se requieren permisos de administrador.' }, { status: 403 });
+    }
 
     const body = await request.json();
     const { id, registrarRetorno, observaciones, motivo, fecha_estimada } = body;
@@ -234,6 +240,9 @@ export async function DELETE(request) {
   try {
     const { user, errorResponse } = await requireAuth(request);
     if (errorResponse) return errorResponse;
+    if (user.rol !== 'ADMINISTRADOR') {
+      return NextResponse.json({ error: 'Acceso denegado. Se requieren permisos de administrador.' }, { status: 403 });
+    }
 
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');

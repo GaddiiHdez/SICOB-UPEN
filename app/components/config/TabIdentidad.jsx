@@ -1,22 +1,107 @@
 'use client';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 
-/**
- * TabIdentidad — Pestaña de Identidad Institucional
- *
- * Gestiona el nombre, acrónimo y logotipo de la institución.
- * Antes era el bloque condicional `activeTab === 'identidad'`
- * en ConfiguracionPanel.jsx (líneas 658–760).
- *
- * @param {string}   univName       - Nombre completo de la institución
- * @param {Function} setUnivName    - Setter del nombre
- * @param {string}   univAcronym    - Siglas oficiales
- * @param {Function} setUnivAcronym - Setter del acrónimo
- * @param {string}   logoBase64     - Imagen del logo en base64
- * @param {Function} setLogoBase64  - Setter del logo
- * @param {boolean}  saving         - Si se está guardando
- * @param {Function} onSave         - Callback de guardado (event handler)
- */
+// ── Componente: Tarjeta de firma individual ────────────────────────────────
+function FirmaCard({ role, icon, nombre, onNombreChange, puesto, onPuestoChange }) {
+  return (
+    <div style={{
+      background: 'var(--bg-body)',
+      border: '1px solid var(--border)',
+      borderRadius: 'var(--radius-lg)',
+      padding: '20px',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: 14,
+      transition: 'border-color 0.2s, box-shadow 0.2s',
+    }}
+      className="firma-card"
+    >
+      {/* Cabecera de la tarjeta */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{
+          width: 36, height: 36, borderRadius: '50%',
+          background: 'linear-gradient(135deg, rgba(13,148,136,0.15) 0%, rgba(13,148,136,0.05) 100%)',
+          border: '1px solid rgba(13,148,136,0.2)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 16, flexShrink: 0
+        }}>
+          {icon}
+        </div>
+        <div>
+          <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
+            {role}
+          </div>
+          <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 1 }}>
+            Aparece al calzar documentos y actas
+          </div>
+        </div>
+      </div>
+
+      {/* Separador */}
+      <div style={{ borderBottom: '1px solid var(--border)' }} />
+
+      {/* Campos */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div>
+          <label style={{
+            display: 'block', fontSize: 11, fontWeight: 600,
+            color: 'var(--text-secondary)', textTransform: 'uppercase',
+            letterSpacing: '0.06em', marginBottom: 6
+          }}>
+            Nombre completo
+          </label>
+          <input
+            className="form-input"
+            value={nombre}
+            onChange={e => onNombreChange(e.target.value)}
+            placeholder="Nombre del responsable"
+            style={{ fontSize: 13 }}
+          />
+        </div>
+        <div>
+          <label style={{
+            display: 'block', fontSize: 11, fontWeight: 600,
+            color: 'var(--text-secondary)', textTransform: 'uppercase',
+            letterSpacing: '0.06em', marginBottom: 6
+          }}>
+            Puesto / Cargo oficial
+          </label>
+          <input
+            className="form-input"
+            value={puesto}
+            onChange={e => onPuestoChange(e.target.value)}
+            placeholder="Cargo del responsable"
+            style={{ fontSize: 13 }}
+          />
+        </div>
+      </div>
+
+      {/* Preview de cómo se verá en el documento */}
+      {(nombre || puesto) && (
+        <div style={{
+          background: 'var(--bg-card)',
+          border: '1px dashed var(--border)',
+          borderRadius: 'var(--radius-md)',
+          padding: '12px 16px',
+          textAlign: 'center',
+        }}>
+          <div style={{ borderTop: '2px solid var(--text-primary)', width: 160, margin: '0 auto 8px' }} />
+          <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-primary)' }}>
+            {nombre || '—'}
+          </div>
+          <div style={{ fontSize: 10, color: 'var(--text-secondary)', marginTop: 2 }}>
+            {puesto || '—'}
+          </div>
+          <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 1, opacity: 0.7 }}>
+            Vista previa de firma
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Componente principal ───────────────────────────────────────────────────
 export default function TabIdentidad({
   univName, setUnivName,
   univAcronym, setUnivAcronym,
@@ -30,9 +115,9 @@ export default function TabIdentidad({
   firmaTecnicoPuesto, setFirmaTecnicoPuesto
 }) {
   const logoInputRef = useRef(null);
+  const [isDragging, setIsDragging] = useState(false);
 
-  const handleLogoChange = (e) => {
-    const file = e.target.files[0];
+  const processFile = (file) => {
     if (!file) return;
     if (!file.type.startsWith('image/')) {
       alert('Por favor selecciona un archivo de imagen válido.');
@@ -47,143 +132,350 @@ export default function TabIdentidad({
     reader.readAsDataURL(file);
   };
 
+  const handleLogoChange = (e) => processFile(e.target.files[0]);
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files[0];
+    processFile(file);
+  };
+
   const handleClearLogo = () => {
     setLogoBase64('');
     if (logoInputRef.current) logoInputRef.current.value = '';
   };
 
   return (
-    <div style={{ maxWidth: 650, margin: '0 auto', width: '100%' }}>
-      <form onSubmit={onSave} style={{
+    <form onSubmit={onSave} style={{ display: 'flex', flexDirection: 'column', gap: 24, width: '100%' }}>
+
+      {/* ── Sección 1: Perfil Institucional ─────────────────────────────── */}
+      <div style={{
         background: 'var(--bg-card)',
         border: '1px solid var(--border)',
         borderRadius: 'var(--radius-lg)',
         boxShadow: 'var(--shadow-card)',
-        padding: '24px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 20
+        overflow: 'hidden'
       }}>
-        <div>
-          <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>Perfil Institucional</h3>
-          <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>
-            Personaliza los datos, acrónimos y logotipos de resguardos del sistema.
-          </p>
+        {/* Header con gradiente */}
+        <div style={{
+          padding: '20px 28px',
+          background: 'linear-gradient(135deg, rgba(13,148,136,0.06) 0%, transparent 60%)',
+          borderBottom: '1px solid var(--border)',
+          display: 'flex', alignItems: 'center', gap: 14
+        }}>
+          <div style={{
+            width: 44, height: 44, borderRadius: 'var(--radius-md)',
+            background: 'linear-gradient(135deg, var(--primary) 0%, #0f766e 100%)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 20, boxShadow: '0 4px 12px rgba(13,148,136,0.3)', flexShrink: 0
+          }}>
+            🏫
+          </div>
+          <div>
+            <h3 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.02em', margin: 0 }}>
+              Perfil Institucional
+            </h3>
+            <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 3 }}>
+              Nombre, siglas y logotipo oficial de la institución
+            </p>
+          </div>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          <div>
-            <label className="form-label">Nombre de la Institución:</label>
-            <input className="form-input" value={univName} onChange={e => setUnivName(e.target.value)}
-              required placeholder="Ej. Universidad Politécnica" />
-          </div>
+        <div style={{ padding: '28px', display: 'flex', gap: 32 }}>
 
-          <div>
-            <label className="form-label">Siglas oficiales (Acrónimo):</label>
-            <input className="form-input" value={univAcronym} onChange={e => setUnivAcronym(e.target.value)}
-              required placeholder="Ej. UPEN" />
-          </div>
+          {/* Columna izquierda: datos */}
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 20 }}>
 
-          {/* Subida del Logotipo */}
-          <div style={{ borderTop: '1px solid var(--border)', paddingTop: 14, marginTop: 4 }}>
-            <label className="form-label" style={{ fontWeight: 600, marginBottom: 8, display: 'block' }}>Logotipo Oficial:</label>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-              {/* Vista Previa del Logo */}
-              <div style={{
-                width: 70, height: 70, borderRadius: 8,
-                border: '1px solid var(--border)', background: '#F9FAFB',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                overflow: 'hidden', flexShrink: 0
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <label style={{
+                fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)',
+                textTransform: 'uppercase', letterSpacing: '0.07em'
               }}>
-                {logoBase64
-                  ? <img src={logoBase64} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                  : <span style={{ fontSize: 24 }}>🏫</span>
-                }
-              </div>
-
-              <div style={{ flex: 1 }}>
-                <input type="file" ref={logoInputRef} onChange={handleLogoChange}
-                  accept="image/*" style={{ display: 'none' }} />
-
-                <div style={{ display: 'flex', gap: 8 }}>
-                  <button type="button" className="btn btn-ghost"
-                    onClick={() => logoInputRef.current?.click()}
-                    style={{ fontSize: 11, padding: '6px 12px', height: 'auto' }}>
-                    📷 Subir Imagen
-                  </button>
-                  {logoBase64 && (
-                    <button type="button" className="btn" onClick={handleClearLogo}
-                      style={{ fontSize: 11, padding: '6px 12px', height: 'auto', background: 'rgba(239, 68, 68, 0.1)', color: '#EF4444', border: '1px solid rgba(239, 68, 68, 0.15)' }}>
-                      🗑️ Quitar
-                    </button>
-                  )}
-                </div>
-
-                <div style={{ fontSize: 10, color: 'var(--text-secondary)', marginTop: 6 }}>
-                  PNG o JPG recomendado con fondo transparente. Máx 2MB.
-                </div>
-              </div>
+                Nombre completo de la institución
+              </label>
+              <input
+                className="form-input"
+                value={univName}
+                onChange={e => setUnivName(e.target.value)}
+                required
+                placeholder="Ej. Universidad Politécnica del Estado de Nayarit"
+                style={{ fontSize: 14, fontWeight: 500 }}
+              />
+              <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                Aparece en cabeceras de reportes y documentos institucionales
+              </span>
             </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <label style={{
+                fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)',
+                textTransform: 'uppercase', letterSpacing: '0.07em'
+              }}>
+                Siglas / Acrónimo oficial
+              </label>
+              <input
+                className="form-input"
+                value={univAcronym}
+                onChange={e => setUnivAcronym(e.target.value)}
+                required
+                placeholder="Ej. UPEN"
+                style={{ fontSize: 20, fontWeight: 800, letterSpacing: '0.1em', maxWidth: 200, textAlign: 'center' }}
+              />
+              <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                Se usa en la generación de códigos de inventario
+              </span>
+            </div>
+
+            {/* Vista previa del código con el acrónimo */}
+            {univAcronym && (
+              <div style={{
+                background: 'linear-gradient(135deg, rgba(13,148,136,0.08) 0%, rgba(13,148,136,0.03) 100%)',
+                border: '1px solid rgba(13,148,136,0.2)',
+                borderRadius: 'var(--radius-md)',
+                padding: '14px 18px',
+                display: 'flex', alignItems: 'center', gap: 12
+              }}>
+                <div style={{ fontSize: 20 }}>🏷️</div>
+                <div>
+                  <div style={{ fontSize: 10, color: 'var(--primary)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                    Ejemplo de código generado
+                  </div>
+                  <div style={{
+                    fontSize: 14, fontWeight: 800, fontFamily: 'monospace',
+                    color: 'var(--text-primary)', marginTop: 3, letterSpacing: '0.05em'
+                  }}>
+                    {univAcronym}-TEC-2026-0001
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* Firmas y Cargos Oficiales */}
-          <div style={{ borderTop: '1px solid var(--border)', paddingTop: 14, marginTop: 4, display: 'flex', flexDirection: 'column', gap: 14 }}>
-            <div>
-              <h4 style={{ fontSize: 13, fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>Firmas y Cargos Oficiales</h4>
-              <p style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 2 }}>
-                Configura los nombres y puestos oficiales que aparecerán al calzar las firmas en actas, vales y constancias.
-              </p>
+          {/* Columna derecha: logo */}
+          <div style={{ width: 240, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <label style={{
+              fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)',
+              textTransform: 'uppercase', letterSpacing: '0.07em'
+            }}>
+              Logotipo oficial
+            </label>
+
+            {/* Zona de arrastre */}
+            <div
+              onDragOver={e => { e.preventDefault(); setIsDragging(true); }}
+              onDragLeave={() => setIsDragging(false)}
+              onDrop={handleDrop}
+              onClick={() => logoInputRef.current?.click()}
+              style={{
+                flex: 1, minHeight: 180,
+                border: `2px dashed ${isDragging ? 'var(--primary)' : 'var(--border)'}`,
+                borderRadius: 'var(--radius-lg)',
+                background: isDragging
+                  ? 'rgba(13,148,136,0.06)'
+                  : (logoBase64 ? 'var(--bg-body)' : 'var(--bg-body)'),
+                display: 'flex', flexDirection: 'column',
+                alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer', transition: 'all 0.2s ease',
+                overflow: 'hidden', position: 'relative', gap: 12
+              }}
+              className="logo-drop-zone"
+            >
+              {logoBase64 ? (
+                <img
+                  src={logoBase64}
+                  alt="Logotipo institucional"
+                  style={{ maxWidth: '85%', maxHeight: '85%', objectFit: 'contain' }}
+                />
+              ) : (
+                <>
+                  <div style={{
+                    width: 52, height: 52, borderRadius: '50%',
+                    background: 'rgba(13,148,136,0.1)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24
+                  }}>
+                    🖼️
+                  </div>
+                  <div style={{ textAlign: 'center', padding: '0 16px' }}>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
+                      Arrastra tu logo aquí
+                    </div>
+                    <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 4 }}>
+                      o haz clic para seleccionar
+                    </div>
+                    <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 8 }}>
+                      PNG · JPG · SVG · Máx 2MB
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {isDragging && (
+                <div style={{
+                  position: 'absolute', inset: 0,
+                  background: 'rgba(13,148,136,0.1)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  backdropFilter: 'blur(2px)'
+                }}>
+                  <div style={{ fontSize: 32 }}>📥</div>
+                </div>
+              )}
             </div>
 
-            {/* 1. Control de Bienes / Almacén */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-              <div>
-                <label className="form-label">Firma: Control de Bienes (Nombre)</label>
-                <input className="form-input" value={firmaPatrimonioNombre} onChange={e => setFirmaPatrimonioNombre(e.target.value)}
-                  placeholder="Nombre del responsable" />
-              </div>
-              <div>
-                <label className="form-label">Puesto / Cargo</label>
-                <input className="form-input" value={firmaPatrimonioPuesto} onChange={e => setFirmaPatrimonioPuesto(e.target.value)}
-                  placeholder="Cargo del responsable" />
-              </div>
-            </div>
+            <input
+              type="file"
+              ref={logoInputRef}
+              onChange={handleLogoChange}
+              accept="image/*"
+              style={{ display: 'none' }}
+            />
 
-            {/* 2. Jefe del Departamento */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-              <div>
-                <label className="form-label">Firma: Jefa/e de Departamento (Nombre)</label>
-                <input className="form-input" value={firmaJefeNombre} onChange={e => setFirmaJefeNombre(e.target.value)}
-                  placeholder="Nombre de la/el jefa/e" />
-              </div>
-              <div>
-                <label className="form-label">Puesto / Cargo</label>
-                <input className="form-input" value={firmaJefePuesto} onChange={e => setFirmaJefePuesto(e.target.value)}
-                  placeholder="Cargo oficial" />
-              </div>
-            </div>
-
-            {/* 3. Técnico de Soporte */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-              <div>
-                <label className="form-label">Firma: Técnico de Soporte (Nombre)</label>
-                <input className="form-input" value={firmaTecnicoNombre} onChange={e => setFirmaTecnicoNombre(e.target.value)}
-                  placeholder="Nombre del técnico" />
-              </div>
-              <div>
-                <label className="form-label">Puesto / Cargo</label>
-                <input className="form-input" value={firmaTecnicoPuesto} onChange={e => setFirmaTecnicoPuesto(e.target.value)}
-                  placeholder="Cargo del técnico" />
-              </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button
+                type="button"
+                className="btn btn-ghost"
+                onClick={() => logoInputRef.current?.click()}
+                style={{ flex: 1, fontSize: 12, padding: '8px', height: 'auto', border: '1px solid var(--border)' }}
+              >
+                📷 Cambiar
+              </button>
+              {logoBase64 && (
+                <button
+                  type="button"
+                  className="btn"
+                  onClick={handleClearLogo}
+                  style={{
+                    fontSize: 12, padding: '8px 12px', height: 'auto',
+                    background: 'rgba(239,68,68,0.1)', color: '#EF4444',
+                    border: '1px solid rgba(239,68,68,0.15)', cursor: 'pointer'
+                  }}
+                >
+                  🗑️
+                </button>
+              )}
             </div>
           </div>
         </div>
+      </div>
 
-        <button type="submit" disabled={saving} className="btn btn-primary" style={{ width: '100%', marginTop: 8 }}>
-          {saving ? '⏳ Guardando Perfil…' : '💾 Guardar Datos Institucionales'}
+      {/* ── Sección 2: Firmas y Cargos ──────────────────────────────────── */}
+      <div style={{
+        background: 'var(--bg-card)',
+        border: '1px solid var(--border)',
+        borderRadius: 'var(--radius-lg)',
+        boxShadow: 'var(--shadow-card)',
+        overflow: 'hidden'
+      }}>
+        <div style={{
+          padding: '20px 28px',
+          background: 'linear-gradient(135deg, rgba(13,148,136,0.06) 0%, transparent 60%)',
+          borderBottom: '1px solid var(--border)',
+          display: 'flex', alignItems: 'center', gap: 14
+        }}>
+          <div style={{
+            width: 44, height: 44, borderRadius: 'var(--radius-md)',
+            background: 'linear-gradient(135deg, var(--primary) 0%, #0f766e 100%)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 20, boxShadow: '0 4px 12px rgba(13,148,136,0.3)', flexShrink: 0
+          }}>
+            ✍️
+          </div>
+          <div>
+            <h3 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.02em', margin: 0 }}>
+              Firmas y Cargos Oficiales
+            </h3>
+            <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 3 }}>
+              Configura los titulares que firmarán actas, vales y constancias de resguardo
+            </p>
+          </div>
+
+          {/* Indicador de cuántas firmas están configuradas */}
+          <div style={{ marginLeft: 'auto' }}>
+            {(() => {
+              const count = [firmaPatrimonioNombre, firmaJefeNombre, firmaTecnicoNombre].filter(Boolean).length;
+              return (
+                <div style={{
+                  background: count === 3
+                    ? 'rgba(16,185,129,0.1)' : 'rgba(245,158,11,0.1)',
+                  border: `1px solid ${count === 3 ? 'rgba(16,185,129,0.25)' : 'rgba(245,158,11,0.25)'}`,
+                  color: count === 3 ? '#10B981' : '#D97706',
+                  borderRadius: 'var(--radius-md)',
+                  padding: '5px 12px',
+                  fontSize: 12, fontWeight: 700,
+                  display: 'flex', alignItems: 'center', gap: 6
+                }}>
+                  {count === 3 ? '✅' : '⚠️'} {count}/3 configuradas
+                </div>
+              );
+            })()}
+          </div>
+        </div>
+
+        <div style={{ padding: '24px 28px', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
+          <FirmaCard
+            role="Control de Bienes / Almacén"
+            icon="📦"
+            nombre={firmaPatrimonioNombre}
+            onNombreChange={setFirmaPatrimonioNombre}
+            puesto={firmaPatrimonioPuesto}
+            onPuestoChange={setFirmaPatrimonioPuesto}
+          />
+          <FirmaCard
+            role="Jefa/e de Departamento"
+            icon="👔"
+            nombre={firmaJefeNombre}
+            onNombreChange={setFirmaJefeNombre}
+            puesto={firmaJefePuesto}
+            onPuestoChange={setFirmaJefePuesto}
+          />
+          <FirmaCard
+            role="Técnico de Soporte"
+            icon="🔧"
+            nombre={firmaTecnicoNombre}
+            onNombreChange={setFirmaTecnicoNombre}
+            puesto={firmaTecnicoPuesto}
+            onPuestoChange={setFirmaTecnicoPuesto}
+          />
+        </div>
+      </div>
+
+      {/* ── Botón guardar ───────────────────────────────────────────────── */}
+      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <button
+          type="submit"
+          disabled={saving}
+          className="btn btn-primary"
+          style={{
+            minWidth: 240, fontSize: 14, fontWeight: 700,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+            padding: '14px 28px',
+            boxShadow: saving ? 'none' : '0 4px 14px rgba(13,148,136,0.35)'
+          }}
+        >
+          {saving ? (
+            <>
+              <span className="sync-pulse" style={{ backgroundColor: '#fff', boxShadow: 'none' }} />
+              Guardando cambios…
+            </>
+          ) : (
+            <>
+              💾 Guardar Identidad Institucional
+            </>
+          )}
         </button>
-      </form>
-    </div>
+      </div>
+
+      {/* Estilos scoped */}
+      <style>{`
+        .firma-card:hover {
+          border-color: rgba(13, 148, 136, 0.3);
+          box-shadow: 0 4px 20px rgba(13,148,136,0.08);
+        }
+        .logo-drop-zone:hover {
+          border-color: var(--primary);
+          background: rgba(13, 148, 136, 0.04) !important;
+        }
+      `}</style>
+    </form>
   );
 }

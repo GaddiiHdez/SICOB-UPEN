@@ -44,6 +44,7 @@ export default function MantenimientosPanel({
   onClearPreselectedBien = null,
   mantenimientoToFinalize = null,
   onClearMantenimientoToFinalize = null,
+  isAdmin = false,
 }) {
   // ── Estados Principales ────────────────────────────────────
   const [mantenimientos, setMantenimientos] = useState([]);
@@ -505,9 +506,11 @@ export default function MantenimientosPanel({
           <h2 style={{ fontSize: 24, fontWeight: 700, letterSpacing: '-0.03em', marginTop: 4 }}>Control Técnico e Historial Clínico</h2>
           <p style={{ color: 'var(--text-secondary)', fontSize: 13, marginTop: 4 }}>Programa inspecciones preventivas, gestiona reparaciones activas y audita los costos patrimoniales.</p>
         </div>
-        <button onClick={() => handleOpenSchedule()} className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 18px', fontSize: 13 }}>
-          🔧 Registrar / Programar
-        </button>
+        {isAdmin && (
+          <button onClick={() => handleOpenSchedule()} className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 18px', fontSize: 13 }}>
+            🔧 Registrar / Programar
+          </button>
+        )}
       </div>
 
       {/* KPIs */}
@@ -571,6 +574,7 @@ export default function MantenimientosPanel({
               onEventClick={setSelectedCalendarEvent}
               getUbicacionName={getUbicacionName}
               getFullBien={getFullBien}
+              isAdmin={isAdmin}
             />
           )}
 
@@ -580,6 +584,7 @@ export default function MantenimientosPanel({
               onFinalize={handleOpenFinalize}
               onDelete={handleDeleteMantenimiento}
               onEdit={handleEditIndividual}
+              isAdmin={isAdmin}
             />
           )}
 
@@ -592,6 +597,7 @@ export default function MantenimientosPanel({
               onFilterChange={setFilterTipo}
               onPrintConstancia={setPrintMantenimiento}
               onDelete={handleDeleteMantenimiento}
+              isAdmin={isAdmin}
             />
           )}
         </div>
@@ -674,6 +680,7 @@ export default function MantenimientosPanel({
           onDelete={() => { const id = selectedCalendarEvent.id; setSelectedCalendarEvent(null); handleDeleteMantenimiento(id); }}
           onStart={() => { const ev = selectedCalendarEvent; setSelectedCalendarEvent(null); handleStartMaintenance(ev); }}
           onFinalize={() => { const ev = selectedCalendarEvent; setSelectedCalendarEvent(null); handleOpenFinalize(ev); }}
+          isAdmin={isAdmin}
         />,
         document.body
       )}

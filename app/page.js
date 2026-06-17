@@ -21,6 +21,7 @@ import AuditoriaPanel from '@/app/components/auditoria/AuditoriaPanel';
 import ValesPanel from '@/app/components/ValesPanel';
 import InmobiliarioPanel from '@/app/components/InmobiliarioPanel';
 import ConsumiblesPanel from '@/app/components/ConsumiblesPanel';
+import LaboratoriosPanel from '@/app/components/LaboratoriosPanel';
 import { generateBarcodeSVG } from '@/lib/barcode';
 import { useInventarioData } from '@/hooks/useInventarioData';
 import { useNotifications }  from '@/hooks/useNotifications';
@@ -33,22 +34,60 @@ import { useDarkMode }       from '@/hooks/useDarkMode';
 //   3. El layout de la página
 // Los datos, notificaciones y el tema oscuro viven en sus propios hooks (ver /hooks/).
 export default function HomePage() {
+  // ── Estado de Autenticación ──────────────────────────────
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [usuario, setUsuario]                 = useState(null);
+  const [loadingSession, setLoadingSession]   = useState(true);
+
   // ── Estado de navegación ─────────────────────────────────
   const [activeNav, setActiveNav] = useState('panel');
   const [selectedMantenimientoPlanKey, setSelectedMantenimientoPlanKey] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  // ── Estado de búsqueda global ─────────────────────────────
+  const [globalSearch, setGlobalSearch] = useState('');
+  const [showGlobalResults, setShowGlobalResults] = useState(false);
+  const globalSearchInputRef = useRef(null);
+
+  // ── Estado de UI/Dropdowns ────────────────────────────────
+  const [showNotifDropdown, setShowNotifDropdown] = useState(false);
+  const [showUserDropdown, setShowUserDropdown] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [toast,     setToast]     = useState(null);
+  const [showScannerModal, setShowScannerModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [showAutogenerarModal, setShowAutogenerarModal] = useState(false);
+  const [bienesEtiquetasPrint, setBienesEtiquetasPrint] = useState([]);
+
+  // ── Estado de selección de inventario ──────────────────────
+  const [selected,     setSelected]     = useState([]);      // IDs con checkbox marcado
+  const [selectedBien, setSelectedBien] = useState(null);    // Bien abierto en el panel
+  const [bienToEdit,   setBienToEdit]   = useState(null);    // Bien a editar en el modal
+  const [selectedFichaBien, setSelectedFichaBien] = useState(null); // Bien abierto en la Ficha Técnica
+  const [activeResguardoCustodioId, setActiveResguardoCustodioId] = useState(null); // Custodio activo para mostrar su acta
+  const [savingImage,  setSavingImage]  = useState(false);   // Subiendo foto
+  const [preselectedBienForMantenimiento, setPreselectedBienForMantenimiento] = useState(null);
+  const [mantenimientoToFinalize, setMantenimientoToFinalize] = useState(null);
+  const [bienToDeletePermanent, setBienToDeletePermanent] = useState(null);
+  const [isDeletingPermanent, setIsDeletingPermanent] = useState(false);
+
+  // ── Estado de filtros ────────────────────────────────────
+  const [search,       setSearch]       = useState('');
+  const [filterEstado, setFilterEstado] = useState('');
+  const [filterArea,   setFilterArea]   = useState('');
+  const [filterTipo,   setFilterTipo]   = useState('');
+
+  // ── Callbacks y Efectos Iniciales ────────────────────────
   const handleNavChange = useCallback((nav, extra = null) => {
+    if (nav === 'configuracion' && usuario?.rol !== 'ADMINISTRADOR') {
+      return;
+    }
     setActiveNav(nav);
     setSidebarOpen(false);
     if (nav === 'mantenimientos') {
       setSelectedMantenimientoPlanKey(extra);
     }
-  }, []);
-
-  // ── Estado de Autenticación ──────────────────────────────
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [usuario, setUsuario]                 = useState(null);
-  const [loadingSession, setLoadingSession]   = useState(true);
+  }, [usuario]);
 
   // Verificar si hay una sesión activa al cargar la página
   useEffect(() => {
@@ -70,39 +109,6 @@ export default function HomePage() {
     };
     checkSession();
   }, []);
-
-  const [selected,     setSelected]     = useState([]);      // IDs con checkbox marcado
-  const [selectedBien, setSelectedBien] = useState(null);    // Bien abierto en el panel
-  const [bienToEdit,   setBienToEdit]   = useState(null);    // Bien a editar en el modal
-  const [selectedFichaBien, setSelectedFichaBien] = useState(null); // Bien abierto en la Ficha Técnica
-  const [activeResguardoCustodioId, setActiveResguardoCustodioId] = useState(null); // Custodio activo para mostrar su acta
-  const [savingImage,  setSavingImage]  = useState(false);   // Subiendo foto
-  const [preselectedBienForMantenimiento, setPreselectedBienForMantenimiento] = useState(null);
-  const [mantenimientoToFinalize, setMantenimientoToFinalize] = useState(null);
-  const [bienToDeletePermanent, setBienToDeletePermanent] = useState(null);
-  const [isDeletingPermanent, setIsDeletingPermanent] = useState(false);
-
-  // ── Estado de UI ─────────────────────────────────────────
-  const [showModal, setShowModal] = useState(false);
-  const [toast,     setToast]     = useState(null);
-  const [showScannerModal, setShowScannerModal] = useState(false);
-  const [showImportModal, setShowImportModal] = useState(false);
-  const [showAutogenerarModal, setShowAutogenerarModal] = useState(false);
-  const [bienesEtiquetasPrint, setBienesEtiquetasPrint] = useState([]);
-
-  // ── Nuevos Estados de Barra de Navegación y Tema ───────────
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [globalSearch, setGlobalSearch] = useState('');
-  const [showGlobalResults, setShowGlobalResults] = useState(false);
-  const globalSearchInputRef = useRef(null);
-  const [showNotifDropdown, setShowNotifDropdown] = useState(false);
-  const [showUserDropdown, setShowUserDropdown] = useState(false);
-
-  // ── Estado de filtros ────────────────────────────────────
-  const [search,       setSearch]       = useState('');
-  const [filterEstado, setFilterEstado] = useState('');
-  const [filterArea,   setFilterArea]   = useState('');
-  const [filterTipo,   setFilterTipo]   = useState('');
 
   // Helper para notificaciones tipo Toast
   const showToast = useCallback((msg, type = 'success') => {
@@ -428,8 +434,12 @@ export default function HomePage() {
   }, [showToast]);
 
   const handlePrintSingleLabel = useCallback((bien) => {
+    if (!bien.etiqueta || bien.etiqueta.startsWith('SIN-NUMERO-')) {
+      showToast('Este bien no cuenta con un número de inventario válido para generar un código de barras.', 'warning');
+      return;
+    }
     setBienesEtiquetasPrint([bien]);
-  }, []);
+  }, [showToast]);
 
   const handlePrintBulkLabels = useCallback(() => {
     const selectedBienes = bienes.filter(b => selected.includes(b.id));
@@ -437,7 +447,16 @@ export default function HomePage() {
       showToast('Por favor selecciona al menos un bien para imprimir', 'warning');
       return;
     }
-    setBienesEtiquetasPrint(selectedBienes);
+    const validBienes = selectedBienes.filter(b => b.etiqueta && !b.etiqueta.startsWith('SIN-NUMERO-'));
+    if (validBienes.length === 0) {
+      showToast('Ninguno de los bienes seleccionados tiene un número de inventario válido para generar un código de barras.', 'error');
+      return;
+    }
+    const skippedCount = selectedBienes.length - validBienes.length;
+    if (skippedCount > 0) {
+      showToast(`Imprimiendo lote. Se omitieron ${skippedCount} bienes por no contar con número de inventario.`, 'info');
+    }
+    setBienesEtiquetasPrint(validBienes);
   }, [bienes, selected, showToast]);
 
   useEffect(() => {
@@ -492,35 +511,146 @@ export default function HomePage() {
   }
 
   // ── Render Principal ──────────────────────────────────────
+  const isAvery = configuracion.etiqueta_formato_papel === 'avery_5167';
   const anchoMm = parseFloat(configuracion.etiqueta_ancho_mm || '30');
   const scalePad = anchoMm / 30;
 
+  // Calibración dinámica Avery 5167
+  const margenSuperior = parseFloat(configuracion.etiqueta_margen_superior || '1.0');
+  const margenInferior = parseFloat(configuracion.etiqueta_margen_inferior || '1.0');
+  const margenIzquierdo = parseFloat(configuracion.etiqueta_margen_izquierdo || '1.0');
+  const margenDerecho = parseFloat(configuracion.etiqueta_margen_derecho || '1.0');
+  const gapColumnas = parseFloat(configuracion.etiqueta_gap_columnas || '0.5');
+  const gapFilas = parseFloat(configuracion.etiqueta_gap_filas || '0.0');
+
+  const dynamicPrintStyles = isAvery ? `
+    @media print {
+      @page {
+        size: letter !important;
+        margin: 0 !important;
+      }
+      body.printing-labels {
+        background: #FFFFFF !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      body.printing-labels .print-labels-container {
+        display: grid !important;
+        grid-template-columns: repeat(4, ${configuracion.etiqueta_ancho_mm || '44'}mm) !important;
+        grid-auto-rows: ${configuracion.etiqueta_alto_mm || '13'}mm !important;
+        align-content: start !important;
+        padding-top: ${margenSuperior}cm !important;
+        padding-bottom: ${margenInferior}cm !important;
+        padding-left: ${margenIzquierdo}cm !important;
+        padding-right: ${margenDerecho}cm !important;
+        box-sizing: border-box !important;
+        width: 21.59cm !important;
+        height: 27.94cm !important;
+        background: #FFFFFF !important;
+        gap: ${gapFilas}cm ${gapColumnas}cm !important;
+        page-break-after: always !important;
+        break-after: page !important;
+      }
+      body.printing-labels .print-labels-container:last-child {
+        page-break-after: avoid !important;
+        break-after: avoid !important;
+      }
+      body.printing-labels .printable-label {
+        width: ${configuracion.etiqueta_ancho_mm || '44'}mm !important;
+        height: ${configuracion.etiqueta_alto_mm || '13'}mm !important;
+        box-sizing: border-box !important;
+        padding: 0.5mm 1mm !important;
+        margin: 0 !important;
+        border: 0.1mm solid #D1D5DB !important;
+        display: block !important;
+        background: #FFFFFF !important;
+        overflow: hidden !important;
+        page-break-inside: avoid !important;
+      }
+      body.printing-labels .label-inner-clean {
+        width: 100% !important;
+        height: 100% !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        box-sizing: border-box !important;
+      }
+      body.printing-labels .label-header-clean {
+        font-size: ${configuracion.etiqueta_letra_cabecera_pt || '3.8'}pt !important;
+        line-height: 1.0 !important;
+        margin: 0 !important;
+        text-align: center !important;
+        font-weight: ${configuracion.etiqueta_cabecera_bold !== 'false' ? '900' : 'normal'} !important;
+        font-style: ${configuracion.etiqueta_cabecera_italic === 'true' ? 'italic' : 'normal'} !important;
+      }
+      body.printing-labels .label-details-clean {
+        font-size: ${configuracion.etiqueta_letra_marca_modelo_pt || '3.5'}pt !important;
+        line-height: 1.0 !important;
+        margin: 0 !important;
+        text-align: center !important;
+        font-weight: ${configuracion.etiqueta_marca_bold === 'true' ? '700' : 'normal'} !important;
+        font-style: ${configuracion.etiqueta_marca_italic === 'true' ? 'italic' : 'normal'} !important;
+      }
+      body.printing-labels .label-barcode-clean {
+        height: ${configuracion.etiqueta_altura_codigo_barras_mm || '4.8'}mm !important;
+        width: 90% !important;
+        margin: 0 auto !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+      }
+      body.printing-labels .label-barcode-clean svg {
+        max-height: 100% !important;
+        width: 100% !important;
+      }
+      body.printing-labels .label-code-clean {
+        font-size: ${configuracion.etiqueta_letra_codigo_pt || '4.5'}pt !important;
+        font-weight: ${configuracion.etiqueta_codigo_bold !== 'false' ? '900' : 'normal'} !important;
+        font-style: ${configuracion.etiqueta_codigo_italic === 'true' ? 'italic' : 'normal'} !important;
+      }
+      body.printing-labels .label-serial-clean {
+        font-size: ${configuracion.etiqueta_letra_serial_pt || '4.0'}pt !important;
+        font-weight: ${configuracion.etiqueta_serial_bold === 'true' ? '900' : 'normal'} !important;
+        font-style: ${configuracion.etiqueta_serial_italic === 'true' ? 'italic' : 'normal'} !important;
+      }
+    }
+  ` : `
+    @media print {
+      body.printing-labels .printable-label {
+        width: ${configuracion.etiqueta_ancho_mm || '30'}mm !important;
+        height: ${configuracion.etiqueta_alto_mm || '15'}mm !important;
+        padding: ${0.8 * scalePad}mm ${1.5 * scalePad}mm ${1.0 * scalePad}mm !important;
+      }
+      body.printing-labels .label-header-clean {
+        font-size: ${configuracion.etiqueta_letra_cabecera_pt || '4.5'}pt !important;
+        font-weight: ${configuracion.etiqueta_cabecera_bold !== 'false' ? '900' : 'normal'} !important;
+        font-style: ${configuracion.etiqueta_cabecera_italic === 'true' ? 'italic' : 'normal'} !important;
+      }
+      body.printing-labels .label-details-clean {
+        font-size: ${configuracion.etiqueta_letra_marca_modelo_pt || '4.2'}pt !important;
+        font-weight: ${configuracion.etiqueta_marca_bold === 'true' ? '700' : 'normal'} !important;
+        font-style: ${configuracion.etiqueta_marca_italic === 'true' ? 'italic' : 'normal'} !important;
+      }
+      body.printing-labels .label-barcode-clean {
+        height: ${configuracion.etiqueta_altura_codigo_barras_mm || '5.6'}mm !important;
+      }
+      body.printing-labels .label-code-clean {
+        font-size: ${configuracion.etiqueta_letra_codigo_pt || '5.5'}pt !important;
+        font-weight: ${configuracion.etiqueta_codigo_bold !== 'false' ? '900' : 'normal'} !important;
+        font-style: ${configuracion.etiqueta_codigo_italic === 'true' ? 'italic' : 'normal'} !important;
+      }
+      body.printing-labels .label-serial-clean {
+        font-size: ${configuracion.etiqueta_letra_serial_pt || '5.0'}pt !important;
+        font-weight: ${configuracion.etiqueta_serial_bold === 'true' ? '900' : 'normal'} !important;
+        font-style: ${configuracion.etiqueta_serial_italic === 'true' ? 'italic' : 'normal'} !important;
+      }
+    }
+  `;
+
   return (
     <div className="root-layout-wrapper" style={{ display: 'flex', height: '100vh', width: '100vw', overflow: 'hidden' }}>
-      <style dangerouslySetInnerHTML={{ __html: `
-        @media print {
-          body.printing-labels .printable-label {
-            width: ${configuracion.etiqueta_ancho_mm || '30'}mm !important;
-            height: ${configuracion.etiqueta_alto_mm || '15'}mm !important;
-            padding: ${0.8 * scalePad}mm ${1.5 * scalePad}mm ${1.0 * scalePad}mm !important;
-          }
-          body.printing-labels .label-header-clean {
-            font-size: ${configuracion.etiqueta_letra_cabecera_pt || '4.5'}pt !important;
-          }
-          body.printing-labels .label-details-clean {
-            font-size: ${configuracion.etiqueta_letra_marca_modelo_pt || '4.2'}pt !important;
-          }
-          body.printing-labels .label-barcode-clean {
-            height: ${configuracion.etiqueta_altura_codigo_barras_mm || '5.6'}mm !important;
-          }
-          body.printing-labels .label-code-clean {
-            font-size: ${configuracion.etiqueta_letra_codigo_pt || '5.5'}pt !important;
-          }
-          body.printing-labels .label-serial-clean {
-            font-size: ${configuracion.etiqueta_letra_serial_pt || '5.0'}pt !important;
-          }
-        }
-      ` }} />
+      <style dangerouslySetInnerHTML={{ __html: dynamicPrintStyles }} />
 
       {/* ══ SIDEBAR ══════════════════════════════════════════ */}
       {sidebarOpen && (
@@ -751,7 +881,7 @@ export default function HomePage() {
             </div>
 
             {/* Botón Importar Bienes */}
-            {activeNav === 'inventario' && (
+            {activeNav === 'inventario' && usuario?.rol === 'ADMINISTRADOR' && (
               <button
                 id="btn-importar-bienes"
                 className="btn btn-secondary"
@@ -763,9 +893,11 @@ export default function HomePage() {
             )}
 
             {/* Botón Nuevo Bien */}
-            <button id="btn-nuevo-bien" className="btn btn-primary" onClick={() => { setBienToEdit(null); setShowModal(true); }}>
-              ＋ Nuevo bien
-            </button>
+            {usuario?.rol === 'ADMINISTRADOR' && (
+              <button id="btn-nuevo-bien" className="btn btn-primary" onClick={() => { setBienToEdit(null); setShowModal(true); }}>
+                ＋ Nuevo bien
+              </button>
+            )}
 
             {/* Menú de Perfil de Usuario Dropdown */}
             <div className="user-profile-menu">
@@ -901,11 +1033,13 @@ export default function HomePage() {
                   setFilterEstado(status);
                 }
               }}
+              isAdmin={usuario?.rol === 'ADMINISTRADOR'}
+              usuario={usuario}
             />
           )}
           {/* ── CATÁLOGOS UNIFICADOS ─────────────────────────────── */}
           {activeNav === 'catalogos' && (
-            <CatalogsPanel showToast={showToast} />
+            <CatalogsPanel showToast={showToast} isAdmin={usuario?.rol === 'ADMINISTRADOR'} />
           )}
 
           {/* ── EXPEDIENTE DE PERSONAL CUSTODIO ─────────────────── */}
@@ -914,6 +1048,7 @@ export default function HomePage() {
               departamentos={departamentos}
               showToast={showToast}
               refreshBienes={fetchData}
+              isAdmin={usuario?.rol === 'ADMINISTRADOR'}
             />
           )}
 
@@ -926,6 +1061,7 @@ export default function HomePage() {
               configuracion={configuracion}
               activeCustodioId={activeResguardoCustodioId}
               onClearActiveCustodio={() => setActiveResguardoCustodioId(null)}
+              isAdmin={usuario?.rol === 'ADMINISTRADOR'}
             />
           )}
 
@@ -945,11 +1081,12 @@ export default function HomePage() {
               onClearPreselectedBien={() => setPreselectedBienForMantenimiento(null)}
               mantenimientoToFinalize={mantenimientoToFinalize}
               onClearMantenimientoToFinalize={() => setMantenimientoToFinalize(null)}
+              isAdmin={usuario?.rol === 'ADMINISTRADOR'}
             />
           )}
 
           {/* ── CONFIGURACIÓN GLOBAL ─────────────────────────────── */}
-          {activeNav === 'configuracion' && (
+          {activeNav === 'configuracion' && usuario?.rol === 'ADMINISTRADOR' && (
             <ConfiguracionPanel
               bienes={bienes}
               showToast={showToast}
@@ -979,6 +1116,7 @@ export default function HomePage() {
               showToast={showToast}
               refreshBienes={fetchData}
               configuracion={configuracion}
+              isAdmin={usuario?.rol === 'ADMINISTRADOR'}
             />
           )}
 
@@ -990,6 +1128,7 @@ export default function HomePage() {
               configuracion={configuracion}
               showToast={showToast}
               refreshBienes={fetchData}
+              isAdmin={usuario?.rol === 'ADMINISTRADOR'}
             />
           )}
 
@@ -1001,6 +1140,7 @@ export default function HomePage() {
               departamentos={departamentos}
               configuracion={configuracion}
               showToast={showToast}
+              isAdmin={usuario?.rol === 'ADMINISTRADOR'}
             />
           )}
 
@@ -1013,6 +1153,17 @@ export default function HomePage() {
               configuracion={configuracion}
               showToast={showToast}
               bienes={bienes}
+              isAdmin={usuario?.rol === 'ADMINISTRADOR'}
+            />
+          )}
+
+          {/* ── GESTIÓN DE LABORATORIOS DE CÓMPUTO ─────────────────── */}
+          {activeNav === 'laboratorios' && (
+            <LaboratoriosPanel
+              ubicaciones={ubicaciones}
+              bienes={bienes}
+              showToast={showToast}
+              isAdmin={usuario?.rol === 'ADMINISTRADOR'}
             />
           )}
 
@@ -1038,7 +1189,11 @@ export default function HomePage() {
           bien={selectedFichaBien}
           configuracion={configuracion}
           onClose={() => setSelectedFichaBien(null)}
-          onEdit={(bien) => { setBienToEdit(bien); setShowModal(true); }}
+          onEdit={(bien) => { 
+            setBienToEdit(bien); 
+            setSelectedFichaBien(null);
+            setShowModal(true); 
+          }}
           onDelete={handleDeleteBien}
           onRestore={handleRestoreBien}
           onDeletePermanent={handleDeletePermanent}
@@ -1119,18 +1274,71 @@ export default function HomePage() {
       )}
 
       {/* ══ CONTENEDOR DE IMPRESIÓN DE ETIQUETAS (OCULTO EN PANTALLA) ══ */}
-      {bienesEtiquetasPrint.length > 0 && (
-        <div className="print-labels-container">
-          {bienesEtiquetasPrint.map((bien) => {
-            const rawHeader = configuracion.cabecera_etiqueta_impresion 
-              ? configuracion.cabecera_etiqueta_impresion.replace('{siglas}', configuracion.siglas_institucion || 'UPEN')
-              : `CONTROL INTERNO DE ACTIVO FIJO ${configuracion.siglas_institucion || 'UPEN'}`;
-            // Simplificar cabecera por defecto muy larga para ahorrar espacio
-            const headerText = rawHeader.toUpperCase().startsWith("CONTROL INTERNO DE ACTIVO FIJO")
-              ? `ACTIVO FIJO ${configuracion.siglas_institucion || 'UPEN'}`
-              : rawHeader;
+      {bienesEtiquetasPrint.length > 0 && (() => {
+        const rawHeader = configuracion.cabecera_etiqueta_impresion 
+          ? configuracion.cabecera_etiqueta_impresion.replace('{siglas}', configuracion.siglas_institucion || 'UPEN')
+          : `CONTROL INTERNO DE ACTIVO FIJO ${configuracion.siglas_institucion || 'UPEN'}`;
+        const headerText = rawHeader.toUpperCase().startsWith("CONTROL INTERNO DE ACTIVO FIJO")
+          ? `ACTIVO FIJO ${configuracion.siglas_institucion || 'UPEN'}`
+          : rawHeader;
 
-            return (
+        if (isAvery) {
+          // Chunk Avery labels into pages of 80
+          const pages = [];
+          for (let i = 0; i < bienesEtiquetasPrint.length; i += 80) {
+            pages.push(bienesEtiquetasPrint.slice(i, i + 80));
+          }
+
+          return (
+            <div className="print-pages-wrapper">
+              {pages.map((pageLabels, pageIdx) => (
+                <div key={pageIdx} className="print-labels-container">
+                  {pageLabels.map((bien) => (
+                    <div key={bien.id} className="printable-label">
+                      <div className="label-inner-clean">
+                        {configuracion.etiqueta_mostrar_cabecera !== 'false' && (
+                          <div className="label-header-clean">
+                            {headerText}
+                          </div>
+                        )}
+                        {configuracion.etiqueta_mostrar_marca_modelo !== 'false' && (
+                          <div className="label-details-clean">
+                            {bien.marca} {bien.modelo}
+                          </div>
+                        )}
+                        {!bien.etiqueta.startsWith('SIN-NUMERO-') ? (
+                          <div 
+                            className="label-barcode-clean" 
+                            dangerouslySetInnerHTML={{ __html: generateBarcodeSVG(bien.etiqueta, false) }} 
+                          />
+                        ) : (
+                          <div className="label-barcode-clean" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '6px', color: '#999', border: '1px dashed #ccc', borderRadius: '3px' }}>
+                            [SIN NÚMERO]
+                          </div>
+                        )}
+                        <div className="label-footer-clean">
+                          <span className="label-code-clean" style={{ maxWidth: configuracion.etiqueta_mostrar_serial !== 'false' ? '55%' : '100%' }}>
+                            {bien.etiqueta.startsWith('SIN-NUMERO-') ? 'S/N' : bien.etiqueta}
+                          </span>
+                          {configuracion.etiqueta_mostrar_serial !== 'false' && (
+                            <span className="label-serial-clean">
+                              S/N: {bien.serial || 'N/S'}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          );
+        }
+
+        // Standard custom label roll (non-Avery)
+        return (
+          <div className="print-labels-container">
+            {bienesEtiquetasPrint.map((bien) => (
               <div key={bien.id} className="printable-label">
                 <div className="label-inner-clean">
                   {configuracion.etiqueta_mostrar_cabecera !== 'false' && (
@@ -1165,10 +1373,10 @@ export default function HomePage() {
                   </div>
                 </div>
               </div>
-            );
-          })}
-        </div>
-      )}
+            ))}
+          </div>
+        );
+      })()}
 
       {/* ══ NOTIFICACIÓN TOAST ═══════════════════════════════ */}
       {toast && (

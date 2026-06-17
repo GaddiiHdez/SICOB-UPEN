@@ -30,7 +30,7 @@ const cleanDesc = (desc) => {
  * @param {Function} onOpenModal  - Abre el modal de "Nuevo Bien"
  * @param {Function} showToast    - Muestra notificaciones tipo toast
  */
-export default function Dashboard({ bienes, categorias = [], ubicaciones = [], mantenimientos = [], onNavChange, onOpenModal, onOpenScanner, showToast, onKpiClick }) {
+export default function Dashboard({ bienes, categorias = [], ubicaciones = [], mantenimientos = [], onNavChange, onOpenModal, onOpenScanner, showToast, onKpiClick, isAdmin, usuario }) {
 
   // ── Hover del donut ────────────────────────────────────────
   const [hoveredSlice, setHoveredSlice] = useState(null);
@@ -355,7 +355,7 @@ export default function Dashboard({ bienes, categorias = [], ubicaciones = [], m
       {/* ── Bienvenida ──────────────────────────────────────── */}
       <div className="dash-welcome fade-in">
         <div>
-          <div className="dash-welcome-saludo">{saludo}, Administrador 👋</div>
+          <div className="dash-welcome-saludo">{saludo}, {usuario?.nombre ?? 'Usuario'} 👋</div>
           <div className="dash-welcome-fecha">{fechaHoy}</div>
         </div>
         <div className="dash-welcome-badge">
@@ -388,10 +388,12 @@ export default function Dashboard({ bienes, categorias = [], ubicaciones = [], m
       <div className="dash-actions fade-in" style={{ animationDelay: '0.3s' }}>
         <div className="dash-section-label">Accesos rápidos</div>
         <div className="dash-actions-grid">
-          <button id="dash-action-nuevo" className="dash-action-btn dash-action-primary" onClick={onOpenModal}>
-            <span className="dash-action-icon">＋</span>
-            <span>Registrar bien</span>
-          </button>
+          {isAdmin && (
+            <button id="dash-action-nuevo" className="dash-action-btn dash-action-primary" onClick={onOpenModal}>
+              <span className="dash-action-icon">＋</span>
+              <span>Registrar bien</span>
+            </button>
+          )}
           <button id="dash-action-escanear" className="dash-action-btn" onClick={onOpenScanner}>
             <span className="dash-action-icon">🔍</span>
             <span>Escanear Código</span>
@@ -400,10 +402,12 @@ export default function Dashboard({ bienes, categorias = [], ubicaciones = [], m
             <span className="dash-action-icon">🔧</span>
             <span>Mantenimiento</span>
           </button>
-          <button id="dash-action-resguardos" className="dash-action-btn" onClick={() => onNavChange('resguardos')}>
-            <span className="dash-action-icon">📝</span>
-            <span>Emitir Resguardo</span>
-          </button>
+          {isAdmin && (
+            <button id="dash-action-resguardos" className="dash-action-btn" onClick={() => onNavChange('resguardos')}>
+              <span className="dash-action-icon">📝</span>
+              <span>Emitir Resguardo</span>
+            </button>
+          )}
           <button id="dash-action-reportes" className="dash-action-btn" onClick={() => onNavChange('reportes')}>
             <span className="dash-action-icon">📊</span>
             <span>Reportes e Historial</span>

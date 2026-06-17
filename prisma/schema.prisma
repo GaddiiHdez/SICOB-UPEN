@@ -39,6 +39,7 @@ model Bien {
   mantenimientos    Mantenimiento[]
   vales             ValeSalida[] @relation("ValesBienes")
   movimientosConsumibles MovimientoConsumible[]
+  labIncidentes     LabIncidente[]
 
   // Índices para acelerar las consultas más frecuentes
   @@index([eliminado, estado])
@@ -68,6 +69,7 @@ model Ubicacion {
   departamentos Departamento[]
   inmobiliarios Inmobiliario[]
   consumibles   Consumible[]
+  laboratorio   Laboratorio?
 }
 
 model Departamento {
@@ -109,6 +111,20 @@ model Usuario {
   password_hash String
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
+}
+
+/// Token temporal de restablecimiento de contraseña.
+/// El administrador lo genera desde Configuración y lo comparte con el usuario.
+model PasswordReset {
+  id        Int      @id @default(autoincrement())
+  correo    String
+  token     String
+  expiresAt DateTime
+  usado     Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([correo])
+  @@index([token])
 }
 
 model Asignacion {
@@ -260,5 +276,43 @@ model MovimientoConsumible {
   usuarioId      Int?         // Usuario que registra el movimiento (opcional)
   bienId         Int?         // Impresora asociada al cambio
   bien           Bien?        @relation(fields: [bienId], references: [id], onDelete: SetNull)
+}
+
+model Laboratorio {
+  id            Int            @id @default(autoincrement())
+  nombre        String         @unique
+  codigo        String?        // Ej: "LAB-COMP-01"
+  capacidad     Int            @default(30)
+  so            String?        // Windows 11, Ubuntu, macOS, etc.
+  software      String?        @db.Text
+  red           String?        // WiFi, Ethernet 1Gbps, etc.
+  observaciones String?        @db.Text
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  // Relaciones
+  ubicacionId   Int?           @unique
+  ubicacion     Ubicacion?     @relation(fields: [ubicacionId], references: [id], onDelete: SetNull)
+  incidentes    LabIncidente[]
+}
+
+model LabIncidente {
+  id              Int          @id @default(autoincrement())
+  titulo          String
+  descripcion     String       @db.Text
+  estado          String       @default("PENDIENTE") // "PENDIENTE", "RESUELTO"
+  prioridad       String       @default("MEDIA")     // "BAJA", "MEDIA", "ALTA"
+  reportadoPor    String?
+  fechaReporte    DateTime     @default(now())
+  fechaResolucion DateTime?
+  comentarios     String?      @db.Text
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  // Relaciones
+  laboratorioId   Int
+  laboratorio     Laboratorio  @relation(fields: [laboratorioId], references: [id], onDelete: Cascade)
+  bienId          Int?
+  bien            Bien?        @relation(fields: [bienId], references: [id], onDelete: SetNull)
 }
 

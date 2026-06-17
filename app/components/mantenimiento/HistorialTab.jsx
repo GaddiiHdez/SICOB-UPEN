@@ -14,6 +14,7 @@ export default function HistorialTab({
   onFilterChange,
   onPrintConstancia,
   onDelete,
+  isAdmin = false,
 }) {
   return (
     <div>
@@ -117,14 +118,16 @@ export default function HistorialTab({
                       >
                         🖨️ Constancia
                       </button>
-                      <button
-                        onClick={() => onDelete(m.id)}
-                        className="btn btn-ghost"
-                        style={{ padding: '5px 10px', fontSize: 11, color: '#EF4444' }}
-                        title="Eliminar del historial clínico"
-                      >
-                        🗑️
-                      </button>
+                      {isAdmin && (
+                        <button
+                          onClick={() => onDelete(m.id)}
+                          className="btn btn-ghost"
+                          style={{ padding: '5px 10px', fontSize: 11, color: '#EF4444' }}
+                          title="Eliminar del historial clínico"
+                        >
+                          🗑️
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>

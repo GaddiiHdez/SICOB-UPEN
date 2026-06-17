@@ -59,7 +59,16 @@ export default function ModalNuevoBien({ initialData, categorias, ubicaciones, d
   };
 
   // Formatear fecha para el input type="date" (YYYY-MM-DD)
-  const formatFecha = (isoString) => isoString ? new Date(isoString).toISOString().split('T')[0] : '';
+  const formatFecha = (isoString) => {
+    if (!isoString) return '';
+    try {
+      const d = new Date(isoString);
+      if (isNaN(d.getTime())) return '';
+      return d.toISOString().split('T')[0];
+    } catch (e) {
+      return '';
+    }
+  };
 
   const [form, setForm] = useState({
     marca: initialData?.marca || '',

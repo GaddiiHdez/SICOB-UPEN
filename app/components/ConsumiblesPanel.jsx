@@ -35,7 +35,8 @@ export default function ConsumiblesPanel({
   departamentos = [],
   configuracion = {},
   showToast,
-  bienes = []
+  bienes = [],
+  isAdmin = false
 }) {
   const [items, setItems] = useState([]);
   const [categorias, setCategorias] = useState([]);
@@ -431,14 +432,16 @@ export default function ConsumiblesPanel({
                 </span>
               </div>
             </div>
-            <div style={{ display: 'flex', gap: 10 }}>
-              <button onClick={() => handleOpenMovModal(null, 'ENTRADA')} className="btn btn-secondary">
-                🔄 Registrar Movimiento
-              </button>
-              <button onClick={handleOpenCreateItemModal} className="btn btn-primary">
-                ＋ Registrar Consumible
-              </button>
-            </div>
+            {isAdmin && (
+              <div style={{ display: 'flex', gap: 10 }}>
+                <button onClick={() => handleOpenMovModal(null, 'ENTRADA')} className="btn btn-secondary">
+                  🔄 Registrar Movimiento
+                </button>
+                <button onClick={handleOpenCreateItemModal} className="btn btn-primary">
+                  ＋ Registrar Consumible
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Barra de Filtros */}
@@ -638,19 +641,21 @@ export default function ConsumiblesPanel({
             </div>
 
             {/* Acciones principales de stock */}
-            <div style={{ display: 'flex', gap: 10 }}>
-              <button onClick={() => handleOpenMovModal(selectedItem, 'ENTRADA')} className="btn btn-primary" style={{ flex: 1, padding: '8px', fontSize: 11, justifyContent: 'center' }}>
-                ➕ Entrada Stock
-              </button>
-              <button 
-                onClick={() => handleOpenMovModal(selectedItem, 'SALIDA')} 
-                className="btn btn-secondary" 
-                style={{ flex: 1, padding: '8px', fontSize: 11, justifyContent: 'center' }}
-                disabled={selectedItem.stock_actual === 0}
-              >
-                ➖ Registrar Salida
-              </button>
-            </div>
+            {isAdmin && (
+              <div style={{ display: 'flex', gap: 10 }}>
+                <button onClick={() => handleOpenMovModal(selectedItem, 'ENTRADA')} className="btn btn-primary" style={{ flex: 1, padding: '8px', fontSize: 11, justifyContent: 'center' }}>
+                  ➕ Entrada Stock
+                </button>
+                <button 
+                  onClick={() => handleOpenMovModal(selectedItem, 'SALIDA')} 
+                  className="btn btn-secondary" 
+                  style={{ flex: 1, padding: '8px', fontSize: 11, justifyContent: 'center' }}
+                  disabled={selectedItem.stock_actual === 0}
+                >
+                  ➖ Registrar Salida
+                </button>
+              </div>
+            )}
 
             {/* Historial de Movimientos de este item */}
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 10, borderTop: '1px solid var(--border)', paddingTop: 16 }}>
@@ -725,16 +730,18 @@ export default function ConsumiblesPanel({
             </div>
 
             {/* Acciones de Edición/Baja del Item */}
-            <div style={{ display: 'flex', gap: 10, borderTop: '1px solid var(--border)', paddingTop: 16 }}>
-              <button onClick={() => handleOpenEditItemModal(selectedItem)} className="btn btn-ghost" style={{ flex: 1, justifyContent: 'center' }}>✏️ Editar Info</button>
-              <button 
-                onClick={() => handleDeleteItem(selectedItem.id, selectedItem.nombre)} 
-                className="btn btn-danger" 
-                style={{ flex: 1, justifyContent: 'center', background: 'rgba(239, 68, 68, 0.1)', color: '#EF4444', border: '1px solid rgba(239, 68, 68, 0.15)' }}
-              >
-                🗑️ Eliminar
-              </button>
-            </div>
+            {isAdmin && (
+              <div style={{ display: 'flex', gap: 10, borderTop: '1px solid var(--border)', paddingTop: 16 }}>
+                <button onClick={() => handleOpenEditItemModal(selectedItem)} className="btn btn-ghost" style={{ flex: 1, justifyContent: 'center' }}>✏️ Editar Info</button>
+                <button 
+                  onClick={() => handleDeleteItem(selectedItem.id, selectedItem.nombre)} 
+                  className="btn btn-danger" 
+                  style={{ flex: 1, justifyContent: 'center', background: 'rgba(239, 68, 68, 0.1)', color: '#EF4444', border: '1px solid rgba(239, 68, 68, 0.15)' }}
+                >
+                  🗑️ Eliminar
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>

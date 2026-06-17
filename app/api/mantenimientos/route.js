@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/db';
+import { requireAuth } from '@/lib/auth';
 
 // Listar mantenimientos con filtros
 export async function GET(request) {
@@ -44,6 +45,12 @@ export async function GET(request) {
 // Registrar o programar un mantenimiento
 export async function POST(request) {
   try {
+    const { user, errorResponse } = await requireAuth(request);
+    if (errorResponse) return errorResponse;
+    if (user.rol !== 'ADMINISTRADOR') {
+      return NextResponse.json({ error: 'Acceso denegado. Se requieren permisos de administrador.' }, { status: 403 });
+    }
+
     const body = await request.json();
     const {
       esLote,
@@ -167,6 +174,12 @@ export async function POST(request) {
 // Actualizar o finalizar un mantenimiento
 export async function PUT(request) {
   try {
+    const { user, errorResponse } = await requireAuth(request);
+    if (errorResponse) return errorResponse;
+    if (user.rol !== 'ADMINISTRADOR') {
+      return NextResponse.json({ error: 'Acceso denegado. Se requieren permisos de administrador.' }, { status: 403 });
+    }
+
     const body = await request.json();
     const {
       id,
@@ -282,6 +295,12 @@ export async function PUT(request) {
 // Eliminar un registro de mantenimiento
 export async function DELETE(request) {
   try {
+    const { user, errorResponse } = await requireAuth(request);
+    if (errorResponse) return errorResponse;
+    if (user.rol !== 'ADMINISTRADOR') {
+      return NextResponse.json({ error: 'Acceso denegado. Se requieren permisos de administrador.' }, { status: 403 });
+    }
+
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
 

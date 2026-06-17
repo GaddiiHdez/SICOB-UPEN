@@ -15,7 +15,8 @@ export default function ReporteDiscrepancias({
   onReset,
   onBack,
   showToast,
-  configuracion = {}
+  configuracion = {},
+  isAdmin = false
 }) {
   const [activeTab, setActiveTab] = useState('resumen');
   const [isFixing, setIsFixing] = useState(false);
@@ -443,7 +444,7 @@ export default function ReporteDiscrepancias({
                 <h3 style={{ fontSize: 14, fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>
                   Equipos que Pertenecen a Otra Ubicación ({desubicados.length})
                 </h3>
-                {desubicados.length > 0 && (
+                {isAdmin && desubicados.length > 0 && (
                   <button
                     onClick={handleFixAll}
                     disabled={isFixing}
@@ -480,7 +481,7 @@ export default function ReporteDiscrepancias({
                       <th style={{ textAlign: 'left' }}>Equipo</th>
                       <th style={{ textAlign: 'left', width: '18%' }}>Marca/Modelo</th>
                       <th style={{ textAlign: 'left', width: '22%' }}>📍 Ubicación en Sistema</th>
-                      <th style={{ textAlign: 'center', width: '15%' }} className="no-print">Acción</th>
+                      {isAdmin && <th style={{ textAlign: 'center', width: '15%' }} className="no-print">Acción</th>}
                     </tr>
                   </thead>
                   <tbody>
@@ -499,22 +500,24 @@ export default function ReporteDiscrepancias({
                             ⚠️ {b.area || 'Bodega'}
                           </div>
                         </td>
-                        <td style={{ textAlign: 'center' }} className="no-print">
-                          <button
-                            onClick={() => handleFixSingle(b)}
-                            disabled={isFixing}
-                            className="btn btn-ghost"
-                            style={{
-                              fontSize: 10,
-                              padding: '4px 10px',
-                              borderColor: 'var(--border)',
-                              fontWeight: 600,
-                              color: 'var(--primary)'
-                            }}
-                          >
-                            Trasladar aquí
-                          </button>
-                        </td>
+                        {isAdmin && (
+                          <td style={{ textAlign: 'center' }} className="no-print">
+                            <button
+                              onClick={() => handleFixSingle(b)}
+                              disabled={isFixing}
+                              className="btn btn-ghost"
+                              style={{
+                                fontSize: 10,
+                                padding: '4px 10px',
+                                borderColor: 'var(--border)',
+                                fontWeight: 600,
+                                color: 'var(--primary)'
+                              }}
+                            >
+                              Trasladar aquí
+                            </button>
+                          </td>
+                        )}
                       </tr>
                     ))}
                   </tbody>

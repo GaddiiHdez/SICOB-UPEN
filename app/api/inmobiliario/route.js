@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/db';
 import { parseNextCorrelativo } from '@/lib/configHelpers';
+import { requireAuth } from '@/lib/auth';
 
 // Listar mobiliarios con relaciones
 export async function GET(request) {
@@ -67,6 +68,12 @@ export async function GET(request) {
 // Registrar un nuevo mobiliario
 export async function POST(request) {
   try {
+    const { user, errorResponse } = await requireAuth(request);
+    if (errorResponse) return errorResponse;
+    if (user.rol !== 'ADMINISTRADOR') {
+      return NextResponse.json({ error: 'Acceso denegado. Se requieren permisos de administrador.' }, { status: 403 });
+    }
+
     const body = await request.json();
     const {
       descripcion,
@@ -213,6 +220,12 @@ export async function POST(request) {
 // Actualizar mobiliario
 export async function PUT(request) {
   try {
+    const { user, errorResponse } = await requireAuth(request);
+    if (errorResponse) return errorResponse;
+    if (user.rol !== 'ADMINISTRADOR') {
+      return NextResponse.json({ error: 'Acceso denegado. Se requieren permisos de administrador.' }, { status: 403 });
+    }
+
     const body = await request.json();
     const {
       id,
@@ -285,6 +298,12 @@ export async function PUT(request) {
 // Dar de baja / Eliminar de forma lógica
 export async function DELETE(request) {
   try {
+    const { user, errorResponse } = await requireAuth(request);
+    if (errorResponse) return errorResponse;
+    if (user.rol !== 'ADMINISTRADOR') {
+      return NextResponse.json({ error: 'Acceso denegado. Se requieren permisos de administrador.' }, { status: 403 });
+    }
+
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
 

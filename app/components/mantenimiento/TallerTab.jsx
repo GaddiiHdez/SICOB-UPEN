@@ -7,7 +7,7 @@ import { parsePeriodo, cleanDescription } from './utils';
 /**
  * TallerTab — Pestaña de Equipos en Taller (estado "En proceso")
  */
-export default function TallerTab({ tallerMantenimientos, onFinalize, onDelete, onEdit }) {
+export default function TallerTab({ tallerMantenimientos, onFinalize, onDelete, onEdit, isAdmin = false }) {
   if (tallerMantenimientos.length === 0) {
     return (
       <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-secondary)' }}>
@@ -28,8 +28,8 @@ export default function TallerTab({ tallerMantenimientos, onFinalize, onDelete, 
             <th>Ingresado por</th>
             <th>Diagnóstico / Falla Reportada</th>
             <th>Técnico Asignado</th>
-            <th>Fecha de Ingreso</th>
-            <th>Acciones</th>
+             <th>Fecha de Ingreso</th>
+             {isAdmin && <th>Acciones</th>}
           </tr>
         </thead>
         <tbody>
@@ -55,39 +55,41 @@ export default function TallerTab({ tallerMantenimientos, onFinalize, onDelete, 
               </td>
               <td style={{ fontSize: 12, fontWeight: 600 }}>👤 {m.tecnico_encargado || 'No asignado'}</td>
               <td style={{ fontSize: 12 }}>📅 {formatDate(m.fecha_mantenimiento)}</td>
-              <td>
-                <div style={{ display: 'flex', gap: 8 }}>
-                  <button
-                    onClick={() => onFinalize(m)}
-                    className="btn btn-primary"
-                    style={{ padding: '5px 12px', fontSize: 11 }}
-                  >
-                    ✓ Finalizar
-                  </button>
-                  <button
-                    onClick={() => onEdit && onEdit(m)}
-                    className="btn"
-                    style={{
-                      padding: '5px 10px',
-                      fontSize: 11,
-                      background: 'rgba(0, 113, 106, 0.05)',
-                      color: 'var(--primary)',
-                      border: '1px solid rgba(0, 113, 106, 0.1)',
-                    }}
-                    title="Editar registro de mantenimiento"
-                  >
-                    ✏️
-                  </button>
-                  <button
-                    onClick={() => onDelete(m.id)}
-                    className="btn"
-                    style={{ padding: '5px 10px', fontSize: 11, background: 'rgba(239, 68, 68, 0.05)', color: '#EF4444', border: '1px solid rgba(239, 68, 68, 0.1)' }}
-                    title="Cancelar mantenimiento y retirar"
-                  >
-                    ✕
-                  </button>
-                </div>
-              </td>
+               {isAdmin && (
+                <td>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button
+                      onClick={() => onFinalize(m)}
+                      className="btn btn-primary"
+                      style={{ padding: '5px 12px', fontSize: 11 }}
+                    >
+                      ✓ Finalizar
+                    </button>
+                    <button
+                      onClick={() => onEdit && onEdit(m)}
+                      className="btn"
+                      style={{
+                        padding: '5px 10px',
+                        fontSize: 11,
+                        background: 'rgba(0, 113, 106, 0.05)',
+                        color: 'var(--primary)',
+                        border: '1px solid rgba(0, 113, 106, 0.1)',
+                      }}
+                      title="Editar registro de mantenimiento"
+                    >
+                      ✏️
+                    </button>
+                    <button
+                      onClick={() => onDelete(m.id)}
+                      className="btn"
+                      style={{ padding: '5px 10px', fontSize: 11, background: 'rgba(239, 68, 68, 0.05)', color: '#EF4444', border: '1px solid rgba(239, 68, 68, 0.1)' }}
+                      title="Cancelar mantenimiento y retirar"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                </td>
+              )}
             </tr>
           ))}
         </tbody>

@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 
 /**
- * Gestor Genérico de Catálogos (CRUD)
+ * Gestor Genérico de Catálogos (CRUD) - Premium Design
  * Props:
  * - title: Título del panel
  * - subtitle: Subtítulo
@@ -10,7 +10,7 @@ import { useState, useEffect, useCallback } from 'react';
  * - icon: Emoji icono
  * - fields: [{ name: 'nombre', label: 'Nombre', type: 'text', required: true }]
  */
-export default function CatalogManager({ title, subtitle, endpoint, icon, fields }) {
+export default function CatalogManager({ title, subtitle, endpoint, icon, fields, isAdmin = false, extraRowAction = null }) {
   const [data, setData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -112,24 +112,47 @@ export default function CatalogManager({ title, subtitle, endpoint, icon, fields
   };
 
   return (
-    <div style={{ padding: '24px', width: '100%' }}>
+    <div style={{ padding: '0 24px 24px', width: '100%' }}>
       
       {/* Header del Catálogo */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 24 }}>
+      <div style={{
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        background: 'linear-gradient(135deg, rgba(13,148,136,0.06) 0%, transparent 60%)',
+        border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)',
+        padding: '20px 28px', marginBottom: 24, gap: 16, flexWrap: 'wrap'
+      }}>
         <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
-          <div style={{ fontSize: 40, opacity: 0.9 }}>{icon}</div>
+          <div style={{
+            width: 46, height: 46, borderRadius: 'var(--radius-md)',
+            background: 'linear-gradient(135deg, var(--primary) 0%, #0f766e 100%)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 22, boxShadow: '0 4px 12px rgba(13,148,136,0.3)', flexShrink: 0
+          }}>{icon}</div>
           <div>
-            <h2 style={{ fontSize: 22, marginBottom: 4, letterSpacing: '-0.02em' }}>{title}</h2>
-            <div style={{ color: 'var(--text-secondary)', fontSize: 13 }}>{subtitle}</div>
+            <h2 style={{ fontSize: 18, fontWeight: 700, margin: 0, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>{title}</h2>
+            <div style={{ color: 'var(--text-secondary)', fontSize: 12, marginTop: 4 }}>{subtitle}</div>
           </div>
         </div>
-        <button className="btn btn-primary" onClick={() => handleOpenModal()}>
-          ＋ Nuevo Registro
-        </button>
+        {isAdmin && (
+          <button
+            onClick={() => handleOpenModal()}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              padding: '10px 18px', borderRadius: 'var(--radius-md)',
+              background: 'linear-gradient(135deg, var(--primary) 0%, #0f766e 100%)',
+              border: 'none', color: '#fff', fontSize: 13, fontWeight: 700,
+              cursor: 'pointer', boxShadow: '0 4px 14px rgba(13,148,136,0.3)',
+              transition: 'all 0.2s ease', whiteSpace: 'nowrap'
+            }}
+            className="btn-create-catalog"
+          >
+            ＋ Nuevo Registro
+          </button>
+        )}
       </div>
 
       {/* Tabla */}
-      <div style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', background: 'var(--bg-card)', overflow: 'hidden' }}>
+      <div style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', background: 'var(--bg-card)', overflow: 'hidden', boxShadow: 'var(--shadow-card)' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
           <thead>
             <tr style={{ background: 'var(--bg-body)', borderBottom: '1px solid var(--border)' }}>
@@ -137,8 +160,8 @@ export default function CatalogManager({ title, subtitle, endpoint, icon, fields
                 <th 
                   key={f.name} 
                   style={{ 
-                    padding: '16px 24px', 
-                    fontSize: '12px', 
+                    padding: '14px 24px', 
+                    fontSize: '11px', 
                     fontWeight: '700', 
                     color: 'var(--text-secondary)', 
                     textTransform: 'uppercase', 
@@ -148,33 +171,35 @@ export default function CatalogManager({ title, subtitle, endpoint, icon, fields
                   {f.label}
                 </th>
               ))}
-              <th 
-                style={{ 
-                  padding: '16px 24px', 
-                  fontSize: '12px', 
-                  fontWeight: '700', 
-                  color: 'var(--text-secondary)', 
-                  textTransform: 'uppercase', 
-                  letterSpacing: '0.05em', 
-                  width: 240, 
-                  textAlign: 'right' 
-                }}
-              >
-                Acciones
-              </th>
+              {(isAdmin || extraRowAction) && (
+                <th 
+                  style={{ 
+                    padding: '14px 24px', 
+                    fontSize: '11px', 
+                    fontWeight: '700', 
+                    color: 'var(--text-secondary)', 
+                    textTransform: 'uppercase', 
+                    letterSpacing: '0.05em', 
+                    width: 280, 
+                    textAlign: 'right' 
+                  }}
+                >
+                  Acciones
+                </th>
+              )}
             </tr>
           </thead>
           <tbody>
             {isLoading ? (
               <tr>
-                <td colSpan={fields.filter(f => f.name !== 'icono').length + 1} style={{ textAlign: 'center', padding: '40px 24px', color: 'var(--text-secondary)' }}>
+                <td colSpan={fields.filter(f => f.name !== 'icono').length + (isAdmin || extraRowAction ? 1 : 0)} style={{ textAlign: 'center', padding: '50px 24px', color: 'var(--text-secondary)' }}>
                   <div className="dash-pulse" style={{ margin: '0 auto 12px', width: 12, height: 12 }}></div>
                   Cargando registros...
                 </td>
               </tr>
             ) : data.length === 0 ? (
               <tr>
-                <td colSpan={fields.filter(f => f.name !== 'icono').length + 1} style={{ textAlign: 'center', padding: '40px 24px', color: 'var(--text-secondary)', fontSize: 13 }}>
+                <td colSpan={fields.filter(f => f.name !== 'icono').length + (isAdmin || extraRowAction ? 1 : 0)} style={{ textAlign: 'center', padding: '50px 24px', color: 'var(--text-secondary)', fontSize: 13 }}>
                   No hay registros. Crea el primero.
                 </td>
               </tr>
@@ -199,15 +224,22 @@ export default function CatalogManager({ title, subtitle, endpoint, icon, fields
                       <td 
                         key={f.name} 
                         style={{ 
-                          padding: '20px 24px', 
-                          fontSize: isFirst ? '14px' : '13px', 
+                          padding: '14px 24px', 
+                          fontSize: isFirst ? '13.5px' : '13px', 
                           fontWeight: isFirst ? '600' : '400',
                           color: isFirst ? 'var(--text-primary)' : 'var(--text-secondary)'
                         }}
                       >
                         {isFirst ? (
                           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                            <span style={{ fontSize: '18px' }}>{row.icono || icon}</span>
+                            <div style={{
+                              width: 32, height: 32, borderRadius: '50%',
+                              background: 'rgba(13,148,136,0.08)',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              fontSize: 16, border: '1px solid rgba(13,148,136,0.2)', flexShrink: 0
+                            }}>
+                              {row.icono || icon}
+                            </div>
                             <span>{displayVal || '—'}</span>
                           </div>
                         ) : (
@@ -217,7 +249,7 @@ export default function CatalogManager({ title, subtitle, endpoint, icon, fields
                               color: 'var(--primary)', 
                               padding: '4px 10px', 
                               borderRadius: 'var(--radius-md)',
-                              fontWeight: '500',
+                              fontWeight: '600',
                               fontSize: '12px',
                               display: 'inline-flex',
                               alignItems: 'center',
@@ -232,54 +264,61 @@ export default function CatalogManager({ title, subtitle, endpoint, icon, fields
                       </td>
                     );
                   })}
-                  <td style={{ padding: '20px 24px', textAlign: 'right' }}>
-                    <div style={{ display: 'inline-flex', gap: 8, justifyContent: 'flex-end', alignItems: 'center' }}>
-                      <button 
-                        onClick={() => handleOpenModal(row)}
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: 6,
-                          padding: '8px 14px',
-                          borderRadius: 'var(--radius-md)',
-                          border: '1px solid rgba(13, 148, 136, 0.2)',
-                          background: 'rgba(13, 148, 136, 0.1)',
-                          color: 'var(--primary)',
-                          fontSize: '12px',
-                          fontWeight: '600',
-                          cursor: 'pointer',
-                          transition: 'all 0.2s ease',
-                          outline: 'none'
-                        }}
-                        className="btn-edit-action"
-                        title="Editar registro"
-                      >
-                        ✏️ Editar
-                      </button>
-                      <button 
-                        onClick={() => handleDelete(row.id)}
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: 6,
-                          padding: '8px 14px',
-                          borderRadius: 'var(--radius-md)',
-                          border: '1px solid rgba(239, 68, 68, 0.2)',
-                          background: 'rgba(239, 68, 68, 0.1)',
-                          color: '#EF4444',
-                          fontSize: '12px',
-                          fontWeight: '600',
-                          cursor: 'pointer',
-                          transition: 'all 0.2s ease',
-                          outline: 'none'
-                        }}
-                        className="btn-delete-action"
-                        title="Eliminar registro"
-                      >
-                        🗑️ Eliminar
-                      </button>
-                    </div>
-                  </td>
+                  {(isAdmin || extraRowAction) && (
+                    <td style={{ padding: '14px 24px', textAlign: 'right' }}>
+                      <div style={{ display: 'inline-flex', gap: 8, justifyContent: 'flex-end', alignItems: 'center', flexWrap: 'wrap' }}>
+                        {extraRowAction && extraRowAction(row)}
+                        {isAdmin && (
+                          <>
+                            <button 
+                              onClick={() => handleOpenModal(row)}
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: 6,
+                                padding: '6px 12px',
+                                borderRadius: 'var(--radius-md)',
+                                border: '1px solid rgba(13, 148, 136, 0.2)',
+                                background: 'rgba(13, 148, 136, 0.08)',
+                                color: 'var(--primary)',
+                                fontSize: '12px',
+                                fontWeight: '600',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease',
+                                outline: 'none'
+                              }}
+                              className="btn-action-teal"
+                              title="Editar registro"
+                            >
+                              ✏️ Editar
+                            </button>
+                            <button 
+                              onClick={() => handleDelete(row.id)}
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: 6,
+                                padding: '6px 12px',
+                                borderRadius: 'var(--radius-md)',
+                                border: '1px solid rgba(239, 68, 68, 0.2)',
+                                background: 'rgba(239, 68, 68, 0.08)',
+                                color: '#EF4444',
+                                fontSize: '12px',
+                                fontWeight: '600',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease',
+                                outline: 'none'
+                              }}
+                              className="btn-action-red"
+                              title="Eliminar registro"
+                            >
+                              🗑️ Eliminar
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </td>
+                  )}
                 </tr>
               ))
             )}
@@ -289,20 +328,34 @@ export default function CatalogManager({ title, subtitle, endpoint, icon, fields
 
       {/* Modal CRUD */}
       {showModal && (
-        <div className="modal-overlay" onClick={() => setShowModal(false)}>
-          <div className="modal-box" onClick={e => e.stopPropagation()} style={{ maxWidth: 500 }}>
-            <div className="modal-header">
+        <div className="modal-overlay" onClick={() => setShowModal(false)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', zIndex: 1000 }}>
+          <div className="modal-box" onClick={e => e.stopPropagation()} style={{ maxWidth: 460, background: 'var(--bg-card)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border)', overflow: 'hidden', boxShadow: '0 32px 80px rgba(0,0,0,0.5)' }}>
+            <div className="modal-header" style={{
+              padding: '20px 24px',
+              background: 'linear-gradient(135deg, rgba(13,148,136,0.06) 0%, transparent 60%)',
+              borderBottom: '1px solid var(--border)',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between'
+            }}>
               <div>
-                <div className="modal-title">{isEdit ? 'Editar' : 'Nuevo'} {title.split(' ')[0]}</div>
-                <div className="modal-sub">Completa los datos del formulario</div>
+                <div className="modal-title" style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
+                  {isEdit ? '✏️ Editar' : '➕ Nuevo'} {title.split(' ')[0]}
+                </div>
+                <div className="modal-sub" style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 4 }}>
+                  Completa los datos del formulario
+                </div>
               </div>
-              <button className="btn-icon" onClick={() => setShowModal(false)} disabled={saving} style={{ border: 'none' }}>✕</button>
+              <button onClick={() => setShowModal(false)} disabled={saving} style={{
+                background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border)',
+                borderRadius: 'var(--radius-md)', cursor: 'pointer',
+                width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 14, color: 'var(--text-secondary)', transition: 'all 0.15s'
+              }}>✕</button>
             </div>
             <form onSubmit={handleSubmit}>
-              <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <div className="modal-body" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
                 {fields.map(f => (
-                  <div key={f.name}>
-                    <label className="form-label">{f.label}</label>
+                  <div key={f.name} style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    <label className="form-label" style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)' }}>{f.label}</label>
                     {f.type === 'textarea' ? (
                       <textarea
                         className="form-input"
@@ -410,9 +463,14 @@ export default function CatalogManager({ title, subtitle, endpoint, icon, fields
                   </div>
                 ))}
               </div>
-              <div className="modal-footer">
+              <div className="modal-footer" style={{ padding: '16px 24px', background: 'var(--bg-body)', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
                 <button type="button" className="btn btn-ghost" onClick={() => setShowModal(false)} disabled={saving}>Cancelar</button>
-                <button type="submit" className="btn btn-primary" disabled={saving} style={{ minWidth: 120 }}>
+                <button type="submit" style={{
+                  padding: '10px 22px', borderRadius: 'var(--radius-md)',
+                  background: 'linear-gradient(135deg, var(--primary) 0%, #0f766e 100%)',
+                  border: 'none', color: '#fff', fontSize: 13, fontWeight: 700,
+                  cursor: 'pointer', transition: 'all 0.2s'
+                }} disabled={saving}>
                   {saving ? '⏳ Guardando…' : '💾 Guardar'}
                 </button>
               </div>
@@ -425,6 +483,14 @@ export default function CatalogManager({ title, subtitle, endpoint, icon, fields
       {toast && (
         <div className={`toast toast-${toast.type}`}>{toast.msg}</div>
       )}
+
+      {/* Estilos Scoped */}
+      <style>{`
+        .btn-create-catalog:hover { opacity: 0.88; transform: translateY(-1px); }
+        .btn-action-teal:hover { background: rgba(13,148,136,0.18) !important; }
+        .btn-action-red:hover { background: rgba(239,68,68,0.15) !important; }
+        .emoji-quick-picker:hover { transform: scale(1.08); background: rgba(13, 148, 136, 0.1) !important; border-color: var(--primary) !important; }
+      `}</style>
     </div>
   );
 }

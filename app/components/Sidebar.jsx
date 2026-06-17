@@ -101,23 +101,27 @@ export default function Sidebar({ activeNav, onNavChange, usuario, configuracion
       <div className="sidebar-user">
         <div className="sidebar-user-info">
           <div className="sidebar-user-name">{usuario?.nombre ?? 'Administrador'}</div>
-          <div style={{ fontSize: 10, color: 'var(--sidebar-text)', opacity: 0.6, marginTop: 2 }}>Control Operativo</div>
+          <div style={{ fontSize: 10, color: 'var(--sidebar-text)', opacity: 0.6, marginTop: 2 }}>
+            {usuario?.rol === 'ADMINISTRADOR' ? 'Administrador General' : 'Usuario de Consulta'}
+          </div>
         </div>
         <div className="sidebar-user-actions">
-          <button
-            className={`sidebar-user-action-btn${activeNav === 'configuracion' ? ' active' : ''}`}
-            onClick={() => onNavChange('configuracion')}
-            style={activeNav === 'configuracion' ? {
-              background: '#00716A',
-              color: '#FFFFFF',
-              fontWeight: 600,
-              outline: 'none',
-              border: 'none',
-              boxShadow: 'none'
-            } : undefined}
-          >
-            <span>⚙️</span> Configuración
-          </button>
+          {usuario?.rol === 'ADMINISTRADOR' && (
+            <button
+              className={`sidebar-user-action-btn${activeNav === 'configuracion' ? ' active' : ''}`}
+              onClick={() => onNavChange('configuracion')}
+              style={activeNav === 'configuracion' ? {
+                background: '#00716A',
+                color: '#FFFFFF',
+                fontWeight: 600,
+                outline: 'none',
+                border: 'none',
+                boxShadow: 'none'
+              } : undefined}
+            >
+              <span>⚙️</span> Configuración
+            </button>
+          )}
           <button
             className="sidebar-user-action-btn sidebar-user-action-btn-danger"
             onClick={() => {

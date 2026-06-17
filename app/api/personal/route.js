@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/db';
+import { requireAuth } from '@/lib/auth';
 
 // Listar personal universitario con relaciones
 export async function GET() {
@@ -65,6 +66,12 @@ export async function GET() {
 // Crear un nuevo empleado / resguardante
 export async function POST(request) {
   try {
+    const { user, errorResponse } = await requireAuth(request);
+    if (errorResponse) return errorResponse;
+    if (user.rol !== 'ADMINISTRADOR') {
+      return NextResponse.json({ error: 'Acceso denegado. Se requieren permisos de administrador.' }, { status: 403 });
+    }
+
     const body = await request.json();
     const { nombre, correo, puesto, departamentoId } = body;
 
@@ -89,6 +96,19 @@ export async function POST(request) {
       }
     });
 
+    if (nuevo.departamentoId && puesto) {
+      const isJefePuesto = puesto.toLowerCase().startsWith('jefe') ||
+                           puesto.toLowerCase().startsWith('jefa') ||
+                           puesto.toLowerCase().startsWith('coordinador') ||
+                           puesto.toLowerCase().startsWith('coordinadora');
+      if (isJefePuesto) {
+        await prisma.departamento.update({
+          where: { id: nuevo.departamentoId },
+          data: { jefe: nuevo.nombre }
+        });
+      }
+    }
+
     return NextResponse.json(nuevo);
   } catch (error) {
     console.error('❌ Error en POST /api/personal:', error);
@@ -99,6 +119,12 @@ export async function POST(request) {
 // Actualizar datos de un empleado
 export async function PUT(request) {
   try {
+    const { user, errorResponse } = await requireAuth(request);
+    if (errorResponse) return errorResponse;
+    if (user.rol !== 'ADMINISTRADOR') {
+      return NextResponse.json({ error: 'Acceso denegado. Se requieren permisos de administrador.' }, { status: 403 });
+    }
+
     const body = await request.json();
     const { id, nombre, correo, puesto, departamentoId } = body;
 
@@ -127,6 +153,33 @@ export async function PUT(request) {
       }
     });
 
+    if (actualizado.departamentoId) {
+      const isJefePuesto = puesto && (
+        puesto.toLowerCase().startsWith('jefe') ||
+        puesto.toLowerCase().startsWith('jefa') ||
+        puesto.toLowerCase().startsWith('coordinador') ||
+        puesto.toLowerCase().startsWith('coordinadora')
+      );
+
+      if (isJefePuesto) {
+        await prisma.departamento.update({
+          where: { id: actualizado.departamentoId },
+          data: { jefe: actualizado.nombre }
+        });
+      } else {
+        // Si ya no es jefe, quitarlo de la tabla de departamento
+        const depto = await prisma.departamento.findUnique({
+          where: { id: actualizado.departamentoId }
+        });
+        if (depto && depto.jefe === actualizado.nombre) {
+          await prisma.departamento.update({
+            where: { id: depto.id },
+            data: { jefe: null }
+          });
+        }
+      }
+    }
+
     return NextResponse.json(actualizado);
   } catch (error) {
     console.error('❌ Error en PUT /api/personal:', error);
@@ -137,6 +190,12 @@ export async function PUT(request) {
 // Dar de baja / Eliminar un empleado
 export async function DELETE(request) {
   try {
+    const { user, errorResponse } = await requireAuth(request);
+    if (errorResponse) return errorResponse;
+    if (user.rol !== 'ADMINISTRADOR') {
+      return NextResponse.json({ error: 'Acceso denegado. Se requieren permisos de administrador.' }, { status: 403 });
+    }
+
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
 
@@ -166,6 +225,14 @@ export async function DELETE(request) {
       return NextResponse.json({ 
         error: `No se puede eliminar al empleado. Tiene ${inmobiliariosActivos} bien(es) de mobiliario asignado(s) bajo su resguardo activo.` 
       }, { status: 400 });
+    }
+
+    const empleado = await prisma.personal.findUnique({ where: { id: idInt } });
+    if (empleado) {
+      await prisma.departamento.updateMany({
+        where: { jefe: empleado.nombre },
+        data: { jefe: null }
+      });
     }
 
     await prisma.personal.delete({ where: { id: idInt } });

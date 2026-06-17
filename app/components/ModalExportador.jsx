@@ -77,7 +77,7 @@ export default function ModalExportador({
         if (!window.XLSX) {
           await new Promise((resolve, reject) => {
             const script = document.createElement('script');
-            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+            script.src = 'https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.min.js';
             script.async = true;
             script.onload = resolve;
             script.onerror = () => reject(new Error('No se pudo cargar SheetJS (Excel)'));

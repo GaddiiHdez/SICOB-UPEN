@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/db';
+import { requireAuth } from '@/lib/auth';
 
 export async function GET() {
   try {
@@ -25,6 +26,12 @@ export async function GET() {
 
 export async function POST(request) {
   try {
+    const { user, errorResponse } = await requireAuth(request);
+    if (errorResponse) return errorResponse;
+    if (user.rol !== 'ADMINISTRADOR') {
+      return NextResponse.json({ error: 'Acceso denegado. Se requieren permisos de administrador.' }, { status: 403 });
+    }
+
     const body = await request.json();
     const { nombre, jefe, ubicacionId, icono } = body;
 
@@ -37,6 +44,30 @@ export async function POST(request) {
     if (ubicacionId) data.ubicacionId = parseInt(ubicacionId, 10);
 
     const nuevo = await prisma.departamento.create({ data });
+
+    // Sincronizar el puesto del jefe en la tabla Personal
+    if (jefe) {
+      const nuevoJefe = await prisma.personal.findFirst({
+        where: { nombre: jefe }
+      });
+      if (nuevoJefe) {
+        const esFemenino = nuevoJefe.nombre.toLowerCase().includes('lya') ||
+                           nuevoJefe.nombre.toLowerCase().includes('paola') ||
+                           nuevoJefe.nombre.toLowerCase().includes('estrada') ||
+                           nuevoJefe.nombre.toLowerCase().includes('maria') ||
+                           nuevoJefe.nombre.toLowerCase().includes('ana') ||
+                           nuevoJefe.nombre.toLowerCase().includes('ing. lya');
+        const nuevoPuesto = esFemenino ? "Jefa del Departamento" : "Jefe del Departamento";
+        await prisma.personal.update({
+          where: { id: nuevoJefe.id },
+          data: {
+            puesto: nuevoPuesto,
+            departamentoId: nuevo.id
+          }
+        });
+      }
+    }
+
     return NextResponse.json(nuevo);
   } catch (error) {
     console.error('❌ Error en POST /api/departamentos:', error);
@@ -46,6 +77,12 @@ export async function POST(request) {
 
 export async function PUT(request) {
   try {
+    const { user, errorResponse } = await requireAuth(request);
+    if (errorResponse) return errorResponse;
+    if (user.rol !== 'ADMINISTRADOR') {
+      return NextResponse.json({ error: 'Acceso denegado. Se requieren permisos de administrador.' }, { status: 403 });
+    }
+
     const body = await request.json();
     const { id, nombre, jefe, ubicacionId, icono } = body;
 
@@ -56,11 +93,46 @@ export async function PUT(request) {
     });
     if (duplicado) return NextResponse.json({ error: `El departamento '${nombre}' ya existe.` }, { status: 400 });
 
-    const data = { nombre, jefe, icono };
+    const data = { nombre, jefe: jefe || null, icono };
     data.ubicacionId = ubicacionId ? parseInt(ubicacionId, 10) : null;
 
+    // Sincronizar el puesto del jefe en la tabla Personal
+    const deptoIdInt = parseInt(id);
+    
+    // 1. Resetear jefes anteriores de este departamento
+    await prisma.personal.updateMany({
+      where: {
+        departamentoId: deptoIdInt,
+        puesto: { in: ["Jefe de Departamento", "Jefa del Departamento", "Jefe del Departamento", "Coordinador", "Coordinadora", "Jefa de Departamento", "Jefe de Departamento"] }
+      },
+      data: { puesto: "Docente" }
+    });
+
+    // 2. Si se asigna un nuevo jefe, actualizar su puesto e ingresarlo al departamento
+    if (jefe) {
+      const nuevoJefe = await prisma.personal.findFirst({
+        where: { nombre: jefe }
+      });
+      if (nuevoJefe) {
+        const esFemenino = nuevoJefe.nombre.toLowerCase().includes('lya') ||
+                           nuevoJefe.nombre.toLowerCase().includes('paola') ||
+                           nuevoJefe.nombre.toLowerCase().includes('estrada') ||
+                           nuevoJefe.nombre.toLowerCase().includes('maria') ||
+                           nuevoJefe.nombre.toLowerCase().includes('ana') ||
+                           nuevoJefe.nombre.toLowerCase().includes('ing. lya');
+        const nuevoPuesto = esFemenino ? "Jefa del Departamento" : "Jefe del Departamento";
+        await prisma.personal.update({
+          where: { id: nuevoJefe.id },
+          data: {
+            puesto: nuevoPuesto,
+            departamentoId: deptoIdInt
+          }
+        });
+      }
+    }
+
     const actualizado = await prisma.departamento.update({
-      where: { id: parseInt(id) },
+      where: { id: deptoIdInt },
       data
     });
     return NextResponse.json(actualizado);
@@ -72,6 +144,12 @@ export async function PUT(request) {
 
 export async function DELETE(request) {
   try {
+    const { user, errorResponse } = await requireAuth(request);
+    if (errorResponse) return errorResponse;
+    if (user.rol !== 'ADMINISTRADOR') {
+      return NextResponse.json({ error: 'Acceso denegado. Se requieren permisos de administrador.' }, { status: 403 });
+    }
+
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
     if (!id) return NextResponse.json({ error: 'El ID es requerido.' }, { status: 400 });

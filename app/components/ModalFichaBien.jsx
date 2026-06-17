@@ -156,16 +156,18 @@ export default function ModalFichaBien({ bien, configuracion = {}, onClose, onEd
             <div className="modal-sub">Información detallada, especificaciones y control de inventario</div>
           </div>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-            <button 
-              onClick={() => {
-                onEdit(bien);
-                onClose();
-              }} 
-              className="btn btn-primary" 
-              style={{ padding: '8px 14px', fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}
-            >
-              ✏️ Editar
-            </button>
+            {isAdmin && (
+              <button 
+                onClick={() => {
+                  onEdit(bien);
+                  onClose();
+                }} 
+                className="btn btn-primary" 
+                style={{ padding: '8px 14px', fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}
+              >
+                ✏️ Editar
+              </button>
+            )}
             <button onClick={handlePrintFicha} className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: 12 }}>
               🖨️ Exportar Ficha PDF
             </button>
@@ -263,23 +265,25 @@ export default function ModalFichaBien({ bien, configuracion = {}, onClose, onEd
             </div>
 
             {/* Input de archivo oculto para la subida de foto (Oculto al imprimir) */}
-            <div className="no-print" style={{ width: '100%' }}>
-              <input 
-                type="file" 
-                ref={fileInputRef} 
-                onChange={handleImageChange} 
-                accept="image/*" 
-                style={{ display: 'none' }} 
-              />
-              <button 
-                onClick={triggerFileInput} 
-                disabled={savingImage}
-                className="btn btn-ghost" 
-                style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontSize: 12 }}
-              >
-                📷 {localImage ? 'Cambiar Fotografía' : 'Subir Fotografía Real'}
-              </button>
-            </div>
+            {isAdmin && (
+              <div className="no-print" style={{ width: '100%' }}>
+                <input 
+                  type="file" 
+                  ref={fileInputRef} 
+                  onChange={handleImageChange} 
+                  accept="image/*" 
+                  style={{ display: 'none' }} 
+                />
+                <button 
+                  onClick={triggerFileInput} 
+                  disabled={savingImage}
+                  className="btn btn-ghost" 
+                  style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontSize: 12 }}
+                >
+                  📷 {localImage ? 'Cambiar Fotografía' : 'Subir Fotografía Real'}
+                </button>
+              </div>
+            )}
 
             {/* Código de Barras e Inventario Patrimonial */}
             {(() => {
@@ -383,35 +387,41 @@ export default function ModalFichaBien({ bien, configuracion = {}, onClose, onEd
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                 <span 
                   className={ESTADO_BADGE[bien.estado] ?? 'badge badge-gray'} 
-                  style={{ padding: '0 0 0 8px', position: 'relative', display: 'inline-flex', alignItems: 'center' }}
-                  title="Cambiar estado"
+                  style={isAdmin ? { padding: '0 0 0 8px', position: 'relative', display: 'inline-flex', alignItems: 'center' } : { padding: '4px 8px', display: 'inline-flex', alignItems: 'center' }}
+                  title={isAdmin ? "Cambiar estado" : undefined}
                 >
-                  <select
-                    value={bien.estado}
-                    onChange={(e) => onStatusChange(bien.id, e.target.value)}
-                    style={{
-                      border: 'none',
-                      background: 'transparent',
-                      color: 'inherit',
-                      fontSize: '11px',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      outline: 'none',
-                      WebkitAppearance: 'none',
-                      MozAppearance: 'none',
-                      appearance: 'none',
-                      padding: '3px 16px 3px 4px',
-                      margin: 0,
-                      fontFamily: 'inherit'
-                    }}
-                  >
-                    {ESTADOS_BIEN.map(e => (
-                      <option key={e} value={e} style={{ color: 'var(--text-primary)', background: 'var(--bg-card)' }}>
-                        {e}
-                      </option>
-                    ))}
-                  </select>
-                  <span style={{ position: 'absolute', right: '6px', pointerEvents: 'none', fontSize: '7px', opacity: 0.6 }}>▼</span>
+                  {isAdmin ? (
+                    <>
+                      <select
+                        value={bien.estado}
+                        onChange={(e) => onStatusChange(bien.id, e.target.value)}
+                        style={{
+                          border: 'none',
+                          background: 'transparent',
+                          color: 'inherit',
+                          fontSize: '11px',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          outline: 'none',
+                          WebkitAppearance: 'none',
+                          MozAppearance: 'none',
+                          appearance: 'none',
+                          padding: '3px 16px 3px 4px',
+                          margin: 0,
+                          fontFamily: 'inherit'
+                        }}
+                      >
+                        {ESTADOS_BIEN.map(e => (
+                          <option key={e} value={e} style={{ color: 'var(--text-primary)', background: 'var(--bg-card)' }}>
+                            {e}
+                          </option>
+                        ))}
+                      </select>
+                      <span style={{ position: 'absolute', right: '6px', pointerEvents: 'none', fontSize: '7px', opacity: 0.6 }}>▼</span>
+                    </>
+                  ) : (
+                    <span style={{ fontSize: '11px', fontWeight: 600 }}>{bien.estado}</span>
+                  )}
                 </span>
                 <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Categoría: <strong>{bien.tipo}</strong></span>
               </div>
@@ -818,21 +828,21 @@ export default function ModalFichaBien({ bien, configuracion = {}, onClose, onEd
           background: 'var(--bg-card)'
         }}>
           <div>
-            {bien.eliminado ? (
-              <div style={{ display: 'flex', gap: 10 }}>
-                <button 
-                  onClick={() => {
-                    if (confirm('¿Deseas re-activar este equipo y devolverlo al inventario activo?')) {
-                      onRestore(bien.id);
-                      onClose();
-                    }
-                  }} 
-                  className="btn" 
-                  style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10B981', border: '1px solid rgba(16, 185, 129, 0.2)' }}
-                >
-                  🟢 Re-activar Equipo
-                </button>
-                {isAdmin && (
+            {isAdmin && (
+              bien.eliminado ? (
+                <div style={{ display: 'flex', gap: 10 }}>
+                  <button 
+                    onClick={() => {
+                      if (confirm('¿Deseas re-activar este equipo y devolverlo al inventario activo?')) {
+                        onRestore(bien.id);
+                        onClose();
+                      }
+                    }} 
+                    className="btn" 
+                    style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10B981', border: '1px solid rgba(16, 185, 129, 0.2)' }}
+                  >
+                    🟢 Re-activar Equipo
+                  </button>
                   <button 
                     onClick={() => {
                       onDeletePermanent(bien.id);
@@ -843,25 +853,25 @@ export default function ModalFichaBien({ bien, configuracion = {}, onClose, onEd
                   >
                     🗑️ Borrar Permanentemente
                   </button>
-                )}
-              </div>
-            ) : (
-              <button 
-                onClick={() => {
-                  if (confirm('¿Estás seguro de que deseas dar de baja este equipo? Esta acción conservará el registro histórico pero cambiará su estatus.')) {
-                    onDelete(bien.id);
-                    onClose();
-                  }
-                }} 
-                className="btn" 
-                style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#EF4444', border: '1px solid rgba(239, 68, 68, 0.2)' }}
-              >
-                🗑️ Dar de Baja
-              </button>
+                </div>
+              ) : (
+                <button 
+                  onClick={() => {
+                    if (confirm('¿Estás seguro de que deseas dar de baja este equipo? Esta acción conservará el registro histórico pero cambiará su estatus.')) {
+                      onDelete(bien.id);
+                      onClose();
+                    }
+                  }} 
+                  className="btn" 
+                  style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#EF4444', border: '1px solid rgba(239, 68, 68, 0.2)' }}
+                >
+                  🗑️ Dar de Baja
+                </button>
+              )
             )}
           </div>
           <div style={{ display: 'flex', gap: 10 }}>
-            {!bien.eliminado && (
+            {isAdmin && !bien.eliminado && (
               bien.estado === 'Mantenimiento' ? (
                 <button 
                   onClick={handleCompleteMaintenance} 
@@ -888,16 +898,18 @@ export default function ModalFichaBien({ bien, configuracion = {}, onClose, onEd
             >
               🏷️ Imprimir Etiqueta
             </button>
-            <button 
-              onClick={() => {
-                onEdit(bien);
-                onClose();
-              }} 
-              className="btn btn-primary" 
-              style={{ display: 'flex', alignItems: 'center', gap: 6 }}
-            >
-              ✏️ Editar Datos
-            </button>
+            {isAdmin && (
+              <button 
+                onClick={() => {
+                  onEdit(bien);
+                  onClose();
+                }} 
+                className="btn btn-primary" 
+                style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+              >
+                ✏️ Editar Datos
+              </button>
+            )}
           </div>
         </div>
 

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/db';
+import { requireAuth } from '@/lib/auth';
 
 // Obtener configuración mapeada como objeto clave-valor
 export async function GET() {
@@ -71,6 +72,51 @@ export async function GET() {
     if (!configMap['etiqueta_letra_serial_pt']) {
       configMap['etiqueta_letra_serial_pt'] = '5.0';
     }
+    if (!configMap['etiqueta_formato_papel']) {
+      configMap['etiqueta_formato_papel'] = 'rollo';
+    }
+    if (!configMap['etiqueta_cabecera_bold']) {
+      configMap['etiqueta_cabecera_bold'] = 'true';
+    }
+    if (!configMap['etiqueta_cabecera_italic']) {
+      configMap['etiqueta_cabecera_italic'] = 'false';
+    }
+    if (!configMap['etiqueta_marca_bold']) {
+      configMap['etiqueta_marca_bold'] = 'false';
+    }
+    if (!configMap['etiqueta_marca_italic']) {
+      configMap['etiqueta_marca_italic'] = 'false';
+    }
+    if (!configMap['etiqueta_codigo_bold']) {
+      configMap['etiqueta_codigo_bold'] = 'true';
+    }
+    if (!configMap['etiqueta_codigo_italic']) {
+      configMap['etiqueta_codigo_italic'] = 'false';
+    }
+    if (!configMap['etiqueta_serial_bold']) {
+      configMap['etiqueta_serial_bold'] = 'false';
+    }
+    if (!configMap['etiqueta_serial_italic']) {
+      configMap['etiqueta_serial_italic'] = 'false';
+    }
+    if (!configMap['etiqueta_margen_superior']) {
+      configMap['etiqueta_margen_superior'] = '1.0';
+    }
+    if (!configMap['etiqueta_margen_inferior']) {
+      configMap['etiqueta_margen_inferior'] = '1.0';
+    }
+    if (!configMap['etiqueta_margen_izquierdo']) {
+      configMap['etiqueta_margen_izquierdo'] = '1.0';
+    }
+    if (!configMap['etiqueta_margen_derecho']) {
+      configMap['etiqueta_margen_derecho'] = '1.0';
+    }
+    if (!configMap['etiqueta_gap_columnas']) {
+      configMap['etiqueta_gap_columnas'] = '0.5';
+    }
+    if (!configMap['etiqueta_gap_filas']) {
+      configMap['etiqueta_gap_filas'] = '0.0';
+    }
 
     return NextResponse.json(configMap);
   } catch (error) {
@@ -82,6 +128,12 @@ export async function GET() {
 // Guardar o actualizar múltiples parámetros de configuración a la vez
 export async function POST(request) {
   try {
+    const { user, errorResponse } = await requireAuth(request);
+    if (errorResponse) return errorResponse;
+    if (user.rol !== 'ADMINISTRADOR') {
+      return NextResponse.json({ error: 'Acceso denegado. Se requieren permisos de administrador.' }, { status: 403 });
+    }
+
     const body = await request.json();
     
     // Compatibilidad con formato anterior de guardar plantilla individual { valor }

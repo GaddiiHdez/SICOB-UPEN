@@ -60,19 +60,191 @@ export default function ModalImportador({ onClose, onImportSuccess, bienes = [],
   const fileInputRef = useRef(null);
   const dropZoneRef = useRef(null);
 
-  // Carga dinámica de SheetJS (xlsx)
+  // Carga dinámica de SheetJS con soporte de estilos (xlsx-js-style)
   useEffect(() => {
-    if (window.XLSX) {
+    // Si ya existe nuestro script con soporte de estilos, marcamos como cargado
+    const existing = document.getElementById('xlsx-style-script');
+    if (existing) {
       setLibraryLoaded(true);
       return;
     }
+    
     const script = document.createElement('script');
-    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+    script.id = 'xlsx-style-script';
+    script.src = 'https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.min.js';
     script.async = true;
-    script.onload = () => setLibraryLoaded(true);
+    script.onload = () => {
+      setLibraryLoaded(true);
+    };
     script.onerror = () => setLoadError('No se pudo cargar el decodificador de Excel (SheetJS). Verifica tu conexión.');
     document.body.appendChild(script);
   }, []);
+
+  const handleDownloadTemplate = () => {
+    if (!window.XLSX) {
+      alert("Cargando el motor de Excel, por favor intenta de nuevo en un segundo.");
+      return;
+    }
+    const XLSX = window.XLSX;
+    
+    // Definir los encabezados de la plantilla maestra
+    const headers = [
+      "Marca",
+      "Modelo",
+      "Número de Serie",
+      "Código de Inventario (Opcional)",
+      "Categoría",
+      "Ubicación",
+      "Departamento",
+      "Valor Estimado (Pesos)",
+      "Fecha de Adquisición (AAAA-MM-DD)",
+      "Programa de Adquisición",
+      "Descripción"
+    ];
+
+    // Ejemplo de filas para que el usuario entienda el formato en base a sus catálogos
+    const rows = [
+      [
+        "Dell",
+        "Latitude 5430",
+        "DELL-SN-123456",
+        "", // Código opcional
+        categorias[0]?.nombre || "Computadoras de Escritorio",
+        ubicaciones[0]?.nombre || "Bodega General",
+        departamentos[0]?.nombre || "Coordinación de Sistemas",
+        "15800.00",
+        "2026-06-16",
+        "Recurso General",
+        "Equipo de cómputo para oficina"
+      ],
+      [
+        "HP",
+        "LaserJet M404dn",
+        "HP-PRNT-998877",
+        "UPEN-PRNT-001", // Código manual
+        categorias[1]?.nombre || "Impresoras",
+        ubicaciones[1]?.nombre || "Aulas de Cómputo",
+        departamentos[1]?.nombre || "Administración",
+        "7450.00",
+        "2026-05-10",
+        "Fondo Federal U006",
+        "Impresora láser de red para docentes"
+      ]
+    ];
+
+    // Matriz completa con títulos y espacio de instrucciones
+    const aoa = [
+      ["PLANTILLA MAESTRA DE IMPORTACIÓN - GDI UPEN", "", "", "", "", "", "", "", "", "", ""],
+      ["Instrucciones: Completa la información respetando las columnas. Los ejemplos sombreados en verde son ilustrativos y deben ser borrados o reemplazados.", "", "", "", "", "", "", "", "", "", ""],
+      ["", "", "", "", "", "", "", "", "", "", ""],
+      headers,
+      ...rows
+    ];
+
+    const worksheet = XLSX.utils.aoa_to_sheet(aoa);
+
+    // Combinaciones de celdas (Merges)
+    worksheet['!merges'] = [
+      { s: { r: 0, c: 0 }, e: { r: 0, c: 10 } }, // Combinar título A1:K1
+      { s: { r: 1, c: 0 }, e: { r: 1, c: 10 } }  // Combinar instrucciones A2:K2
+    ];
+
+    // Estilos premium
+    const titleStyle = {
+      font: { name: "Segoe UI", sz: 13, bold: true, color: { rgb: "FFFFFF" } },
+      fill: { fgColor: { rgb: "0D9488" } }, // Teal primary
+      alignment: { horizontal: "center", vertical: "center" }
+    };
+
+    const subtitleStyle = {
+      font: { name: "Segoe UI", sz: 9.5, color: { rgb: "E0F2F1" }, italic: true },
+      fill: { fgColor: { rgb: "0F766E" } }, // Teal dark
+      alignment: { horizontal: "center", vertical: "center" }
+    };
+
+    const headerStyle = {
+      font: { name: "Segoe UI", sz: 10.5, bold: true, color: { rgb: "FFFFFF" } },
+      fill: { fgColor: { rgb: "0D9488" } },
+      alignment: { horizontal: "center", vertical: "center", wrapText: true },
+      border: {
+        top: { style: "thin", color: { rgb: "CCCCCC" } },
+        bottom: { style: "medium", color: { rgb: "0F766E" } },
+        left: { style: "thin", color: { rgb: "CCCCCC" } },
+        right: { style: "thin", color: { rgb: "CCCCCC" } }
+      }
+    };
+
+    const exampleStyle = {
+      font: { name: "Segoe UI", sz: 9.5, color: { rgb: "374151" } },
+      fill: { fgColor: { rgb: "F0FDF4" } }, // Suave fondo verde claro para diferenciar ejemplos
+      alignment: { vertical: "center" },
+      border: {
+        top: { style: "thin", color: { rgb: "E5E7EB" } },
+        bottom: { style: "thin", color: { rgb: "E5E7EB" } },
+        left: { style: "thin", color: { rgb: "E5E7EB" } },
+        right: { style: "thin", color: { rgb: "E5E7EB" } }
+      }
+    };
+
+    // Función auxiliar para obtener la clave de celda (A1, B5...)
+    const getCellKey = (colIndex, rowIndex) => {
+      const colName = String.fromCharCode(65 + colIndex);
+      return `${colName}${rowIndex + 1}`;
+    };
+
+    // Aplicar estilos celda por celda
+    for (let r = 0; r < aoa.length; r++) {
+      for (let c = 0; c < 11; c++) {
+        const key = getCellKey(c, r);
+        if (!worksheet[key]) continue;
+
+        if (r === 0) {
+          worksheet[key].s = titleStyle;
+        } else if (r === 1) {
+          worksheet[key].s = subtitleStyle;
+        } else if (r === 3) {
+          worksheet[key].s = headerStyle;
+        } else if (r > 3) {
+          worksheet[key].s = {
+            ...exampleStyle,
+            alignment: {
+              ...exampleStyle.alignment,
+              horizontal: (c === 2 || c === 3 || c === 7 || c === 8) ? "center" : "left"
+            }
+          };
+        }
+      }
+    }
+
+    // Configurar anchos de columna recomendados
+    worksheet['!cols'] = [
+      { wch: 15 }, // Marca
+      { wch: 18 }, // Modelo
+      { wch: 20 }, // Número de Serie
+      { wch: 28 }, // Código de Inventario
+      { wch: 24 }, // Categoría
+      { wch: 22 }, // Ubicación
+      { wch: 24 }, // Departamento
+      { wch: 18 }, // Valor Estimado
+      { wch: 28 }, // Fecha
+      { wch: 22 }, // Programa
+      { wch: 30 }  // Descripción
+    ];
+
+    // Configurar altos de filas recomendados
+    worksheet['!rows'] = [
+      { hpt: 30 }, // Título
+      { hpt: 20 }, // Instrucciones
+      { hpt: 10 }, // Espacio vacío
+      { hpt: 28 }, // Encabezados
+      { hpt: 22 }, // Ejemplo 1
+      { hpt: 22 }  // Ejemplo 2
+    ];
+
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Plantilla Importación");
+    XLSX.writeFile(workbook, "plantilla_maestra_bienes_upen.xlsx");
+  };
 
   // Manejar el archivo seleccionado
   const processFile = (file) => {
@@ -546,6 +718,36 @@ export default function ModalImportador({ onClose, onImportSuccess, bienes = [],
                     style={{ display: 'none' }} 
                     onChange={e => processFile(e.target.files[0])} 
                   />
+
+                  <div style={{ marginTop: 24, borderTop: '1px solid var(--border)', paddingTop: 16 }}>
+                    <p style={{ fontSize: 11, color: 'var(--text-secondary)', margin: '0 0 10px' }}>
+                      ¿No tienes un archivo preparado? Descarga nuestra plantilla recomendada:
+                    </p>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation(); // Evitar abrir el explorador de archivos
+                        handleDownloadTemplate();
+                      }}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 6,
+                        padding: '8px 16px',
+                        borderRadius: 'var(--radius-md)',
+                        background: 'rgba(13, 148, 136, 0.08)',
+                        border: '1px solid rgba(13, 148, 136, 0.2)',
+                        color: 'var(--primary)',
+                        fontSize: 12,
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        transition: 'all 0.15s'
+                      }}
+                      className="btn-action-teal"
+                    >
+                      📥 Descargar Plantilla Maestra (.xlsx)
+                    </button>
+                  </div>
                 </div>
               )}
             </div>

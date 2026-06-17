@@ -47,103 +47,109 @@ export default function DetailPanel({ bien, selected, personal = [], ubicaciones
           </div>
 
           {/* Selector de Estado Masivo */}
-          <div style={{ marginTop: 14 }}>
-            <label className="form-label" style={{ fontSize: 10, textTransform: 'uppercase', color: 'var(--text-secondary)', fontWeight: 700, marginBottom: 4, display: 'block' }}>Cambiar Estado:</label>
-            <div style={{ display: 'flex', gap: 6 }}>
-              <select 
-                className="form-select" 
-                value={bulkEstado} 
-                onChange={e => setBulkEstado(e.target.value)}
-                style={{ height: 36, fontSize: 12, padding: '0 8px', flex: 1 }}
-              >
-                <option value="">Selecciona...</option>
-                {ESTADOS_BIEN.map(e => <option key={e} value={e}>{e}</option>)}
-              </select>
-              <button 
-                className="btn btn-primary" 
-                onClick={() => {
-                  if (bulkEstado) {
-                    onBulkUpdate({ estado: bulkEstado });
-                    setBulkEstado('');
-                  }
-                }}
-                disabled={!bulkEstado}
-                style={{ height: 36, padding: '0 14px' }}
-                title="Aplicar estado"
-              >
-                ✓
-              </button>
+          {isAdmin && (
+            <div style={{ marginTop: 14 }}>
+              <label className="form-label" style={{ fontSize: 10, textTransform: 'uppercase', color: 'var(--text-secondary)', fontWeight: 700, marginBottom: 4, display: 'block' }}>Cambiar Estado:</label>
+              <div style={{ display: 'flex', gap: 6 }}>
+                <select 
+                  className="form-select" 
+                  value={bulkEstado} 
+                  onChange={e => setBulkEstado(e.target.value)}
+                  style={{ height: 36, fontSize: 12, padding: '0 8px', flex: 1 }}
+                >
+                  <option value="">Selecciona...</option>
+                  {ESTADOS_BIEN.map(e => <option key={e} value={e}>{e}</option>)}
+                </select>
+                <button 
+                  className="btn btn-primary" 
+                  onClick={() => {
+                    if (bulkEstado) {
+                      onBulkUpdate({ estado: bulkEstado });
+                      setBulkEstado('');
+                    }
+                  }}
+                  disabled={!bulkEstado}
+                  style={{ height: 36, padding: '0 14px' }}
+                  title="Aplicar estado"
+                >
+                  ✓
+                </button>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Selector de Custodio Masivo */}
-          <div style={{ marginTop: 12 }}>
-            <label className="form-label" style={{ fontSize: 10, textTransform: 'uppercase', color: 'var(--text-secondary)', fontWeight: 700, marginBottom: 4, display: 'block' }}>Reasignar Custodio:</label>
-            <div style={{ display: 'flex', gap: 6 }}>
-              <select 
-                className="form-select" 
-                value={bulkCustodio} 
-                onChange={e => setBulkCustodio(e.target.value)}
-                style={{ height: 36, fontSize: 12, padding: '0 8px', flex: 1 }}
-              >
-                <option value="">Selecciona...</option>
-                <option value="none">📦 Desasignar (Mandar a Bodega)</option>
-                {personal.map(p => (
-                  <option key={p.id} value={p.id}>
-                    {p.nombre} {p.noRegistrado ? '(⚠️ Temporal)' : ''}
-                  </option>
-                ))}
-              </select>
-              <button 
-                className="btn btn-primary" 
-                onClick={() => {
-                  if (bulkCustodio) {
-                    onBulkUpdate({ 
-                      responsableId: bulkCustodio === 'none' ? null : bulkCustodio 
-                    });
-                    setBulkCustodio('');
-                  }
-                }}
-                disabled={!bulkCustodio}
-                style={{ height: 36, padding: '0 14px' }}
-                title="Asignar custodio"
-              >
-                ✓
-              </button>
+          {isAdmin && (
+            <div style={{ marginTop: 12 }}>
+              <label className="form-label" style={{ fontSize: 10, textTransform: 'uppercase', color: 'var(--text-secondary)', fontWeight: 700, marginBottom: 4, display: 'block' }}>Reasignar Custodio:</label>
+              <div style={{ display: 'flex', gap: 6 }}>
+                <select 
+                  className="form-select" 
+                  value={bulkCustodio} 
+                  onChange={e => setBulkCustodio(e.target.value)}
+                  style={{ height: 36, fontSize: 12, padding: '0 8px', flex: 1 }}
+                >
+                  <option value="">Selecciona...</option>
+                  <option value="none">📦 Desasignar (Mandar a Bodega)</option>
+                  {personal.map(p => (
+                    <option key={p.id} value={p.id}>
+                      {p.nombre} {p.noRegistrado ? '(⚠️ Temporal)' : ''}
+                    </option>
+                  ))}
+                </select>
+                <button 
+                  className="btn btn-primary" 
+                  onClick={() => {
+                    if (bulkCustodio) {
+                      onBulkUpdate({ 
+                        responsableId: bulkCustodio === 'none' ? null : bulkCustodio 
+                      });
+                      setBulkCustodio('');
+                    }
+                  }}
+                  disabled={!bulkCustodio}
+                  style={{ height: 36, padding: '0 14px' }}
+                  title="Asignar custodio"
+                >
+                  ✓
+                </button>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Selector de Ubicación Masiva */}
-          <div style={{ marginTop: 12 }}>
-            <label className="form-label" style={{ fontSize: 10, textTransform: 'uppercase', color: 'var(--text-secondary)', fontWeight: 700, marginBottom: 4, display: 'block' }}>Cambiar Ubicación:</label>
-            <div style={{ display: 'flex', gap: 6 }}>
-              <select 
-                className="form-select" 
-                value={bulkUbicacion} 
-                onChange={e => setBulkUbicacion(e.target.value)}
-                style={{ height: 36, fontSize: 12, padding: '0 8px', flex: 1 }}
-              >
-                <option value="">Selecciona...</option>
-                {ubicaciones.map(u => (
-                  <option key={u.id} value={u.id}>{u.nombre}</option>
-                ))}
-              </select>
-              <button 
-                className="btn btn-primary" 
-                onClick={() => {
-                  if (bulkUbicacion) {
-                    onBulkUpdate({ ubicacionId: bulkUbicacion });
-                    setBulkUbicacion('');
-                  }
-                }}
-                disabled={!bulkUbicacion}
-                style={{ height: 36, padding: '0 14px' }}
-                title="Cambiar ubicación"
-              >
-                ✓
-              </button>
+          {isAdmin && (
+            <div style={{ marginTop: 12 }}>
+              <label className="form-label" style={{ fontSize: 10, textTransform: 'uppercase', color: 'var(--text-secondary)', fontWeight: 700, marginBottom: 4, display: 'block' }}>Cambiar Ubicación:</label>
+              <div style={{ display: 'flex', gap: 6 }}>
+                <select 
+                  className="form-select" 
+                  value={bulkUbicacion} 
+                  onChange={e => setBulkUbicacion(e.target.value)}
+                  style={{ height: 36, fontSize: 12, padding: '0 8px', flex: 1 }}
+                >
+                  <option value="">Selecciona...</option>
+                  {ubicaciones.map(u => (
+                    <option key={u.id} value={u.id}>{u.nombre}</option>
+                  ))}
+                </select>
+                <button 
+                  className="btn btn-primary" 
+                  onClick={() => {
+                    if (bulkUbicacion) {
+                      onBulkUpdate({ ubicacionId: bulkUbicacion });
+                      setBulkUbicacion('');
+                    }
+                  }}
+                  disabled={!bulkUbicacion}
+                  style={{ height: 36, padding: '0 14px' }}
+                  title="Cambiar ubicación"
+                >
+                  ✓
+                </button>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Generación de etiquetas masiva */}
           <div style={{ marginTop: 12, borderTop: '1px dashed var(--border)', paddingTop: 14 }}>
@@ -171,75 +177,81 @@ export default function DetailPanel({ bien, selected, personal = [], ubicaciones
           </div>
 
           {/* Eliminar No. de Inventario en Lote */}
-          <div style={{ marginTop: 12 }}>
-            <button 
-              className="btn" 
-              onClick={() => {
-                if (confirm(`¿Estás seguro de borrar el No. de Inventario de los ${selected.length} equipos seleccionados? Esto no borrará los equipos, solo dejará vacío su número de inventario.`)) {
-                  onBulkUpdate({ eliminarNoInventario: true });
-                }
-              }}
-              style={{ 
-                width: '100%', 
-                background: 'rgba(245, 158, 11, 0.1)', 
-                color: '#D97706', 
-                border: '1px solid rgba(245, 158, 11, 0.2)',
-                fontSize: 12,
-                padding: '8px 12px',
-                fontWeight: 600,
-                borderRadius: '6px',
-                cursor: 'pointer'
-              }}
-            >
-              🚫 Quitar No. de Inventario en Lote
-            </button>
-          </div>
+          {isAdmin && (
+            <div style={{ marginTop: 12 }}>
+              <button 
+                className="btn" 
+                onClick={() => {
+                  if (confirm(`¿Estás seguro de borrar el No. de Inventario de los ${selected.length} equipos seleccionados? Esto no borrará los equipos, solo dejará vacío su número de inventario.`)) {
+                    onBulkUpdate({ eliminarNoInventario: true });
+                  }
+                }}
+                style={{ 
+                  width: '100%', 
+                  background: 'rgba(245, 158, 11, 0.1)', 
+                  color: '#D97706', 
+                  border: '1px solid rgba(245, 158, 11, 0.2)',
+                  fontSize: 12,
+                  padding: '8px 12px',
+                  fontWeight: 600,
+                  borderRadius: '6px',
+                  cursor: 'pointer'
+                }}
+              >
+                🚫 Quitar No. de Inventario en Lote
+              </button>
+            </div>
+          )}
 
           {/* Autogenerar No. de Inventario en Lote */}
-          <div style={{ marginTop: 12 }}>
-            <button 
-              className="btn" 
-              onClick={() => onBulkUpdate({ abrirAutogenerarModal: true })}
-              style={{ 
-                width: '100%', 
-                background: 'rgba(13, 148, 136, 0.1)', 
-                color: '#0D9488', 
-                border: '1px solid rgba(13, 148, 136, 0.2)',
-                fontSize: 12,
-                padding: '8px 12px',
-                fontWeight: 600,
-                borderRadius: '6px',
-                cursor: 'pointer'
-              }}
-            >
-              🔄 Autogenerar No. de Inventario en Lote
-            </button>
-          </div>
+          {isAdmin && (
+            <div style={{ marginTop: 12 }}>
+              <button 
+                className="btn" 
+                onClick={() => onBulkUpdate({ abrirAutogenerarModal: true })}
+                style={{ 
+                  width: '100%', 
+                  background: 'rgba(13, 148, 136, 0.1)', 
+                  color: '#0D9488', 
+                  border: '1px solid rgba(13, 148, 136, 0.2)',
+                  fontSize: 12,
+                  padding: '8px 12px',
+                  fontWeight: 600,
+                  borderRadius: '6px',
+                  cursor: 'pointer'
+                }}
+              >
+                🔄 Autogenerar No. de Inventario en Lote
+              </button>
+            </div>
+          )}
 
           {/* Dar de Baja Lógica Masiva */}
-          <div style={{ marginTop: 12 }}>
-            <button 
-              className="btn" 
-              onClick={() => {
-                if (confirm(`¿Estás seguro de dar de baja los ${selected.length} equipos seleccionados? Esta acción conservará el registro histórico pero cambiará su estatus a Baja.`)) {
-                  onBulkUpdate({ darDeBaja: true });
-                }
-              }}
-              style={{ 
-                width: '100%', 
-                background: 'rgba(239, 68, 68, 0.1)', 
-                color: '#EF4444', 
-                border: '1px solid rgba(239, 68, 68, 0.2)',
-                fontSize: 12,
-                padding: '8px 12px',
-                fontWeight: 600,
-                borderRadius: '6px',
-                cursor: 'pointer'
-              }}
-            >
-              🗑️ Dar de Baja en Lote
-            </button>
-          </div>
+          {isAdmin && (
+            <div style={{ marginTop: 12 }}>
+              <button 
+                className="btn" 
+                onClick={() => {
+                  if (confirm(`¿Estás seguro de dar de baja los ${selected.length} equipos seleccionados? Esta acción conservará el registro histórico pero cambiará su estatus a Baja.`)) {
+                    onBulkUpdate({ darDeBaja: true });
+                  }
+                }}
+                style={{ 
+                  width: '100%', 
+                  background: 'rgba(239, 68, 68, 0.1)', 
+                  color: '#EF4444', 
+                  border: '1px solid rgba(239, 68, 68, 0.2)',
+                  fontSize: 12,
+                  padding: '8px 12px',
+                  fontWeight: 600,
+                  borderRadius: '6px',
+                  cursor: 'pointer'
+                }}
+              >
+                🗑️ Dar de Baja en Lote
+              </button>
+            </div>
+          )}
         </div>
       )}
 
@@ -263,12 +275,16 @@ export default function DetailPanel({ bien, selected, personal = [], ubicaciones
                     🔍 Ver Historial
                   </button>
                 )}
-                <button className="btn-icon" title="Clonar / Duplicar" style={{ width: 28, height: 28, fontSize: 13, background: 'rgba(13, 148, 136, 0.1)', color: 'var(--primary)' }} onClick={() => onClone && onClone(bien)}>
-                  👥
-                </button>
-                <button className="btn-icon" title="Editar" style={{ width: 28, height: 28, fontSize: 13 }} onClick={() => onEdit && onEdit(bien)}>
-                  ✏
-                </button>
+                {isAdmin && (
+                  <>
+                    <button className="btn-icon" title="Clonar / Duplicar" style={{ width: 28, height: 28, fontSize: 13, background: 'rgba(13, 148, 136, 0.1)', color: 'var(--primary)' }} onClick={() => onClone && onClone(bien)}>
+                      👥
+                    </button>
+                    <button className="btn-icon" title="Editar" style={{ width: 28, height: 28, fontSize: 13 }} onClick={() => onEdit && onEdit(bien)}>
+                      ✏
+                    </button>
+                  </>
+                )}
               </div>
             </div>
 
@@ -280,35 +296,41 @@ export default function DetailPanel({ bien, selected, personal = [], ubicaciones
                 </div>
                 <span 
                   className={ESTADO_BADGE[bien.estado] ?? 'badge badge-gray'} 
-                  style={{ padding: '0 0 0 8px', position: 'relative', display: 'inline-flex', alignItems: 'center', marginTop: 4 }}
-                  title="Cambiar estado"
+                  style={isAdmin ? { padding: '0 0 0 8px', position: 'relative', display: 'inline-flex', alignItems: 'center', marginTop: 4 } : { padding: '4px 8px', display: 'inline-flex', alignItems: 'center', marginTop: 4 }}
+                  title={isAdmin ? "Cambiar estado" : undefined}
                 >
-                  <select
-                    value={bien.estado}
-                    onChange={(e) => onStatusChange(bien.id, e.target.value)}
-                    style={{
-                      border: 'none',
-                      background: 'transparent',
-                      color: 'inherit',
-                      fontSize: '11px',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      outline: 'none',
-                      WebkitAppearance: 'none',
-                      MozAppearance: 'none',
-                      appearance: 'none',
-                      padding: '3px 16px 3px 4px',
-                      margin: 0,
-                      fontFamily: 'inherit'
-                    }}
-                  >
-                    {ESTADOS_BIEN.map(e => (
-                      <option key={e} value={e} style={{ color: 'var(--text-primary)', background: 'var(--bg-card)' }}>
-                        {e}
-                      </option>
-                    ))}
-                  </select>
-                  <span style={{ position: 'absolute', right: '6px', pointerEvents: 'none', fontSize: '7px', opacity: 0.6 }}>▼</span>
+                  {isAdmin ? (
+                    <>
+                      <select
+                        value={bien.estado}
+                        onChange={(e) => onStatusChange(bien.id, e.target.value)}
+                        style={{
+                          border: 'none',
+                          background: 'transparent',
+                          color: 'inherit',
+                          fontSize: '11px',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          outline: 'none',
+                          WebkitAppearance: 'none',
+                          MozAppearance: 'none',
+                          appearance: 'none',
+                          padding: '3px 16px 3px 4px',
+                          margin: 0,
+                          fontFamily: 'inherit'
+                        }}
+                      >
+                        {ESTADOS_BIEN.map(e => (
+                          <option key={e} value={e} style={{ color: 'var(--text-primary)', background: 'var(--bg-card)' }}>
+                            {e}
+                          </option>
+                        ))}
+                      </select>
+                      <span style={{ position: 'absolute', right: '6px', pointerEvents: 'none', fontSize: '7px', opacity: 0.6 }}>▼</span>
+                    </>
+                  ) : (
+                    <span style={{ fontSize: '11px', fontWeight: 600 }}>{bien.estado}</span>
+                  )}
                 </span>
               </div>
             </div>
@@ -440,7 +462,7 @@ export default function DetailPanel({ bien, selected, personal = [], ubicaciones
             </div>
           )}
 
-          {bien.eliminado && (
+          {bien.eliminado && isAdmin && (
             <div style={{ padding: '20px', borderTop: '1px solid var(--border-light)', display: 'flex', flexDirection: 'column', gap: 10 }}>
               <button
                 className="btn btn-primary"
@@ -449,15 +471,13 @@ export default function DetailPanel({ bien, selected, personal = [], ubicaciones
               >
                 🟢 Re-activar / Restaurar Equipo
               </button>
-              {isAdmin && (
-                <button
-                  className="btn"
-                  onClick={() => onDeletePermanent && onDeletePermanent(bien.id)}
-                  style={{ width: '100%', justifyContent: 'center', background: 'rgba(239, 68, 68, 0.1)', color: '#EF4444', border: '1px solid rgba(239, 68, 68, 0.2)', padding: '10px' }}
-                >
-                  🗑️ Borrar Permanentemente
-                </button>
-              )}
+              <button
+                className="btn"
+                onClick={() => onDeletePermanent && onDeletePermanent(bien.id)}
+                style={{ width: '100%', justifyContent: 'center', background: 'rgba(239, 68, 68, 0.1)', color: '#EF4444', border: '1px solid rgba(239, 68, 68, 0.2)', padding: '10px' }}
+              >
+                🗑️ Borrar Permanentemente
+              </button>
             </div>
           )}
         </div>

@@ -8,9 +8,10 @@ import UbicacionesManager from './UbicacionesManager';
  * Agrupa Áreas, Departamentos, Categorías y Responsables bajo una hermosa
  * interfaz de sub-pestañas con diseño moderno y transiciones pulidas.
  */
-export default function CatalogsPanel({ showToast }) {
+export default function CatalogsPanel({ showToast, isAdmin = false }) {
   const [activeTab, setActiveTab] = useState('areas');
   const [ubicaciones, setUbicaciones] = useState([]);
+  const [personal, setPersonal] = useState([]);
 
   useEffect(() => {
     let active = true;
@@ -20,6 +21,14 @@ export default function CatalogsPanel({ showToast }) {
         if (active) setUbicaciones(data);
       })
       .catch(err => console.error("Error al cargar ubicaciones en catálogos:", err));
+
+    fetch('/api/personal')
+      .then(res => res.json())
+      .then(data => {
+        if (active) setPersonal(data);
+      })
+      .catch(err => console.error("Error al cargar personal en catálogos:", err));
+
     return () => {
       active = false;
     };
@@ -100,16 +109,18 @@ export default function CatalogsPanel({ showToast }) {
       </div>
 
       {/* Renderizado Dinámico de los Catálogos correspondientes */}
-      <div style={{
-        background: 'var(--bg-card)',
-        border: '1px solid var(--border)',
-        borderRadius: 'var(--radius-lg)',
-        boxShadow: 'var(--shadow-card)',
-        overflow: 'hidden',
-        animation: 'slideUp 0.3s ease-out'
-      }}>
+      <div 
+        className="fade-in"
+        style={{
+          background: 'var(--bg-card)',
+          border: '1px solid var(--border)',
+          borderRadius: 'var(--radius-lg)',
+          boxShadow: 'var(--shadow-card)',
+          overflow: 'hidden'
+        }}
+      >
         {activeTab === 'areas' && (
-          <UbicacionesManager showToast={showToast} />
+          <UbicacionesManager showToast={showToast} isAdmin={isAdmin} />
         )}
 
         {activeTab === 'departamentos' && (
@@ -118,9 +129,15 @@ export default function CatalogsPanel({ showToast }) {
             subtitle="Unidades, departamentos y coordinaciones del organigrama institucional" 
             icon="🏢" 
             endpoint="/api/departamentos"
+            isAdmin={isAdmin}
             fields={[
               { name: 'nombre', label: 'Nombre del Departamento o Coordinación', required: true },
-              { name: 'jefe', label: 'Titular / Jefe o Coordinador' },
+              { 
+                name: 'jefe', 
+                label: 'Titular / Jefe o Coordinador',
+                type: 'select',
+                options: personal.map(p => ({ value: p.nombre, label: `${p.nombre} (${p.puesto || 'Sin puesto'})` }))
+              },
               { 
                 name: 'ubicacionId', 
                 label: 'Ubicación física de la Oficina', 
@@ -138,6 +155,7 @@ export default function CatalogsPanel({ showToast }) {
             subtitle="Familias de clasificación patrimonial y especificaciones" 
             icon="🏷️" 
             endpoint="/api/categorias"
+            isAdmin={isAdmin}
             fields={[
               { name: 'nombre', label: 'Nombre de la Categoría', required: true },
               { name: 'descripcion', label: 'Descripción de los Equipos', type: 'textarea' },
@@ -152,6 +170,7 @@ export default function CatalogsPanel({ showToast }) {
             subtitle="Familias de clasificación de mobiliario e inmobiliario" 
             icon="🪑" 
             endpoint="/api/categorias-inmobiliario"
+            isAdmin={isAdmin}
             fields={[
               { name: 'nombre', label: 'Nombre de la Categoría', required: true },
               { name: 'descripcion', label: 'Descripción de los Artículos', type: 'textarea' },
@@ -166,6 +185,7 @@ export default function CatalogsPanel({ showToast }) {
             subtitle="Familias de clasificación de consumibles y suministros" 
             icon="📦" 
             endpoint="/api/categorias-consumibles"
+            isAdmin={isAdmin}
             fields={[
               { name: 'nombre', label: 'Nombre de la Categoría', required: true },
               { name: 'descripcion', label: 'Descripción de los Suministros', type: 'textarea' },

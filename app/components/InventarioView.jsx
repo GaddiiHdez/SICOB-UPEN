@@ -296,36 +296,42 @@ export default function InventarioView({
                       <td>
                         <span 
                           className={ESTADO_BADGE[bien.estado] ?? 'badge badge-gray'} 
-                          style={{ padding: '0 0 0 8px', position: 'relative', display: 'inline-flex', alignItems: 'center' }}
+                          style={isAdmin ? { padding: '0 0 0 8px', position: 'relative', display: 'inline-flex', alignItems: 'center' } : { padding: '4px 8px', display: 'inline-flex', alignItems: 'center' }}
                           onClick={e => e.stopPropagation()}
-                          title="Cambiar estado rápidamente"
+                          title={isAdmin ? "Cambiar estado rápidamente" : undefined}
                         >
-                          <select
-                            value={bien.estado}
-                            onChange={(e) => onStatusChange(bien.id, e.target.value)}
-                            style={{
-                              border: 'none',
-                              background: 'transparent',
-                              color: 'inherit',
-                              fontSize: '11px',
-                              fontWeight: 600,
-                              cursor: 'pointer',
-                              outline: 'none',
-                              WebkitAppearance: 'none',
-                              MozAppearance: 'none',
-                              appearance: 'none',
-                              padding: '3px 16px 3px 4px',
-                              margin: 0,
-                              fontFamily: 'inherit'
-                            }}
-                          >
-                            {ESTADOS_BIEN.map(e => (
-                              <option key={e} value={e} style={{ color: 'var(--text-primary)', background: 'var(--bg-card)' }}>
-                                {e}
-                              </option>
-                            ))}
-                          </select>
-                          <span style={{ position: 'absolute', right: '6px', pointerEvents: 'none', fontSize: '7px', opacity: 0.6 }}>▼</span>
+                          {isAdmin ? (
+                            <>
+                              <select
+                                value={bien.estado}
+                                onChange={(e) => onStatusChange(bien.id, e.target.value)}
+                                style={{
+                                  border: 'none',
+                                  background: 'transparent',
+                                  color: 'inherit',
+                                  fontSize: '11px',
+                                  fontWeight: 600,
+                                  cursor: 'pointer',
+                                  outline: 'none',
+                                  WebkitAppearance: 'none',
+                                  MozAppearance: 'none',
+                                  appearance: 'none',
+                                  padding: '3px 16px 3px 4px',
+                                  margin: 0,
+                                  fontFamily: 'inherit'
+                                }}
+                              >
+                                {ESTADOS_BIEN.map(e => (
+                                  <option key={e} value={e} style={{ color: 'var(--text-primary)', background: 'var(--bg-card)' }}>
+                                    {e}
+                                  </option>
+                                ))}
+                              </select>
+                              <span style={{ position: 'absolute', right: '6px', pointerEvents: 'none', fontSize: '7px', opacity: 0.6 }}>▼</span>
+                            </>
+                          ) : (
+                            <span style={{ fontSize: '11px', fontWeight: 600 }}>{bien.estado}</span>
+                          )}
                         </span>
                       </td>
                       <td style={{ color: 'var(--text-secondary)', fontSize: 12 }}>{bien.area}</td>
@@ -370,36 +376,42 @@ export default function InventarioView({
                           <td>
                             <span 
                               className={ESTADO_BADGE[bien.estado] ?? 'badge badge-gray'} 
-                              style={{ padding: '0 0 0 8px', position: 'relative', display: 'inline-flex', alignItems: 'center' }}
+                              style={isAdmin ? { padding: '0 0 0 8px', position: 'relative', display: 'inline-flex', alignItems: 'center' } : { padding: '4px 8px', display: 'inline-flex', alignItems: 'center' }}
                               onClick={e => e.stopPropagation()}
-                              title="Cambiar estado rápidamente"
+                              title={isAdmin ? "Cambiar estado rápidamente" : undefined}
                             >
-                              <select
-                                value={bien.estado}
-                                onChange={(e) => onStatusChange(bien.id, e.target.value)}
-                                style={{
-                                  border: 'none',
-                                  background: 'transparent',
-                                  color: 'inherit',
-                                  fontSize: '11px',
-                                  fontWeight: 600,
-                                  cursor: 'pointer',
-                                  outline: 'none',
-                                  WebkitAppearance: 'none',
-                                  MozAppearance: 'none',
-                                  appearance: 'none',
-                                  padding: '3px 16px 3px 4px',
-                                  margin: 0,
-                                  fontFamily: 'inherit'
-                                }}
-                              >
-                                {ESTADOS_BIEN.map(e => (
-                                  <option key={e} value={e} style={{ color: 'var(--text-primary)', background: 'var(--bg-card)' }}>
-                                    {e}
-                                  </option>
-                                ))}
-                              </select>
-                              <span style={{ position: 'absolute', right: '6px', pointerEvents: 'none', fontSize: '7px', opacity: 0.6 }}>▼</span>
+                              {isAdmin ? (
+                                <>
+                                  <select
+                                    value={bien.estado}
+                                    onChange={(e) => onStatusChange(bien.id, e.target.value)}
+                                    style={{
+                                      border: 'none',
+                                      background: 'transparent',
+                                      color: 'inherit',
+                                      fontSize: '11px',
+                                      fontWeight: 600,
+                                      cursor: 'pointer',
+                                      outline: 'none',
+                                      WebkitAppearance: 'none',
+                                      MozAppearance: 'none',
+                                      appearance: 'none',
+                                      padding: '3px 16px 3px 4px',
+                                      margin: 0,
+                                      fontFamily: 'inherit'
+                                    }}
+                                  >
+                                    {ESTADOS_BIEN.map(e => (
+                                      <option key={e} value={e} style={{ color: 'var(--text-primary)', background: 'var(--bg-card)' }}>
+                                        {e}
+                                      </option>
+                                    ))}
+                                  </select>
+                                  <span style={{ position: 'absolute', right: '6px', pointerEvents: 'none', fontSize: '7px', opacity: 0.6 }}>▼</span>
+                                </>
+                              ) : (
+                                <span style={{ fontSize: '11px', fontWeight: 600 }}>{bien.estado}</span>
+                              )}
                             </span>
                           </td>
                           <td style={{ color: 'var(--text-secondary)', fontSize: 12 }}>{bien.area}</td>

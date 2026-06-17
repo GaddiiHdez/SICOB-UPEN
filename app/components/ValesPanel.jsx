@@ -3,7 +3,7 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { formatDateLong as formatDate } from '@/lib/formatters';
 
-export default function ValesPanel({ bienes, personal, configuracion = {}, showToast, refreshBienes }) {
+export default function ValesPanel({ bienes, personal, configuracion = {}, showToast, refreshBienes, isAdmin = false }) {
   const [vales, setVales] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filterEstado, setFilterEstado] = useState('ALL'); // ALL, PENDIENTE, DEVUELTO
@@ -240,9 +240,11 @@ export default function ValesPanel({ bienes, personal, configuracion = {}, showT
             Control de equipos técnicos autorizados para salir de la institución por comisiones.
           </p>
         </div>
-        <button className="btn btn-primary" onClick={() => setShowNuevoModal(true)}>
-          ＋ Registrar Vale de Salida
-        </button>
+        {isAdmin && (
+          <button className="btn btn-primary" onClick={() => setShowNuevoModal(true)}>
+            ＋ Registrar Vale de Salida
+          </button>
+        )}
       </div>
 
       {/* Tarjetas Analíticas */}
@@ -297,13 +299,13 @@ export default function ValesPanel({ bienes, personal, configuracion = {}, showT
                 <th>Devolución Estimada</th>
                 <th>Equipos</th>
                 <th>Estatus</th>
-                <th style={{ textAlign: 'center', width: 140 }}>Acciones</th>
+                {isAdmin && <th style={{ textAlign: 'center', width: 140 }}>Acciones</th>}
               </tr>
             </thead>
             <tbody>
               {isLoading ? (
                 <tr>
-                  <td colSpan={7}>
+                  <td colSpan={isAdmin ? 7 : 6}>
                     <div className="empty-state" style={{ padding: '40px 0' }}>
                       <div className="dash-pulse" style={{ width: 12, height: 12, margin: '0 auto 12px' }}></div>
                       <div className="empty-state-text">Cargando vales...</div>
@@ -312,7 +314,7 @@ export default function ValesPanel({ bienes, personal, configuracion = {}, showT
                 </tr>
               ) : filteredVales.length === 0 ? (
                 <tr>
-                  <td colSpan={7}>
+                  <td colSpan={isAdmin ? 7 : 6}>
                     <div className="empty-state" style={{ padding: '40px 0' }}>
                       <div className="empty-state-icon" style={{ fontSize: 28 }}>⏱️</div>
                       <div className="empty-state-text">No se encontraron vales de salida</div>
@@ -358,36 +360,38 @@ export default function ValesPanel({ bienes, personal, configuracion = {}, showT
                           {vale.estado === 'DEVUELTO' ? 'DEVUELTO ✓' : esVencido ? 'VENCIDO ⚠️' : 'PENDIENTE'}
                         </span>
                       </td>
-                      <td style={{ textAlign: 'center' }} onClick={e => e.stopPropagation()}>
-                        <div style={{ display: 'flex', gap: 6, justifyContent: 'center' }}>
-                          <button 
-                            className="btn btn-secondary" 
-                            style={{ padding: '6px 8px', fontSize: 12 }} 
-                            onClick={() => setSelectedVale(vale)}
-                            title="Ver detalles e imprimir Vale"
-                          >
-                            👁️
-                          </button>
-                          {isPendiente && (
+                      {isAdmin && (
+                        <td style={{ textAlign: 'center' }} onClick={e => e.stopPropagation()}>
+                          <div style={{ display: 'flex', gap: 6, justifyContent: 'center' }}>
+                            <button 
+                              className="btn btn-secondary" 
+                              style={{ padding: '6px 8px', fontSize: 12 }} 
+                              onClick={() => setSelectedVale(vale)}
+                              title="Ver detalles e imprimir Vale"
+                            >
+                              👁️
+                            </button>
+                            {isPendiente && (
+                              <button 
+                                className="btn" 
+                                style={{ padding: '6px 8px', fontSize: 12, background: 'rgba(16, 185, 129, 0.1)', color: '#10B981', border: '1px solid rgba(16, 185, 129, 0.2)' }} 
+                                onClick={() => handleRegistrarRetorno(vale.id)}
+                                title="Registrar Retorno de Equipos"
+                              >
+                                ↩️
+                              </button>
+                            )}
                             <button 
                               className="btn" 
-                              style={{ padding: '6px 8px', fontSize: 12, background: 'rgba(16, 185, 129, 0.1)', color: '#10B981', border: '1px solid rgba(16, 185, 129, 0.2)' }} 
-                              onClick={() => handleRegistrarRetorno(vale.id)}
-                              title="Registrar Retorno de Equipos"
+                              style={{ padding: '6px 8px', fontSize: 12, background: 'rgba(239, 68, 68, 0.1)', color: '#EF4444', border: '1px solid rgba(239, 68, 68, 0.2)' }} 
+                              onClick={() => handleEliminarVale(vale.id, vale.folio)}
+                              title="Eliminar Vale de Salida"
                             >
-                              ↩️
+                              🗑️
                             </button>
-                          )}
-                          <button 
-                            className="btn" 
-                            style={{ padding: '6px 8px', fontSize: 12, background: 'rgba(239, 68, 68, 0.1)', color: '#EF4444', border: '1px solid rgba(239, 68, 68, 0.2)' }} 
-                            onClick={() => handleEliminarVale(vale.id, vale.folio)}
-                            title="Eliminar Vale de Salida"
-                          >
-                            🗑️
-                          </button>
-                        </div>
-                      </td>
+                          </div>
+                        </td>
+                      )}
                     </tr>
                   );
                 })
@@ -826,7 +830,7 @@ export default function ValesPanel({ bienes, personal, configuracion = {}, showT
             <div className="modal-footer no-print" style={{ flexShrink: 0, padding: '12px 20px', borderTop: '1px solid var(--border)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
                 <div>
-                  {selectedVale.estado === 'PENDIENTE' && (
+                  {isAdmin && selectedVale.estado === 'PENDIENTE' && (
                     <button 
                       type="button" 
                       className="btn" 

@@ -4,6 +4,37 @@ All notable changes to the **SICOB** (Sistema de Control y Operación de Bienes)
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.13.0] - 2026-06-17
+
+### Added
+- **Módulo de Laboratorios e Incidentes:** Gestión completa de laboratorios y reporte/seguimiento de incidentes asociados a bienes tecnológicos.
+- **Restablecimiento de Contraseña Seguro:** Sistema de generación de enlaces/tokens temporales de restablecimiento de contraseñas desde el panel de Accesos.
+- **Respaldos de Base de Datos:** Pestaña de Respaldos en Configuración para exportar, descargar y restaurar bases de datos PostgreSQL.
+
+### Changed
+- **Configuración de ESLint:** Ajuste y desactivación de reglas estrictas de React/React-Hooks en `eslint.config.mjs` para garantizar la integridad y éxito del build en producción.
+
+## [0.12.5] - 2026-06-10
+
+### Fixed
+- **Protección de Cierre de Modales:** Corrección de errores en auditoría y protectores globales de modales.
+- **Impresión de Reportes:** Solución a truncamiento de páginas y mejora de maquetación en membrete institucional.
+
+## [0.12.0] - 2026-06-10
+
+### Added
+- **Firmas Dinámicas:** Soporte para firmas configurables en formatos imprimibles de resguardos y vales.
+
+## [0.11.0] - 2026-06-10
+
+### Added
+- **Vales de Salida:** Módulo de control de salidas de consumibles y préstamos temporales de bienes.
+
+## [0.10.0] - 2026-06-10
+
+### Added
+- **Colector de Especificaciones:** Módulo de recopilación automática de hardware y versión del sistema.
+
 ## [0.9.4] - 2026-06-08
 
 ### Changed
