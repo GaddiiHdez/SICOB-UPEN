@@ -73,8 +73,12 @@ export default function ModalNuevoBien({ initialData, categorias, ubicaciones, d
   const [form, setForm] = useState({
     marca: initialData?.marca || '',
     modelo: initialData?.modelo || '',
-    serial: initialData?.serial || '',
-    etiqueta: (initialData?.etiqueta && !initialData.etiqueta.startsWith('SIN-NUMERO-')) ? initialData.etiqueta : '',
+    serial: initialData?.serial || initialData?.numero_serie || '',
+    etiqueta: (initialData?.etiqueta && typeof initialData.etiqueta === 'string' && !initialData.etiqueta.startsWith('SIN-NUMERO-')) 
+      ? initialData.etiqueta 
+      : ((initialData?.codigo_inventario && typeof initialData.codigo_inventario === 'string' && !initialData.codigo_inventario.startsWith('SIN-NUMERO-')) 
+        ? initialData.codigo_inventario 
+        : ''),
     estado: initialData?.estado || 'Activo',
     categoriaId: initialData?.categoriaId || (categorias[0]?.id ?? ''),
     ubicacionId: initialData?.ubicacionId || (ubicaciones[0]?.id ?? ''),

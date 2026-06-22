@@ -526,7 +526,7 @@ export default function ConsumiblesPanel({
                                 {item.nombre}
                                 {getColorDot(item.color)}
                               </div>
-                              <div className="bien-serial" style={{ fontSize: 11, display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 2 }}>
+                              <div className="bien-serial" style={{ fontSize: 12.5, display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 2 }}>
                                 <span>{item.marca ? `${item.marca} ` : ''}{item.modelo || ''}</span>
                                 {item.compatibilidad && (
                                   <span style={{ color: 'var(--text-secondary)', background: 'var(--bg-body)', padding: '0 4px', borderRadius: 3, border: '1px solid var(--border-light)', fontSize: 10 }}>

@@ -26,6 +26,7 @@ import { generateBarcodeSVG } from '@/lib/barcode';
 import { useInventarioData } from '@/hooks/useInventarioData';
 import { useNotifications }  from '@/hooks/useNotifications';
 import { useDarkMode }       from '@/hooks/useDarkMode';
+import { Sun, Moon, QrCode, Bell, Download, Plus, RefreshCw, Settings2, LogOut, PartyPopper } from 'lucide-react';
 
 // ── Página principal del sistema de inventario ──────────────────
 // Este archivo contiene:
@@ -318,6 +319,195 @@ export default function HomePage() {
       showToast(err.message || 'Error al eliminar', 'error');
     }
   }, [showToast, fetchData, selectedBien, selectedFichaBien]);
+
+  const handleLinkMonitor = useCallback(async (pcId, monitorId) => {
+    const pc = bienes.find(b => b.id === pcId);
+    const monitor = bienes.find(b => b.id === monitorId);
+    if (!pc || !monitor) return;
+
+    try {
+      const payloadPc = {
+        id: pc.id,
+        codigo_inventario: pc.etiqueta,
+        numero_serie: pc.serial,
+        marca: pc.marca,
+        modelo: pc.modelo,
+        estado: pc.estado,
+        descripcion: pc.descripcion,
+        categoriaId: pc.categoriaId,
+        ubicacionId: pc.ubicacionId,
+        departamentoId: pc.departamentoId,
+        especificaciones: {
+          ...pc.especificaciones,
+          monitorId: monitor.id
+        }
+      };
+
+      const payloadMonitor = {
+        id: monitor.id,
+        codigo_inventario: monitor.etiqueta,
+        numero_serie: monitor.serial,
+        marca: monitor.marca,
+        modelo: monitor.modelo,
+        estado: monitor.estado,
+        descripcion: monitor.descripcion,
+        categoriaId: monitor.categoriaId,
+        ubicacionId: monitor.ubicacionId,
+        departamentoId: monitor.departamentoId,
+        especificaciones: {
+          ...monitor.especificaciones,
+          pcId: pc.id
+        }
+      };
+
+      const [resPc, resMon] = await Promise.all([
+        fetch('/api/bienes', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payloadPc)
+        }),
+        fetch('/api/bienes', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payloadMonitor)
+        })
+      ]);
+
+      const dataPc = await resPc.json();
+      const dataMon = await resMon.json();
+
+      if (!resPc.ok) throw new Error(dataPc.error || 'Error al actualizar la PC');
+      if (!resMon.ok) throw new Error(dataMon.error || 'Error al actualizar el monitor');
+
+      showToast('Equipos vinculados correctamente ✓');
+      
+      await fetchData();
+
+      setTimeout(() => {
+        setSelectedFichaBien(prev => {
+          if (!prev) return null;
+          if (prev.id === pcId) {
+            return {
+              ...prev,
+              especificaciones: { ...prev.especificaciones, monitorId },
+              updatedAt: new Date().toISOString()
+            };
+          }
+          if (prev.id === monitorId) {
+            return {
+              ...prev,
+              especificaciones: { ...prev.especificaciones, pcId },
+              updatedAt: new Date().toISOString()
+            };
+          }
+          return prev;
+        });
+      }, 100);
+
+    } catch (err) {
+      console.error(err);
+      showToast(err.message || 'Error al vincular los equipos', 'error');
+    }
+  }, [bienes, showToast, fetchData]);
+
+  const handleUnlinkMonitor = useCallback(async (pcId, monitorId) => {
+    const pc = bienes.find(b => b.id === pcId);
+    const monitor = bienes.find(b => b.id === monitorId);
+
+    try {
+      const promises = [];
+
+      if (pc) {
+        const { monitorId: _, ...cleanPcSpecs } = pc.especificaciones || {};
+        const payloadPc = {
+          id: pc.id,
+          codigo_inventario: pc.etiqueta,
+          numero_serie: pc.serial,
+          marca: pc.marca,
+          modelo: pc.modelo,
+          estado: pc.estado,
+          descripcion: pc.descripcion,
+          categoriaId: pc.categoriaId,
+          ubicacionId: pc.ubicacionId,
+          departamentoId: pc.departamentoId,
+          especificaciones: cleanPcSpecs
+        };
+        promises.push(
+          fetch('/api/bienes', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payloadPc)
+          }).then(async r => {
+            if (!r.ok) {
+              const d = await r.json();
+              throw new Error(d.error || 'Error al desvincular la PC');
+            }
+          })
+        );
+      }
+
+      if (monitor) {
+        const { pcId: _, ...cleanMonSpecs } = monitor.especificaciones || {};
+        const payloadMonitor = {
+          id: monitor.id,
+          codigo_inventario: monitor.etiqueta,
+          numero_serie: monitor.serial,
+          marca: monitor.marca,
+          modelo: monitor.modelo,
+          estado: monitor.estado,
+          descripcion: monitor.descripcion,
+          categoriaId: monitor.categoriaId,
+          ubicacionId: monitor.ubicacionId,
+          departamentoId: monitor.departamentoId,
+          especificaciones: cleanMonSpecs
+        };
+        promises.push(
+          fetch('/api/bienes', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payloadMonitor)
+          }).then(async r => {
+            if (!r.ok) {
+              const d = await r.json();
+              throw new Error(d.error || 'Error al desvincular el monitor');
+            }
+          })
+        );
+      }
+
+      await Promise.all(promises);
+      showToast('Equipos desvinculados correctamente ✓');
+      
+      await fetchData();
+
+      setTimeout(() => {
+        setSelectedFichaBien(prev => {
+          if (!prev) return null;
+          if (prev.id === pcId) {
+            const { monitorId: _, ...cleanSpecs } = prev.especificaciones || {};
+            return {
+              ...prev,
+              especificaciones: cleanSpecs,
+              updatedAt: new Date().toISOString()
+            };
+          }
+          if (prev.id === monitorId) {
+            const { pcId: _, ...cleanSpecs } = prev.especificaciones || {};
+            return {
+              ...prev,
+              especificaciones: cleanSpecs,
+              updatedAt: new Date().toISOString()
+            };
+          }
+          return prev;
+        });
+      }, 100);
+
+    } catch (err) {
+      console.error(err);
+      showToast(err.message || 'Error al desvincular los equipos', 'error');
+    }
+  }, [bienes, showToast, fetchData]);
 
   const handleDeletePermanent = useCallback((id) => {
     if (usuario?.rol !== 'ADMINISTRADOR') {
@@ -796,9 +986,10 @@ export default function HomePage() {
             <button
               onClick={toggleDarkMode}
               className="theme-toggle"
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
               title={darkMode ? 'Cambiar a Modo Claro' : 'Cambiar a Modo Oscuro'}
             >
-              {darkMode ? '☀️' : '🌙'}
+              {darkMode ? <Sun size={18} /> : <Moon size={18} />}
             </button>
 
             {/* Lector por Escáner */}
@@ -808,18 +999,18 @@ export default function HomePage() {
               style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
               title="Abrir Lector de Códigos"
             >
-              🏷️
+              <QrCode size={18} />
             </button>
 
             {/* Centro de Notificaciones */}
             <div className="notifications-bell">
               <button
                 className="btn-icon"
-                style={{ width: 34, height: 34, padding: 0 }}
+                style={{ width: 34, height: 34, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                 onClick={() => setShowNotifDropdown(!showNotifDropdown)}
                 title="Notificaciones del sistema"
               >
-                🔔
+                <Bell size={18} />
                 {activeNotifications.length > 0 && <span className="bell-badge"></span>}
               </button>
 
@@ -846,7 +1037,9 @@ export default function HomePage() {
                   <div className="notifications-list">
                     {activeNotifications.length === 0 ? (
                       <div className="notifications-empty">
-                        <div className="notifications-empty-icon">🎉</div>
+                        <div className="notifications-empty-icon" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', margin: '0 auto 8px' }}>
+                          <PartyPopper size={32} />
+                        </div>
                         <div>Todo en orden. No hay alertas pendientes.</div>
                       </div>
                     ) : (
@@ -888,14 +1081,14 @@ export default function HomePage() {
                 style={{ marginRight: 8, display: 'flex', alignItems: 'center', gap: 6 }}
                 onClick={() => setShowImportModal(true)}
               >
-                📥 Importar Excel
+                <Download size={16} /> Importar Excel
               </button>
             )}
 
             {/* Botón Nuevo Bien */}
             {usuario?.rol === 'ADMINISTRADOR' && (
-              <button id="btn-nuevo-bien" className="btn btn-primary" onClick={() => { setBienToEdit(null); setShowModal(true); }}>
-                ＋ Nuevo bien
+              <button id="btn-nuevo-bien" className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: 6 }} onClick={() => { setBienToEdit(null); setShowModal(true); }}>
+                <Plus size={16} /> Nuevo bien
               </button>
             )}
 
@@ -936,7 +1129,7 @@ export default function HomePage() {
                       }}
                       style={{ borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 8 }}
                     >
-                      🔄 Sincronizar Datos (Soft Refresh)
+                      <RefreshCw size={15} /> Sincronizar Datos (Soft Refresh)
                     </button>
                     <button
                       className="user-dropdown-item"
@@ -944,8 +1137,9 @@ export default function HomePage() {
                         setActiveNav('configuracion');
                         setShowUserDropdown(false);
                       }}
+                      style={{ display: 'flex', alignItems: 'center', gap: 8 }}
                     >
-                      ⚙️ Configurar Sistema
+                      <Settings2 size={15} /> Configurar Sistema
                     </button>
                     <button
                       className="user-dropdown-item user-dropdown-item-danger"
@@ -953,8 +1147,9 @@ export default function HomePage() {
                         setShowUserDropdown(false);
                         handleLogout();
                       }}
+                      style={{ display: 'flex', alignItems: 'center', gap: 8 }}
                     >
-                      ⏻ Cerrar Sesión
+                      <LogOut size={15} /> Cerrar Sesión
                     </button>
                   </div>
                 </div>
@@ -1157,13 +1352,13 @@ export default function HomePage() {
             />
           )}
 
-          {/* ── GESTIÓN DE LABORATORIOS DE CÓMPUTO ─────────────────── */}
           {activeNav === 'laboratorios' && (
             <LaboratoriosPanel
               ubicaciones={ubicaciones}
               bienes={bienes}
               showToast={showToast}
               isAdmin={usuario?.rol === 'ADMINISTRADOR'}
+              onViewFicha={setSelectedFichaBien}
             />
           )}
 
@@ -1183,16 +1378,25 @@ export default function HomePage() {
         />
       )}
 
-      {/* ══ MODAL FICHA TÉCNICA (DETALLE DOBLE CLIC) ═════════ */}
       {selectedFichaBien && (
         <ModalFichaBien
+          key={`ficha-${selectedFichaBien.id}-${selectedFichaBien.updatedAt || ''}`}
           bien={selectedFichaBien}
+          bienes={bienes}
+          onLinkMonitor={handleLinkMonitor}
+          onUnlinkMonitor={handleUnlinkMonitor}
+          onOpenFicha={setSelectedFichaBien}
           configuracion={configuracion}
-          onClose={() => setSelectedFichaBien(null)}
           onEdit={(bien) => { 
-            setBienToEdit(bien); 
-            setSelectedFichaBien(null);
-            setShowModal(true); 
+            try {
+              console.log('Parent onEdit triggered with:', bien);
+              setBienToEdit(bien); 
+              setSelectedFichaBien(null);
+              setShowModal(true); 
+            } catch (err) {
+              alert('Error en onEdit (parent): ' + err.message);
+              console.error(err);
+            }
           }}
           onDelete={handleDeleteBien}
           onRestore={handleRestoreBien}

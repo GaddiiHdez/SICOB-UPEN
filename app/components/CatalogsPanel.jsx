@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import CatalogManager from './CatalogManager';
 import UbicacionesManager from './UbicacionesManager';
+import { MapPin, Building2, Tag, Armchair, Package } from 'lucide-react';
 
 /**
  * CatalogsPanel — Panel Unificado de Catálogos Auxiliares
@@ -35,11 +36,11 @@ export default function CatalogsPanel({ showToast, isAdmin = false }) {
   }, []);
 
   const tabs = [
-    { id: 'areas',                  label: 'Áreas / Ubicaciones',    icon: '🏫', desc: 'Edificios, salones y bodegas' },
-    { id: 'departamentos',          label: 'Departamentos y Coordinaciones', icon: '🏢', desc: 'Organigrama institucional' },
-    { id: 'categorias',             label: 'Categorías de Bienes',   icon: '🏷️', desc: 'Familias de equipos' },
-    { id: 'categorias_inmobiliario', label: 'Categorías de Mobiliario', icon: '🪑', desc: 'Familias de mobiliario' },
-    { id: 'categorias_consumibles',  label: 'Categorías de Consumibles', icon: '📦', desc: 'Familias de consumibles' },
+    { id: 'areas',                  label: 'Áreas / Ubicaciones',    icon: <MapPin size={16} />, desc: 'Edificios, salones y bodegas' },
+    { id: 'departamentos',          label: 'Departamentos y Coordinaciones', icon: <Building2 size={16} />, desc: 'Organigrama institucional' },
+    { id: 'categorias',             label: 'Categorías de Bienes',   icon: <Tag size={16} />, desc: 'Familias de equipos' },
+    { id: 'categorias_inmobiliario', label: 'Categorías de Mobiliario', icon: <Armchair size={16} />, desc: 'Familias de mobiliario' },
+    { id: 'categorias_consumibles',  label: 'Categorías de Consumibles', icon: <Package size={16} />, desc: 'Familias de consumibles' },
   ];
 
   return (
@@ -97,7 +98,7 @@ export default function CatalogsPanel({ showToast, isAdmin = false }) {
                 }}
                 className="catalog-tab-button"
               >
-                <span style={{ fontSize: '16px' }}>{tab.icon}</span>
+                <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{tab.icon}</span>
                 <div style={{ textAlign: 'left' }}>
                   <div style={{ lineHeight: '1.2' }}>{tab.label}</div>
                   <div style={{ fontSize: '10px', opacity: 0.7, fontWeight: '400', marginTop: 2 }}>{tab.desc}</div>
@@ -127,7 +128,7 @@ export default function CatalogsPanel({ showToast, isAdmin = false }) {
           <CatalogManager 
             title="Departamentos y Coordinaciones" 
             subtitle="Unidades, departamentos y coordinaciones del organigrama institucional" 
-            icon="🏢" 
+            icon={Building2} 
             endpoint="/api/departamentos"
             isAdmin={isAdmin}
             fields={[
@@ -153,7 +154,7 @@ export default function CatalogsPanel({ showToast, isAdmin = false }) {
           <CatalogManager 
             title="Categorías de Bienes" 
             subtitle="Familias de clasificación patrimonial y especificaciones" 
-            icon="🏷️" 
+            icon={Tag} 
             endpoint="/api/categorias"
             isAdmin={isAdmin}
             fields={[
@@ -168,7 +169,7 @@ export default function CatalogsPanel({ showToast, isAdmin = false }) {
           <CatalogManager 
             title="Categorías de Mobiliario" 
             subtitle="Familias de clasificación de mobiliario e inmobiliario" 
-            icon="🪑" 
+            icon={Armchair} 
             endpoint="/api/categorias-inmobiliario"
             isAdmin={isAdmin}
             fields={[
@@ -183,7 +184,7 @@ export default function CatalogsPanel({ showToast, isAdmin = false }) {
           <CatalogManager 
             title="Categorías de Consumibles" 
             subtitle="Familias de clasificación de consumibles y suministros" 
-            icon="📦" 
+            icon={Package} 
             endpoint="/api/categorias-consumibles"
             isAdmin={isAdmin}
             fields={[

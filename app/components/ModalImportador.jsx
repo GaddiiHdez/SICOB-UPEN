@@ -20,6 +20,9 @@ export default function ModalImportador({ onClose, onImportSuccess, bienes = [],
   const [fileName, setFileName] = useState('');
   const [rawHeaders, setRawHeaders] = useState([]);
   const [rawRows, setRawRows] = useState([]);
+  const [detectedSheets, setDetectedSheets] = useState([]);
+  const [activeWorkbook, setActiveWorkbook] = useState(null);
+  const [selectedSheet, setSelectedSheet] = useState('');
 
   // Estados de mapeo de campos
   const [fieldMappings, setFieldMappings] = useState({
@@ -246,6 +249,67 @@ export default function ModalImportador({ onClose, onImportSuccess, bienes = [],
     XLSX.writeFile(workbook, "plantilla_maestra_bienes_upen.xlsx");
   };
 
+  // Procesar una hoja específica del libro de trabajo
+  const parseSheet = (workbook, sheetName) => {
+    try {
+      const worksheet = workbook.Sheets[sheetName];
+
+      // Obtener filas completas como objetos
+      const rows = window.XLSX.utils.sheet_to_json(worksheet, { defval: '' });
+
+      if (rows.length === 0) {
+        setImportStatus({ type: 'error', msg: `La hoja "${sheetName}" está vacía.` });
+        return;
+      }
+
+      // Obtener headers de la primera fila
+      const headers = Object.keys(rows[0]);
+      setRawHeaders(headers);
+      setRawRows(rows);
+
+      // Preselección inteligente basada en coincidencias de nombres de columnas
+      const mappings = {
+        marca: '',
+        modelo: '',
+        numero_serie: '',
+        codigo_inventario: '',
+        valor_estimado: '',
+        fecha_adquisicion: '',
+        programa_adquisicion: '',
+        descripcion: ''
+      };
+      headers.forEach(h => {
+        const l = h.toLowerCase().replace(/[^a-z_]/g, '');
+        if (['marca', 'brand', 'fabricante'].includes(l)) mappings.marca = h;
+        if (['modelo', 'model', 'tipo_modelo'].includes(l)) mappings.modelo = h;
+        if (['serie', 'serial', 'sn', 'no_serie', 'n_s'].includes(l)) mappings.numero_serie = h;
+        if (['inventario', 'codigo', 'etiqueta', 'folio', 'no_inventario'].includes(l)) mappings.codigo_inventario = h;
+        if (['valor', 'costo', 'precio', 'estimado'].includes(l)) mappings.valor_estimado = h;
+        if (['fecha', 'adquisicion_fecha', 'alta'].includes(l)) mappings.fecha_adquisicion = h;
+        if (['programa', 'recurso', 'proyecto', 'fondo'].includes(l)) mappings.programa_adquisicion = h;
+        if (['descripcion', 'detalles', 'observaciones'].includes(l)) mappings.descripcion = h;
+      });
+
+      // Intentar autodetectar columnas de categoría, ubicación y departamento
+      setCatColumn('');
+      setUbiColumn('');
+      setDeptColumn('');
+      headers.forEach(h => {
+        const l = h.toLowerCase().replace(/[^a-z_]/g, '');
+        if (['categoria', 'tipo', 'tipo_equipo', 'clase'].includes(l)) setCatColumn(h);
+        if (['ubicacion', 'area', 'salon', 'laboratorio', 'aula'].includes(l)) setUbiColumn(h);
+        if (['departamento', 'depto', 'oficina'].includes(l)) setDeptColumn(h);
+      });
+
+      setFieldMappings(mappings);
+      setImportStatus({ type: 'idle', msg: '' });
+      setStep(2);
+    } catch (err) {
+      console.error(err);
+      setImportStatus({ type: 'error', msg: 'Error al procesar la hoja del archivo.' });
+    }
+  };
+
   // Manejar el archivo seleccionado
   const processFile = (file) => {
     if (!file) return;
@@ -257,47 +321,15 @@ export default function ModalImportador({ onClose, onImportSuccess, bienes = [],
       try {
         const data = new Uint8Array(e.target.result);
         const workbook = window.XLSX.read(data, { type: 'array' });
-        const sheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[sheetName];
-
-        // Obtener filas completas como objetos
-        const rows = window.XLSX.utils.sheet_to_json(worksheet, { defval: '' });
-
-        if (rows.length === 0) {
-          setImportStatus({ type: 'error', msg: 'El archivo está vacío.' });
-          return;
+        
+        if (workbook.SheetNames.length > 1) {
+          setActiveWorkbook(workbook);
+          setDetectedSheets(workbook.SheetNames);
+          setSelectedSheet(workbook.SheetNames[0]);
+          setImportStatus({ type: 'idle', msg: '' });
+        } else {
+          parseSheet(workbook, workbook.SheetNames[0]);
         }
-
-        // Obtener headers de la primera fila
-        const headers = Object.keys(rows[0]);
-        setRawHeaders(headers);
-        setRawRows(rows);
-
-        // Preselección inteligente basada en coincidencias de nombres de columnas
-        const mappings = { ...fieldMappings };
-        headers.forEach(h => {
-          const l = h.toLowerCase().replace(/[^a-z_]/g, '');
-          if (['marca', 'brand', 'fabricante'].includes(l)) mappings.marca = h;
-          if (['modelo', 'model', 'tipo_modelo'].includes(l)) mappings.modelo = h;
-          if (['serie', 'serial', 'sn', 'no_serie', 'n_s'].includes(l)) mappings.numero_serie = h;
-          if (['inventario', 'codigo', 'etiqueta', 'folio', 'no_inventario'].includes(l)) mappings.codigo_inventario = h;
-          if (['valor', 'costo', 'precio', 'estimado'].includes(l)) mappings.valor_estimado = h;
-          if (['fecha', 'adquisicion_fecha', 'alta'].includes(l)) mappings.fecha_adquisicion = h;
-          if (['programa', 'recurso', 'proyecto', 'fondo'].includes(l)) mappings.programa_adquisicion = h;
-          if (['descripcion', 'detalles', 'observaciones'].includes(l)) mappings.descripcion = h;
-        });
-
-        // Intentar autodetectar columnas de categoría y ubicación
-        headers.forEach(h => {
-          const l = h.toLowerCase().replace(/[^a-z_]/g, '');
-          if (['categoria', 'tipo', 'tipo_equipo', 'clase'].includes(l)) setCatColumn(h);
-          if (['ubicacion', 'area', 'salon', 'laboratorio', 'aula'].includes(l)) setUbiColumn(h);
-          if (['departamento', 'depto', 'oficina'].includes(l)) setDeptColumn(h);
-        });
-
-        setFieldMappings(mappings);
-        setImportStatus({ type: 'idle', msg: '' });
-        setStep(2);
       } catch (err) {
         console.error(err);
         setImportStatus({ type: 'error', msg: 'Error al procesar el archivo. Asegúrate de que sea un archivo de Excel o CSV válido.' });
@@ -683,6 +715,68 @@ export default function ModalImportador({ onClose, onImportSuccess, bienes = [],
               ) : loadError ? (
                 <div style={{ padding: 20, color: 'var(--danger)', background: 'rgba(239, 68, 68, 0.08)', border: '1px dashed var(--danger)', borderRadius: 10 }}>
                   ⚠️ {loadError}
+                </div>
+              ) : detectedSheets.length > 1 ? (
+                <div style={{ padding: '20px 10px', textAlign: 'left' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+                    <span style={{ fontSize: 32 }}>📂</span>
+                    <div>
+                      <h3 style={{ fontSize: 14, fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>
+                        Se detectaron múltiples hojas
+                      </h3>
+                      <p style={{ fontSize: 11, color: 'var(--text-secondary)', margin: '2px 0 0' }}>
+                        Archivo: <b style={{ color: 'var(--text-primary)' }}>{fileName}</b>
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 20 }}>
+                    Por favor, selecciona la hoja que contiene la información de los bienes a importar:
+                  </p>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 12, marginBottom: 24 }}>
+                    {detectedSheets.map(s => {
+                      const isSelected = selectedSheet === s;
+                      return (
+                        <div
+                          key={s}
+                          onClick={() => setSelectedSheet(s)}
+                          style={{
+                            padding: '16px',
+                            borderRadius: 'var(--radius-md)',
+                            border: isSelected ? '2px solid var(--primary)' : '1px solid var(--border)',
+                            background: isSelected ? 'rgba(13, 148, 136, 0.06)' : 'var(--bg-body)',
+                            color: isSelected ? 'var(--primary)' : 'var(--text-primary)',
+                            cursor: 'pointer',
+                            fontWeight: isSelected ? '700' : '500',
+                            transition: 'all 0.15s ease',
+                            textAlign: 'center',
+                            boxShadow: isSelected ? '0 4px 12px rgba(13, 148, 136, 0.1)' : 'none'
+                          }}
+                          className="sheet-card"
+                        >
+                          <span style={{ fontSize: 24, display: 'block', marginBottom: 8 }}>📊</span>
+                          <span style={{ fontSize: 13, wordBreak: 'break-all' }}>{s}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <div style={{ display: 'flex', gap: 10, borderTop: '1px solid var(--border)', paddingTop: 16 }}>
+                    <button
+                      type="button"
+                      className="btn btn-ghost"
+                      style={{ padding: '8px 16px', height: 'auto', fontSize: 12 }}
+                      onClick={() => {
+                        setActiveWorkbook(null);
+                        setDetectedSheets([]);
+                        setFileName('');
+                        setSelectedSheet('');
+                      }}
+                    >
+                      🔄 Cambiar Archivo
+                    </button>
+                  </div>
                 </div>
               ) : (
                 <div 
@@ -1267,19 +1361,35 @@ export default function ModalImportador({ onClose, onImportSuccess, bienes = [],
               type="button" 
               className="btn btn-ghost" 
               onClick={() => {
-                if (step === 1) onClose();
-                else setStep(step - 1);
+                if (step === 1) {
+                  if (detectedSheets.length > 1) {
+                    setActiveWorkbook(null);
+                    setDetectedSheets([]);
+                    setFileName('');
+                    setSelectedSheet('');
+                  } else {
+                    onClose();
+                  }
+                } else {
+                  setStep(step - 1);
+                }
               }}
             >
-              {step === 1 ? 'Cancelar' : 'Atrás'}
+              {step === 1 ? (detectedSheets.length > 1 ? 'Atrás' : 'Cancelar') : 'Atrás'}
             </button>
 
             {step === 1 && (
               <button 
                 type="button" 
                 className="btn btn-primary"
-                disabled={!fileName}
-                onClick={() => setStep(2)}
+                disabled={!fileName || (detectedSheets.length > 1 && !selectedSheet)}
+                onClick={() => {
+                  if (detectedSheets.length > 1) {
+                    parseSheet(activeWorkbook, selectedSheet);
+                  } else {
+                    setStep(2);
+                  }
+                }}
               >
                 Siguiente
               </button>
@@ -1328,6 +1438,11 @@ export default function ModalImportador({ onClose, onImportSuccess, bienes = [],
           border-color: var(--accent) !important;
           background: rgba(13, 148, 136, 0.08) !important;
           transform: scale(0.99);
+        }
+        .sheet-card:hover {
+          border-color: var(--primary) !important;
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(13, 148, 136, 0.12) !important;
         }
       `}</style>
     </div>

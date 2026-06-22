@@ -47,7 +47,7 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { nombre, codigo, capacidad, so, software, red, observaciones, ubicacionId } = body;
+    const { nombre, codigo, capacidad, so, software, red, observaciones, ubicacionId, layout } = body;
 
     if (!nombre) {
       return NextResponse.json({ error: 'El nombre del laboratorio es requerido.' }, { status: 400 });
@@ -79,6 +79,7 @@ export async function POST(request) {
         software: software || null,
         red: red || null,
         observaciones: observaciones || null,
+        layout: layout || null,
         ubicacionId: ubicacionId ? parseInt(ubicacionId, 10) : null
       }
     });
@@ -100,7 +101,7 @@ export async function PUT(request) {
     }
 
     const body = await request.json();
-    const { id, nombre, codigo, capacidad, so, software, red, observaciones, ubicacionId } = body;
+    const { id, nombre, codigo, capacidad, so, software, red, observaciones, ubicacionId, layout } = body;
 
     if (!id || !nombre) {
       return NextResponse.json({ error: 'El ID y nombre del laboratorio son obligatorios.' }, { status: 400 });
@@ -137,6 +138,7 @@ export async function PUT(request) {
         software: software || null,
         red: red || null,
         observaciones: observaciones || null,
+        layout: layout !== undefined ? layout : undefined,
         ubicacionId: ubicacionId ? parseInt(ubicacionId, 10) : null
       }
     });

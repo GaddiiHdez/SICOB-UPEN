@@ -9,13 +9,46 @@ import { formatCurrency, formatDateLong as formatDate } from '@/lib/formatters';
  * Despliega todos los campos de forma altamente estética, permite subir/editar una
  * fotografía en tiempo real en Base64, e imprimir la ficha técnica en PDF con maquetación optimizada.
  */
-export default function ModalFichaBien({ bien, configuracion = {}, onClose, onEdit, onDelete, onRestore, onDeletePermanent, onUpdateImage, savingImage, onViewActaColectiva, onPrintLabel, onMaintenanceChange, onStatusChange, isAdmin }) {
+export default function ModalFichaBien({ 
+  bien, 
+  bienes = [], 
+  configuracion = {}, 
+  onClose, 
+  onEdit, 
+  onDelete, 
+  onRestore, 
+  onDeletePermanent, 
+  onUpdateImage, 
+  savingImage, 
+  onViewActaColectiva, 
+  onPrintLabel, 
+  onMaintenanceChange, 
+  onStatusChange, 
+  isAdmin,
+  onLinkMonitor,
+  onUnlinkMonitor,
+  onOpenFicha
+}) {
   const fileInputRef = useRef(null);
   const [localImage, setLocalImage] = useState(bien.imagen_url || null);
   const [fullBienDetails, setFullBienDetails] = useState(null);
   const [loadingHistory, setLoadingHistory] = useState(true);
   const [replacements, setReplacements] = useState([]);
   const [loadingReplacements, setLoadingReplacements] = useState(true);
+
+  // States for Monitor/PC association
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedAssociationId, setSelectedAssociationId] = useState('');
+  const [isLinking, setIsLinking] = useState(false);
+
+  const currentBien = fullBienDetails || bien;
+  const categoryName = currentBien.categoria?.nombre || currentBien.categoria || '';
+  const isPC = categoryName === 'Computadoras de Escritorio' || categoryName === 'Laptops' || currentBien.tipo === 'Desktop' || currentBien.tipo === 'Laptop';
+  const isMonitor = categoryName === 'Monitores' || currentBien.tipo === 'Monitor';
+
+  // Safe references in case raw model object is passed
+  const etiqueta = currentBien.etiqueta || currentBien.codigo_inventario || '';
+  const serial = currentBien.serial || currentBien.numero_serie || '';
 
   // Cargar el historial, detalles del bien y reemplazos de forma asíncrona
   useEffect(() => {
@@ -64,7 +97,7 @@ export default function ModalFichaBien({ bien, configuracion = {}, onClose, onEd
     if (!file) return;
 
     // Validar tipo de archivo
-    if (!file.type.startsWith('image/')) {
+    if (!file.type || !file.type.startsWith('image/')) {
       alert('Por favor selecciona un archivo de imagen válido.');
       return;
     }
@@ -115,8 +148,422 @@ export default function ModalFichaBien({ bien, configuracion = {}, onClose, onEd
     onClose();
   };
 
-  // Mapear todas las especificaciones técnicas del JSON
-  const technicalSpecs = bien.especificaciones ? Object.entries(bien.especificaciones) : [];
+  const renderPeripheralLinking = () => {
+    if (!isPC && !isMonitor) return null;
+
+    const specifications = currentBien.especificaciones || {};
+
+    if (isPC) {
+      const monitorId = specifications.monitorId;
+      const linkedMonitor = monitorId ? bienes.find(b => b.id === monitorId) : null;
+
+      if (monitorId) {
+        return (
+          <div style={{ marginBottom: 20, padding: 14, background: 'var(--bg-body)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)' }} className="no-print">
+            <h4 style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
+              🖥️ Monitor Vinculado
+            </h4>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+              {linkedMonitor ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
+                    {linkedMonitor.marca} {linkedMonitor.modelo}
+                  </span>
+                  <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
+                    Cód. Inv: <strong style={{ fontFamily: 'monospace' }}>{String(linkedMonitor.etiqueta || linkedMonitor.codigo_inventario || '').startsWith('SIN-NUMERO-') ? 'S/N' : (linkedMonitor.etiqueta || linkedMonitor.codigo_inventario)}</strong> | Serie: {linkedMonitor.serial || linkedMonitor.numero_serie || 'N/S'}
+                  </span>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontStyle: 'italic' }}>
+                    Monitor ID: {monitorId} (No encontrado en inventario activo)
+                  </span>
+                </div>
+              )}
+              <div style={{ display: 'flex', gap: 8 }}>
+                {linkedMonitor && onOpenFicha && (
+                  <button
+                    type="button"
+                    onClick={() => onOpenFicha(linkedMonitor)}
+                    className="btn btn-ghost"
+                    style={{ fontSize: 11, padding: '4px 8px', height: 'auto', minHeight: 'unset', display: 'flex', alignItems: 'center', gap: 4 }}
+                  >
+                    🔍 Ver Ficha
+                  </button>
+                )}
+                <button
+                  type="button"
+                  disabled={isLinking}
+                  onClick={async () => {
+                    if (onUnlinkMonitor) {
+                      setIsLinking(true);
+                      try {
+                        await onUnlinkMonitor(currentBien.id, monitorId);
+                      } catch (err) {
+                        console.error(err);
+                      } finally {
+                        setIsLinking(false);
+                      }
+                    }
+                  }}
+                  className="btn btn-danger-ghost"
+                  style={{ fontSize: 11, padding: '4px 8px', height: 'auto', minHeight: 'unset', color: '#ef4444', display: 'flex', alignItems: 'center', gap: 4 }}
+                >
+                  {isLinking ? 'Desvinculando...' : '🔗 Desvincular'}
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      } else {
+        const sameLocationMonitors = bienes.filter(b => {
+          const cat = b.categoria?.nombre || b.categoria || '';
+          const isMon = cat === 'Monitores' || b.tipo === 'Monitor';
+          return (
+            isMon &&
+            b.id !== currentBien.id &&
+            b.ubicacionId === currentBien.ubicacionId &&
+            !b.especificaciones?.pcId &&
+            !b.eliminado
+          );
+        });
+
+        const filteredMonitors = sameLocationMonitors.filter(m => {
+          const text = `${m.marca} ${m.modelo} ${m.etiqueta || m.codigo_inventario || ''} ${m.serial || m.numero_serie || ''}`.toLowerCase();
+          return text.includes(searchQuery.toLowerCase());
+        });
+
+        const handleLink = async () => {
+          if (!selectedAssociationId) return;
+          setIsLinking(true);
+          try {
+            await onLinkMonitor(currentBien.id, parseInt(selectedAssociationId, 10));
+            setSelectedAssociationId('');
+            setSearchQuery('');
+          } catch (err) {
+            console.error(err);
+          } finally {
+            setIsLinking(false);
+          }
+        };
+
+        return (
+          <div style={{ marginBottom: 20, padding: 14, background: 'var(--bg-body)', border: '1px dashed var(--border)', borderRadius: 'var(--radius-md)' }} className="no-print">
+            <h4 style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+              🖥️ Monitor Vinculado
+            </h4>
+            <p style={{ fontSize: 11, color: 'var(--text-secondary)', marginBottom: 12 }}>
+              Este equipo no tiene un monitor asociado. Vincula un monitor disponible en el mismo laboratorio u oficina.
+            </p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <div style={{ position: 'relative', flex: 1 }}>
+                  <input
+                    type="text"
+                    disabled={isLinking}
+                    placeholder="Buscar monitor disponible en la misma ubicación..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '8px 12px',
+                      fontSize: 12,
+                      background: 'var(--bg-card)',
+                      border: '1px solid var(--border)',
+                      borderRadius: 'var(--radius-md)',
+                      color: 'var(--text-primary)',
+                      outline: 'none'
+                    }}
+                  />
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setSearchQuery('')}
+                      style={{
+                        position: 'absolute',
+                        right: 10,
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        background: 'none',
+                        border: 'none',
+                        color: 'var(--text-secondary)',
+                        cursor: 'pointer',
+                        fontSize: 12
+                      }}
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {sameLocationMonitors.length === 0 ? (
+                <div style={{ fontSize: 11, color: '#b45309', fontStyle: 'italic', padding: '4px 0' }}>
+                  ⚠️ No hay monitores disponibles (sin vincular) registrados en esta ubicación.
+                </div>
+              ) : (
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <select
+                    disabled={isLinking}
+                    value={selectedAssociationId}
+                    onChange={(e) => setSelectedAssociationId(e.target.value)}
+                    style={{
+                      flex: 1,
+                      padding: '8px',
+                      fontSize: 12,
+                      background: 'var(--bg-card)',
+                      border: '1px solid var(--border)',
+                      borderRadius: 'var(--radius-md)',
+                      color: 'var(--text-primary)',
+                      outline: 'none'
+                    }}
+                  >
+                    <option value="">-- Selecciona un monitor ({filteredMonitors.length} coincidentes) --</option>
+                    {filteredMonitors.map(m => {
+                      const code = (m.etiqueta || m.codigo_inventario || '');
+                      const displayCode = String(code).startsWith('SIN-NUMERO-') ? 'S/N' : code;
+                      return (
+                        <option key={m.id} value={m.id}>
+                          {m.marca} {m.modelo} (Cód: {displayCode} | Serie: {m.serial || m.numero_serie || 'N/S'})
+                        </option>
+                      );
+                    })}
+                  </select>
+                  <button
+                    type="button"
+                    disabled={!selectedAssociationId || isLinking}
+                    onClick={handleLink}
+                    className="btn btn-primary"
+                    style={{
+                      padding: '8px 16px',
+                      fontSize: 12,
+                      borderRadius: 'var(--radius-md)',
+                      whiteSpace: 'nowrap',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 4
+                    }}
+                  >
+                    {isLinking ? 'Vinculando...' : '🔗 Vincular'}
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      }
+    }
+
+    if (isMonitor) {
+      const pcId = specifications.pcId;
+      const linkedPc = pcId ? bienes.find(b => b.id === pcId) : null;
+
+      if (pcId) {
+        return (
+          <div style={{ marginBottom: 20, padding: 14, background: 'var(--bg-body)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)' }} className="no-print">
+            <h4 style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
+              💻 Computadora Vinculada
+            </h4>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+              {linkedPc ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
+                    {linkedPc.marca} {linkedPc.modelo}
+                  </span>
+                  <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
+                    Cód. Inv: <strong style={{ fontFamily: 'monospace' }}>{String(linkedPc.etiqueta || linkedPc.codigo_inventario || '').startsWith('SIN-NUMERO-') ? 'S/N' : (linkedPc.etiqueta || linkedPc.codigo_inventario)}</strong> | Serie: {linkedPc.serial || linkedPc.numero_serie || 'N/S'}
+                  </span>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontStyle: 'italic' }}>
+                    Computadora ID: {pcId} (No encontrada en inventario activo)
+                  </span>
+                </div>
+              )}
+              <div style={{ display: 'flex', gap: 8 }}>
+                {linkedPc && onOpenFicha && (
+                  <button
+                    type="button"
+                    onClick={() => onOpenFicha(linkedPc)}
+                    className="btn btn-ghost"
+                    style={{ fontSize: 11, padding: '4px 8px', height: 'auto', minHeight: 'unset', display: 'flex', alignItems: 'center', gap: 4 }}
+                  >
+                    🔍 Ver Ficha
+                  </button>
+                )}
+                <button
+                  type="button"
+                  disabled={isLinking}
+                  onClick={async () => {
+                    if (onUnlinkMonitor) {
+                      setIsLinking(true);
+                      try {
+                        await onUnlinkMonitor(pcId, currentBien.id);
+                      } catch (err) {
+                        console.error(err);
+                      } finally {
+                        setIsLinking(false);
+                      }
+                    }
+                  }}
+                  className="btn btn-danger-ghost"
+                  style={{ fontSize: 11, padding: '4px 8px', height: 'auto', minHeight: 'unset', color: '#ef4444', display: 'flex', alignItems: 'center', gap: 4 }}
+                >
+                  {isLinking ? 'Desvinculando...' : '🔗 Desvincular'}
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      } else {
+        const sameLocationPcs = bienes.filter(b => {
+          const cat = b.categoria?.nombre || b.categoria || '';
+          const isPcDev = cat === 'Computadoras de Escritorio' || cat === 'Laptops' || b.tipo === 'Desktop' || b.tipo === 'Laptop';
+          return (
+            isPcDev &&
+            b.id !== currentBien.id &&
+            b.ubicacionId === currentBien.ubicacionId &&
+            !b.especificaciones?.monitorId &&
+            !b.eliminado
+          );
+        });
+
+        const filteredPcs = sameLocationPcs.filter(p => {
+          const text = `${p.marca} ${p.modelo} ${p.etiqueta || p.codigo_inventario || ''} ${p.serial || p.numero_serie || ''}`.toLowerCase();
+          return text.includes(searchQuery.toLowerCase());
+        });
+
+        const handleLink = async () => {
+          if (!selectedAssociationId) return;
+          setIsLinking(true);
+          try {
+            await onLinkMonitor(parseInt(selectedAssociationId, 10), currentBien.id);
+            setSelectedAssociationId('');
+            setSearchQuery('');
+          } catch (err) {
+            console.error(err);
+          } finally {
+            setIsLinking(false);
+          }
+        };
+
+        return (
+          <div style={{ marginBottom: 20, padding: 14, background: 'var(--bg-body)', border: '1px dashed var(--border)', borderRadius: 'var(--radius-md)' }} className="no-print">
+            <h4 style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+              💻 Computadora Vinculada
+            </h4>
+            <p style={{ fontSize: 11, color: 'var(--text-secondary)', marginBottom: 12 }}>
+              Este monitor no tiene una computadora asociada. Vincula una computadora disponible en el mismo laboratorio u oficina.
+            </p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <div style={{ position: 'relative', flex: 1 }}>
+                  <input
+                    type="text"
+                    disabled={isLinking}
+                    placeholder="Buscar PC disponible en la misma ubicación..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '8px 12px',
+                      fontSize: 12,
+                      background: 'var(--bg-card)',
+                      border: '1px solid var(--border)',
+                      borderRadius: 'var(--radius-md)',
+                      color: 'var(--text-primary)',
+                      outline: 'none'
+                    }}
+                  />
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setSearchQuery('')}
+                      style={{
+                        position: 'absolute',
+                        right: 10,
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        background: 'none',
+                        border: 'none',
+                        color: 'var(--text-secondary)',
+                        cursor: 'pointer',
+                        fontSize: 12
+                      }}
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {sameLocationPcs.length === 0 ? (
+                <div style={{ fontSize: 11, color: '#b45309', fontStyle: 'italic', padding: '4px 0' }}>
+                  ⚠️ No hay computadoras disponibles (sin vincular) registradas en esta ubicación.
+                </div>
+              ) : (
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <select
+                    disabled={isLinking}
+                    value={selectedAssociationId}
+                    onChange={(e) => setSelectedAssociationId(e.target.value)}
+                    style={{
+                      flex: 1,
+                      padding: '8px',
+                      fontSize: 12,
+                      background: 'var(--bg-card)',
+                      border: '1px solid var(--border)',
+                      borderRadius: 'var(--radius-md)',
+                      color: 'var(--text-primary)',
+                      outline: 'none'
+                    }}
+                  >
+                    <option value="">-- Selecciona una PC ({filteredPcs.length} coincidentes) --</option>
+                    {filteredPcs.map(p => {
+                      const code = (p.etiqueta || p.codigo_inventario || '');
+                      const displayCode = String(code).startsWith('SIN-NUMERO-') ? 'S/N' : code;
+                      return (
+                        <option key={p.id} value={p.id}>
+                          {p.marca} {p.modelo} (Cód: {displayCode} | Serie: {p.serial || p.numero_serie || 'N/S'})
+                        </option>
+                      );
+                    })}
+                  </select>
+                  <button
+                    type="button"
+                    disabled={!selectedAssociationId || isLinking}
+                    onClick={handleLink}
+                    className="btn btn-primary"
+                    style={{
+                      padding: '8px 16px',
+                      fontSize: 12,
+                      borderRadius: 'var(--radius-md)',
+                      whiteSpace: 'nowrap',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 4
+                    }}
+                  >
+                    {isLinking ? 'Vinculando...' : '🔗 Vincular'}
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      }
+    }
+
+    return null;
+  };
+
+  // Mapear todas las especificaciones técnicas del JSON, excluyendo los IDs de vinculación
+  const technicalSpecs = currentBien.especificaciones 
+    ? Object.entries(currentBien.especificaciones).filter(([key]) => key !== 'monitorId' && key !== 'pcId')
+    : [];
 
   return (
     <div className="modal-overlay" onClick={onClose} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -156,18 +603,6 @@ export default function ModalFichaBien({ bien, configuracion = {}, onClose, onEd
             <div className="modal-sub">Información detallada, especificaciones y control de inventario</div>
           </div>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-            {isAdmin && (
-              <button 
-                onClick={() => {
-                  onEdit(bien);
-                  onClose();
-                }} 
-                className="btn btn-primary" 
-                style={{ padding: '8px 14px', fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}
-              >
-                ✏️ Editar
-              </button>
-            )}
             <button onClick={handlePrintFicha} className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: 12 }}>
               🖨️ Exportar Ficha PDF
             </button>
@@ -237,6 +672,29 @@ export default function ModalFichaBien({ bien, configuracion = {}, onClose, onEd
                       transition: 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)'
                     }} 
                   />
+                  {fullBienDetails?.imagen_compartida && (
+                    <div style={{
+                      position: 'absolute',
+                      top: 10,
+                      right: 10,
+                      background: 'rgba(13, 148, 136, 0.95)',
+                      backdropFilter: 'blur(4px)',
+                      color: '#FFFFFF',
+                      padding: '4px 8px',
+                      borderRadius: 4,
+                      fontSize: 10,
+                      fontWeight: 700,
+                      zIndex: 2,
+                      pointerEvents: 'none',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 4,
+                      boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
+                      border: '1px solid rgba(255,255,255,0.15)'
+                    }}>
+                      <span>📢</span> Foto compartida (modelo)
+                    </div>
+                  )}
                 </>
               ) : (
                 <div style={{ textAlign: 'center', color: '#9CA3AF', padding: 20, zIndex: 1 }}>
@@ -351,11 +809,11 @@ export default function ModalFichaBien({ bien, configuracion = {}, onClose, onEd
                   )}
                   
                   {/* Representación de Barras en SVG Real */}
-                  {!bien.etiqueta.startsWith('SIN-NUMERO-') ? (
+                  {!etiqueta.startsWith('SIN-NUMERO-') ? (
                     <div 
                       className="preview-barcode-svg-ficha-container"
                       style={{ width: '100%', height: barcodeHeightMm * scale, display: 'flex', justifyContent: 'center', alignItems: 'center' }}
-                      dangerouslySetInnerHTML={{ __html: generateBarcodeSVG(bien.etiqueta, false) }}
+                      dangerouslySetInnerHTML={{ __html: generateBarcodeSVG(etiqueta, false) }}
                     />
                   ) : (
                     <div style={{ width: '100%', height: barcodeHeightMm * scale, display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: '9px', color: '#888', border: '1px dashed #ccc', borderRadius: '4px', background: '#fafafa', boxSizing: 'border-box' }}>
@@ -366,11 +824,11 @@ export default function ModalFichaBien({ bien, configuracion = {}, onClose, onEd
                   {/* Pie de Etiqueta */}
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', gap: '4px' }}>
                     <span style={{ fontSize: `${ptToPx(codigoPt)}px`, fontWeight: 900, fontFamily: 'monospace', color: '#000000', textTransform: 'uppercase', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: configuracion.etiqueta_mostrar_serial !== 'false' ? '55%' : '100%', textAlign: 'left' }}>
-                      {bien.etiqueta.startsWith('SIN-NUMERO-') ? 'S/N' : bien.etiqueta}
+                      {etiqueta.startsWith('SIN-NUMERO-') ? 'S/N' : etiqueta}
                     </span>
                     {configuracion.etiqueta_mostrar_serial !== 'false' && (
                       <span style={{ fontSize: `${ptToPx(serialPt)}px`, fontWeight: 900, fontFamily: 'monospace', color: '#111827', textTransform: 'uppercase', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '45%', textAlign: 'right' }}>
-                        S/N: {bien.serial || 'N/S'}
+                        S/N: {serial || 'N/S'}
                       </span>
                     )}
                   </div>
@@ -441,7 +899,7 @@ export default function ModalFichaBien({ bien, configuracion = {}, onClose, onEd
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px 24px' }}>
               <div>
                 <div style={{ fontSize: 10, textTransform: 'uppercase', color: 'var(--text-secondary)', fontWeight: 600 }}>Número de Serie</div>
-                <div style={{ fontSize: 13, fontWeight: 700, fontFamily: 'monospace', marginTop: 4, color: 'var(--text-primary)' }}>{bien.serial || '—'}</div>
+                <div style={{ fontSize: 13, fontWeight: 700, fontFamily: 'monospace', marginTop: 4, color: 'var(--text-primary)' }}>{serial || '—'}</div>
               </div>
               <div>
                 <div style={{ fontSize: 10, textTransform: 'uppercase', color: 'var(--text-secondary)', fontWeight: 600 }}>Valor Patrimonial</div>
@@ -522,6 +980,8 @@ export default function ModalFichaBien({ bien, configuracion = {}, onClose, onEd
             </div>
 
             <hr style={{ border: 'none', borderTop: '1px solid var(--border)', margin: 0 }} />
+
+            {renderPeripheralLinking()}
 
             {/* SECCIÓN: Especificaciones Técnicas JSON */}
             <div>
@@ -901,8 +1361,26 @@ export default function ModalFichaBien({ bien, configuracion = {}, onClose, onEd
             {isAdmin && (
               <button 
                 onClick={() => {
-                  onEdit(bien);
-                  onClose();
+                  try {
+                    console.log('Ficha bottom edit click. currentBien:', currentBien);
+                    const normalizedBien = {
+                      ...currentBien,
+                      serial: currentBien.serial || currentBien.numero_serie || '',
+                      etiqueta: currentBien.etiqueta || currentBien.codigo_inventario || '',
+                      responsable: currentBien.responsable || 
+                        (currentBien.asignaciones?.[0]?.fecha_retorno ? 'Sin asignar' : 
+                        (currentBien.asignaciones?.[0]?.personal?.nombre || 'Sin asignar')),
+                      responsableId: currentBien.responsableId || 
+                        (currentBien.asignaciones?.[0]?.fecha_retorno ? '' : 
+                        (currentBien.asignaciones?.[0]?.personal?.id || ''))
+                    };
+                    console.log('Ficha bottom edit normalized:', normalizedBien);
+                    onEdit(normalizedBien);
+                    onClose();
+                  } catch (err) {
+                    alert('Error en click handler (Editar Datos): ' + err.message);
+                    console.error('Error en click handler (Editar Datos):', err);
+                  }
                 }} 
                 className="btn btn-primary" 
                 style={{ display: 'flex', alignItems: 'center', gap: 6 }}

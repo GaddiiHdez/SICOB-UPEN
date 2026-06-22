@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect, useMemo, useCallback } from 'react';
+import { Pencil, Trash2, Plus, Save, Loader2, X, Search, Grid, List, Building2, MapPin } from 'lucide-react';
 
 /**
  * UbicacionesManager — Gestor Avanzado de Áreas y Edificios (Diseño Premium)
@@ -254,8 +255,8 @@ export default function UbicacionesManager({ showToast, isAdmin = false }) {
             width: 46, height: 46, borderRadius: 'var(--radius-md)',
             background: 'linear-gradient(135deg, var(--primary) 0%, #0f766e 100%)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 22, boxShadow: '0 4px 12px rgba(13,148,136,0.3)', flexShrink: 0
-          }}>🏫</div>
+            boxShadow: '0 4px 12px rgba(13,148,136,0.3)', flexShrink: 0
+          }}><MapPin size={22} style={{ color: '#fff' }} /></div>
           <div>
             <h2 style={{ fontSize: 18, fontWeight: 700, margin: 0, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
               Bloques, Edificios y Aulas
@@ -270,7 +271,7 @@ export default function UbicacionesManager({ showToast, isAdmin = false }) {
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
           {/* Buscador */}
           <div className="search-input-wrap" style={{ minWidth: 240 }}>
-            <span className="search-icon">🔍</span>
+            <span className="search-icon" style={{ display: 'flex', alignItems: 'center' }}><Search size={15} /></span>
             <input
               className="search-input"
               placeholder="Buscar área, bloque o depto..."
@@ -300,11 +301,15 @@ export default function UbicacionesManager({ showToast, isAdmin = false }) {
                 cursor: 'pointer',
                 transition: 'all 0.2s',
                 boxShadow: viewMode === 'grid' ? 'var(--shadow-sm)' : 'none',
-                outline: 'none'
+                outline: 'none',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6
               }}
               title="Vista de bloques agrupados por Edificio"
             >
-              🏢 Edificios
+              <Building2 size={13} />
+              <span>Edificios</span>
             </button>
             <button
               onClick={() => setViewMode('table')}
@@ -319,11 +324,15 @@ export default function UbicacionesManager({ showToast, isAdmin = false }) {
                 cursor: 'pointer',
                 transition: 'all 0.2s',
                 boxShadow: viewMode === 'table' ? 'var(--shadow-sm)' : 'none',
-                outline: 'none'
+                outline: 'none',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6
               }}
               title="Vista de lista plana estándar"
             >
-              📋 Lista Plana
+              <List size={13} />
+              <span>Lista Plana</span>
             </button>
           </div>
 
@@ -340,7 +349,7 @@ export default function UbicacionesManager({ showToast, isAdmin = false }) {
               }}
               className="btn-create-area"
             >
-              ＋ Nueva Área
+              <Plus size={15} /> Nueva Área
             </button>
           )}
         </div>
@@ -456,7 +465,7 @@ export default function UbicacionesManager({ showToast, isAdmin = false }) {
                           className="btn-action-teal"
                           title="Editar área"
                         >
-                          ✏️ Editar
+                          <Pencil size={12} /> Editar
                         </button>
                         <button 
                           onClick={() => handleDelete(row.id, row.nombre)}
@@ -478,7 +487,7 @@ export default function UbicacionesManager({ showToast, isAdmin = false }) {
                           className="btn-action-red"
                           title="Eliminar área"
                         >
-                          🗑️ Eliminar
+                          <Trash2 size={12} /> Eliminar
                         </button>
                       </div>
                     </td>
@@ -520,27 +529,27 @@ export default function UbicacionesManager({ showToast, isAdmin = false }) {
                 alignItems: 'center'
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ fontSize: 18 }}>🏫</span>
+                  <Building2 size={16} style={{ color: 'var(--primary)' }} />
                   <span style={{ fontWeight: 700, fontSize: 14, color: 'var(--text-primary)' }}>
                     {building.nombre}
                   </span>
 
                   {/* Botones de acción rápidos para el Bloque/Edificio */}
                   {isAdmin && !building.esOtros && (
-                    <div style={{ display: 'inline-flex', gap: 6, marginLeft: 6 }}>
+                    <div style={{ display: 'inline-flex', gap: 6, marginLeft: 6, alignItems: 'center' }}>
                       <button
                         onClick={() => handleOpenRenameBlockModal(building.nombre)}
-                        style={{ border: 'none', background: 'transparent', cursor: 'pointer', opacity: 0.6, fontSize: 11, padding: '2px 4px', outline: 'none' }}
+                        style={{ border: 'none', background: 'transparent', cursor: 'pointer', opacity: 0.6, display: 'flex', alignItems: 'center', padding: '2px 4px', outline: 'none' }}
                         title="Renombrar bloque / edificio"
                       >
-                        ✏️
+                        <Pencil size={11} />
                       </button>
                       <button
                         onClick={() => handleDeleteEdificio(building.nombre)}
-                        style={{ border: 'none', background: 'transparent', cursor: 'pointer', opacity: 0.6, fontSize: 11, padding: '2px 4px', color: '#EF4444', outline: 'none' }}
+                        style={{ border: 'none', background: 'transparent', cursor: 'pointer', opacity: 0.6, display: 'flex', alignItems: 'center', padding: '2px 4px', color: '#EF4444', outline: 'none' }}
                         title="Eliminar bloque / edificio completo"
                       >
-                        🗑️
+                        <Trash2 size={11} />
                       </button>
                     </div>
                   )}
@@ -587,20 +596,20 @@ export default function UbicacionesManager({ showToast, isAdmin = false }) {
                       
                       {/* Botones de acción rápidos */}
                       {isAdmin && (
-                        <div style={{ display: 'flex', gap: 4 }}>
+                        <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
                           <button
                             onClick={() => handleOpenModal(area)}
-                            style={{ border: 'none', background: 'transparent', cursor: 'pointer', opacity: 0.7, padding: 4 }}
+                            style={{ border: 'none', background: 'transparent', cursor: 'pointer', opacity: 0.7, padding: 4, display: 'flex', alignItems: 'center' }}
                             title="Editar área"
                           >
-                            ✏️
+                            <Pencil size={11} />
                           </button>
                           <button
                             onClick={() => handleDelete(area.id, area.nombre)}
-                            style={{ border: 'none', background: 'transparent', cursor: 'pointer', opacity: 0.7, padding: 4, color: '#EF4444' }}
+                            style={{ border: 'none', background: 'transparent', cursor: 'pointer', opacity: 0.7, padding: 4, color: '#EF4444', display: 'flex', alignItems: 'center' }}
                             title="Eliminar área"
                           >
-                            🗑️
+                            <Trash2 size={11} />
                           </button>
                         </div>
                       )}
@@ -676,8 +685,9 @@ export default function UbicacionesManager({ showToast, isAdmin = false }) {
               display: 'flex', alignItems: 'center', justifyContent: 'space-between'
             }}>
               <div>
-                <h3 className="modal-title" style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
-                  {isEdit ? '✏️ Editar Área' : '🏫 Nueva Ubicación'}
+                <h3 className="modal-title" style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', margin: 0, display: 'flex', alignItems: 'center', gap: 6 }}>
+                  {isEdit ? <Pencil size={15} /> : <Plus size={15} />}
+                  <span>{isEdit ? 'Editar Área' : 'Nueva Ubicación'}</span>
                 </h3>
                 <p className="modal-sub" style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 4 }}>
                   Define las propiedades del espacio físico en el campus
@@ -687,8 +697,8 @@ export default function UbicacionesManager({ showToast, isAdmin = false }) {
                 background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border)',
                 borderRadius: 'var(--radius-md)', cursor: 'pointer',
                 width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 14, color: 'var(--text-secondary)', transition: 'all 0.15s'
-              }}>✕</button>
+                color: 'var(--text-secondary)', transition: 'all 0.15s'
+              }}><X size={15} /></button>
             </div>
 
             <form onSubmit={handleSubmit}>
@@ -770,7 +780,7 @@ export default function UbicacionesManager({ showToast, isAdmin = false }) {
                         />
                       </div>
                       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', background: 'var(--bg-body)', padding: 8, borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
-                        {['🏫', '🔬', '🚪', '🏢', '📚', '💻', '🛠️', '🩺', '🎨', '🧪', '🧬', '🖥️', '🔊', '🔋', '🔌', '📡', '🌱', '🌍', '🍽️', '🏋️'].map(emoji => (
+                        {['🏫', '🏢', '🏛️', '🔬', '🚪', '📚', '💻', '🖥️', '📽️', '🖨️', '🛠️', '🩺', '🎨', '🧪', '🧬', '🔊', '🔋', '🔌', '📡', '🌱', '🌍', '🍽️', '🏋️', '🪑', '🛋️', '💡', '🔑', '🔒', '👨‍💻', '👩‍💻', '👨‍🏫', '👩‍🏫', '👨‍🔬', '👩‍🔬', '👨‍💼', '👩‍💼', '👥'].map(emoji => (
                           <button
                             key={emoji}
                             type="button"
@@ -805,9 +815,20 @@ export default function UbicacionesManager({ showToast, isAdmin = false }) {
                   padding: '10px 22px', borderRadius: 'var(--radius-md)',
                   background: 'linear-gradient(135deg, var(--primary) 0%, #0f766e 100%)',
                   border: 'none', color: '#fff', fontSize: 13, fontWeight: 700,
-                  cursor: 'pointer', transition: 'all 0.2s'
+                  cursor: 'pointer', transition: 'all 0.2s',
+                  display: 'inline-flex', alignItems: 'center', gap: 6
                 }} disabled={saving}>
-                  {saving ? '⏳ Guardando...' : '💾 Guardar'}
+                  {saving ? (
+                    <>
+                      <Loader2 size={15} style={{ animation: 'spin 1s linear infinite' }} />
+                      <span>Guardando...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Save size={15} />
+                      <span>Guardar</span>
+                    </>
+                  )}
                 </button>
               </div>
             </form>
@@ -826,15 +847,18 @@ export default function UbicacionesManager({ showToast, isAdmin = false }) {
               display: 'flex', alignItems: 'center', justifyContent: 'space-between'
             }}>
               <div>
-                <h3 className="modal-title" style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>✏️ Renombrar Edificio</h3>
+                <h3 className="modal-title" style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', margin: 0, display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <Pencil size={15} />
+                  <span>Renombrar Edificio</span>
+                </h3>
                 <p className="modal-sub" style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 4 }}>Cambia el nombre agrupador para todas las áreas asociadas</p>
               </div>
               <button onClick={() => setShowRenameBlockModal(false)} disabled={renamingBlock} style={{
                 background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border)',
                 borderRadius: 'var(--radius-md)', cursor: 'pointer',
                 width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 14, color: 'var(--text-secondary)', transition: 'all 0.15s'
-              }}>✕</button>
+                color: 'var(--text-secondary)', transition: 'all 0.15s'
+              }}><X size={15} /></button>
             </div>
 
             <form onSubmit={handleRenameBlockSubmit}>
@@ -873,9 +897,20 @@ export default function UbicacionesManager({ showToast, isAdmin = false }) {
                   padding: '10px 22px', borderRadius: 'var(--radius-md)',
                   background: 'linear-gradient(135deg, var(--primary) 0%, #0f766e 100%)',
                   border: 'none', color: '#fff', fontSize: 13, fontWeight: 700,
-                  cursor: 'pointer', transition: 'all 0.2s'
+                  cursor: 'pointer', transition: 'all 0.2s',
+                  display: 'inline-flex', alignItems: 'center', gap: 6
                 }} disabled={renamingBlock}>
-                  {renamingBlock ? '⏳ Guardando...' : '💾 Guardar'}
+                  {renamingBlock ? (
+                    <>
+                      <Loader2 size={15} style={{ animation: 'spin 1s linear infinite' }} />
+                      <span>Guardando...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Save size={15} />
+                      <span>Guardar</span>
+                    </>
+                  )}
                 </button>
               </div>
             </form>

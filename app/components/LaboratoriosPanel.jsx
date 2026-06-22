@@ -1,10 +1,11 @@
 'use client';
 import { useState, useEffect, useMemo, useCallback } from 'react';
+import LaboratorioMapa from './LaboratorioMapa';
 
 /**
  * LaboratoriosPanel — Módulo Premium para Gestión de Laboratorios de Cómputo
  */
-export default function LaboratoriosPanel({ ubicaciones = [], bienes = [], showToast, isAdmin = false }) {
+export default function LaboratoriosPanel({ ubicaciones = [], bienes = [], showToast, isAdmin = false, onViewFicha }) {
   const [labs, setLabs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedLab, setSelectedLab] = useState(null);
@@ -118,6 +119,90 @@ export default function LaboratoriosPanel({ ubicaciones = [], bienes = [], showT
   useEffect(() => {
     fetchLabs();
   }, []);
+
+  const handleHostChange = (bienId, value) => {
+    setSelectedLab(prev => {
+      if (!prev) return prev;
+      const updatedBienes = prev.ubicacion.bienes.map(b => {
+        if (b.id === bienId) {
+          return {
+            ...b,
+            especificaciones: {
+              ...(b.especificaciones || {}),
+              host: value
+            }
+          };
+        }
+        return b;
+      });
+      return {
+        ...prev,
+        ubicacion: {
+          ...prev.ubicacion,
+          bienes: updatedBienes
+        }
+      };
+    });
+  };
+
+  const handleIpChange = (bienId, value) => {
+    setSelectedLab(prev => {
+      if (!prev) return prev;
+      const updatedBienes = prev.ubicacion.bienes.map(b => {
+        if (b.id === bienId) {
+          return {
+            ...b,
+            especificaciones: {
+              ...(b.especificaciones || {}),
+              ip: value
+            }
+          };
+        }
+        return b;
+      });
+      return {
+        ...prev,
+        ubicacion: {
+          ...prev.ubicacion,
+          bienes: updatedBienes
+        }
+      };
+    });
+  };
+
+  const handleSaveSpecs = async (bienId, hostValue, ipValue) => {
+    try {
+      const bien = selectedLab.ubicacion.bienes.find(b => b.id === bienId);
+      if (!bien) return;
+
+      const newSpecs = {
+        ...(bien.especificaciones || {}),
+        host: hostValue.trim(),
+        ip: ipValue.trim()
+      };
+
+      if (!newSpecs.host) delete newSpecs.host;
+      if (!newSpecs.ip) delete newSpecs.ip;
+
+      const res = await fetch('/api/bienes', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...bien,
+          especificaciones: newSpecs
+        })
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Error al actualizar especificaciones');
+      }
+      fetchLabs();
+    } catch (error) {
+      console.error(error);
+      if (showToast) showToast('Error al guardar Host/IP del equipo', 'error');
+    }
+  };
 
   // KPIs
   const stats = useMemo(() => {
@@ -685,6 +770,17 @@ export default function LaboratoriosPanel({ ubicaciones = [], bienes = [], showT
             >
               ⚠️ Reportes e Incidentes ({selectedLab.incidentes?.filter(i => i.estado === 'PENDIENTE').length || 0})
             </button>
+            <button
+              onClick={() => setActiveSubTab('mapa')}
+              style={{
+                background: 'transparent', border: 'none', borderBottom: activeSubTab === 'mapa' ? '2.5px solid var(--primary)' : '2.5px solid transparent',
+                color: activeSubTab === 'mapa' ? 'var(--primary)' : 'var(--text-secondary)',
+                fontWeight: activeSubTab === 'mapa' ? '700' : '500',
+                padding: '8px 12px', fontSize: 13, cursor: 'pointer', outline: 'none', transition: 'all 0.15s'
+              }}
+            >
+              🗺️ Vista Aérea
+            </button>
           </div>
 
           {/* CONTENIDO PESTAÑAS */}
@@ -704,6 +800,8 @@ export default function LaboratoriosPanel({ ubicaciones = [], bienes = [], showT
                     <tr style={{ background: 'var(--bg-body)', borderBottom: '1px solid var(--border)' }}>
                       <th style={{ padding: '14px 20px', fontSize: '11px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Cód. Inventario</th>
                       <th style={{ padding: '14px 20px', fontSize: '11px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Marca / Modelo</th>
+                      <th style={{ padding: '14px 20px', fontSize: '11px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Host</th>
+                      <th style={{ padding: '14px 20px', fontSize: '11px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>IP</th>
                       <th style={{ padding: '14px 20px', fontSize: '11px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Especificaciones</th>
                       <th style={{ padding: '14px 20px', fontSize: '11px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Estado</th>
                       <th style={{ padding: '14px 20px', fontSize: '11px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase', textAlign: 'right' }}>Acciones</th>
@@ -712,6 +810,8 @@ export default function LaboratoriosPanel({ ubicaciones = [], bienes = [], showT
                   <tbody>
                     {selectedLab.ubicacion.bienes.map((row, idx) => {
                       const specs = row.especificaciones || {};
+                      const hostVal = specs.host || '';
+                      const ipVal = specs.ip || '';
                       
                       return (
                         <tr 
@@ -728,8 +828,71 @@ export default function LaboratoriosPanel({ ubicaciones = [], bienes = [], showT
                               <div>
                                 <span>{row.marca}</span>
                                 <div style={{ fontSize: 10.5, color: 'var(--text-secondary)', fontWeight: '400' }}>{row.modelo}</div>
+                                <div className="bien-serial" style={{ marginTop: '2px' }}>
+                                  S/N: {row.numero_serie || 'N/S'}
+                                </div>
                               </div>
                             </div>
+                          </td>
+                          <td style={{ padding: '14px 20px' }}>
+                            {isAdmin ? (
+                              <input
+                                type="text"
+                                value={hostVal}
+                                onChange={(e) => handleHostChange(row.id, e.target.value)}
+                                onBlur={() => handleSaveSpecs(row.id, hostVal, ipVal)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') {
+                                    e.target.blur();
+                                  }
+                                }}
+                                placeholder="Host..."
+                                style={{
+                                  fontSize: '11.5px',
+                                  padding: '4px 8px',
+                                  borderRadius: 'var(--radius-sm)',
+                                  border: '1px solid var(--border)',
+                                  background: 'var(--bg-body)',
+                                  color: 'var(--text-primary)',
+                                  width: '120px',
+                                  fontFamily: 'monospace'
+                                }}
+                              />
+                            ) : (
+                              <span style={{ fontFamily: 'monospace', fontSize: '11.5px', color: 'var(--text-secondary)' }}>
+                                {hostVal || '—'}
+                              </span>
+                            )}
+                          </td>
+                          <td style={{ padding: '14px 20px' }}>
+                            {isAdmin ? (
+                              <input
+                                type="text"
+                                value={ipVal}
+                                onChange={(e) => handleIpChange(row.id, e.target.value)}
+                                onBlur={() => handleSaveSpecs(row.id, hostVal, ipVal)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') {
+                                    e.target.blur();
+                                  }
+                                }}
+                                placeholder="IP..."
+                                style={{
+                                  fontSize: '11.5px',
+                                  padding: '4px 8px',
+                                  borderRadius: 'var(--radius-sm)',
+                                  border: '1px solid var(--border)',
+                                  background: 'var(--bg-body)',
+                                  color: 'var(--text-primary)',
+                                  width: '130px',
+                                  fontFamily: 'monospace'
+                                }}
+                              />
+                            ) : (
+                              <span style={{ fontFamily: 'monospace', fontSize: '11.5px', color: 'var(--text-secondary)' }}>
+                                {ipVal || '—'}
+                              </span>
+                            )}
                           </td>
                           <td style={{ padding: '14px 20px', color: 'var(--text-secondary)', fontSize: 11.5 }}>
                             {specs.procesador || specs.ram || specs.almacenamiento ? (
@@ -935,6 +1098,19 @@ export default function LaboratoriosPanel({ ubicaciones = [], bienes = [], showT
                 </table>
               )}
             </div>
+          )}
+
+          {activeSubTab === 'mapa' && (
+            <LaboratorioMapa
+              selectedLab={selectedLab}
+              isAdmin={isAdmin}
+              onSaveSuccess={fetchLabs}
+              onViewFicha={(bienRaw) => {
+                const fullBien = bienes.find(b => b.id === bienRaw.id);
+                onViewFicha(fullBien || bienRaw);
+              }}
+              showToast={showToast}
+            />
           )}
         </div>
       )}

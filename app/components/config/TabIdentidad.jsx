@@ -1,8 +1,9 @@
 'use client';
 import { useRef, useState } from 'react';
+import { Package, Briefcase, Wrench, Save, Loader2 } from 'lucide-react';
 
 // ── Componente: Tarjeta de firma individual ────────────────────────────────
-function FirmaCard({ role, icon, nombre, onNombreChange, puesto, onPuestoChange }) {
+function FirmaCard({ role, icon: IconComponent, nombre, onNombreChange, puesto, onPuestoChange }) {
   return (
     <div style={{
       background: 'var(--bg-body)',
@@ -23,9 +24,9 @@ function FirmaCard({ role, icon, nombre, onNombreChange, puesto, onPuestoChange 
           background: 'linear-gradient(135deg, rgba(13,148,136,0.15) 0%, rgba(13,148,136,0.05) 100%)',
           border: '1px solid rgba(13,148,136,0.2)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 16, flexShrink: 0
+          color: 'var(--primary)', flexShrink: 0
         }}>
-          {icon}
+          <IconComponent size={16} />
         </div>
         <div>
           <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
@@ -414,7 +415,7 @@ export default function TabIdentidad({
         <div style={{ padding: '24px 28px', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
           <FirmaCard
             role="Control de Bienes / Almacén"
-            icon="📦"
+            icon={Package}
             nombre={firmaPatrimonioNombre}
             onNombreChange={setFirmaPatrimonioNombre}
             puesto={firmaPatrimonioPuesto}
@@ -422,7 +423,7 @@ export default function TabIdentidad({
           />
           <FirmaCard
             role="Jefa/e de Departamento"
-            icon="👔"
+            icon={Briefcase}
             nombre={firmaJefeNombre}
             onNombreChange={setFirmaJefeNombre}
             puesto={firmaJefePuesto}
@@ -430,7 +431,7 @@ export default function TabIdentidad({
           />
           <FirmaCard
             role="Técnico de Soporte"
-            icon="🔧"
+            icon={Wrench}
             nombre={firmaTecnicoNombre}
             onNombreChange={setFirmaTecnicoNombre}
             puesto={firmaTecnicoPuesto}
@@ -454,12 +455,12 @@ export default function TabIdentidad({
         >
           {saving ? (
             <>
-              <span className="sync-pulse" style={{ backgroundColor: '#fff', boxShadow: 'none' }} />
+              <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} />
               Guardando cambios…
             </>
           ) : (
             <>
-              💾 Guardar Identidad Institucional
+              <Save size={16} /> Guardar Identidad Institucional
             </>
           )}
         </button>

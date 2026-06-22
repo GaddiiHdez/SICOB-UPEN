@@ -1,6 +1,8 @@
 'use client';
 import { useState, useMemo } from 'react';
 import { TIPOS_EQUIPO, ESTADO_BADGE } from '@/lib/constants';
+import { getStatIcon } from '@/lib/icons';
+import { Plus, QrCode, Wrench, ClipboardList, BarChart3 } from 'lucide-react';
 
 // ── Paleta de colores para los gráficos ──────────────────────
 const CHART_COLORS = [
@@ -374,7 +376,9 @@ export default function Dashboard({ bienes, categorias = [], ubicaciones = [], m
             onClick={() => onKpiClick && onKpiClick(k.status)}
             title={`Filtrar inventario por ${k.label}`}
           >
-            <div className={`dash-kpi-icon dash-kpi-icon-${k.color}`}>{k.icon}</div>
+            <div className={`dash-kpi-icon dash-kpi-icon-${k.color}`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              {getStatIcon(k.icon, 20)}
+            </div>
             <div className="dash-kpi-body">
               <div className="dash-kpi-label">{k.label}</div>
               <div className="dash-kpi-value">{k.value}</div>
@@ -389,27 +393,27 @@ export default function Dashboard({ bienes, categorias = [], ubicaciones = [], m
         <div className="dash-section-label">Accesos rápidos</div>
         <div className="dash-actions-grid">
           {isAdmin && (
-            <button id="dash-action-nuevo" className="dash-action-btn dash-action-primary" onClick={onOpenModal}>
-              <span className="dash-action-icon">＋</span>
+            <button id="dash-action-nuevo" className="dash-action-btn dash-action-primary" style={{ display: 'flex', alignItems: 'center', gap: 10 }} onClick={onOpenModal}>
+              <span className="dash-action-icon" style={{ display: 'flex', alignItems: 'center' }}><Plus size={16} /></span>
               <span>Registrar bien</span>
             </button>
           )}
-          <button id="dash-action-escanear" className="dash-action-btn" onClick={onOpenScanner}>
-            <span className="dash-action-icon">🔍</span>
+          <button id="dash-action-escanear" className="dash-action-btn" style={{ display: 'flex', alignItems: 'center', gap: 10 }} onClick={onOpenScanner}>
+            <span className="dash-action-icon" style={{ display: 'flex', alignItems: 'center' }}><QrCode size={16} /></span>
             <span>Escanear Código</span>
           </button>
-          <button id="dash-action-mantenimiento" className="dash-action-btn" onClick={() => onNavChange('mantenimientos')}>
-            <span className="dash-action-icon">🔧</span>
+          <button id="dash-action-mantenimiento" className="dash-action-btn" style={{ display: 'flex', alignItems: 'center', gap: 10 }} onClick={() => onNavChange('mantenimientos')}>
+            <span className="dash-action-icon" style={{ display: 'flex', alignItems: 'center' }}><Wrench size={16} /></span>
             <span>Mantenimiento</span>
           </button>
           {isAdmin && (
-            <button id="dash-action-resguardos" className="dash-action-btn" onClick={() => onNavChange('resguardos')}>
-              <span className="dash-action-icon">📝</span>
+            <button id="dash-action-resguardos" className="dash-action-btn" style={{ display: 'flex', alignItems: 'center', gap: 10 }} onClick={() => onNavChange('resguardos')}>
+              <span className="dash-action-icon" style={{ display: 'flex', alignItems: 'center' }}><ClipboardList size={16} /></span>
               <span>Emitir Resguardo</span>
             </button>
           )}
-          <button id="dash-action-reportes" className="dash-action-btn" onClick={() => onNavChange('reportes')}>
-            <span className="dash-action-icon">📊</span>
+          <button id="dash-action-reportes" className="dash-action-btn" style={{ display: 'flex', alignItems: 'center', gap: 10 }} onClick={() => onNavChange('reportes')}>
+            <span className="dash-action-icon" style={{ display: 'flex', alignItems: 'center' }}><BarChart3 size={16} /></span>
             <span>Reportes e Historial</span>
           </button>
         </div>

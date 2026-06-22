@@ -1,5 +1,7 @@
 'use client';
 import { NAV_ITEMS } from '@/lib/constants';
+import { getNavIcon } from '@/lib/icons';
+import { Settings2, LogOut } from 'lucide-react';
 
 /**
  * Sidebar — Navegación lateral del sistema.
@@ -45,6 +47,9 @@ export default function Sidebar({ activeNav, onNavChange, usuario, configuracion
         <style dangerouslySetInnerHTML={{ __html: `
           .sidebar .nav-item {
             transition: all 0.15s ease !important;
+            display: flex;
+            align-items: center;
+            gap: 12px;
           }
           .sidebar .nav-item:hover {
             background: #FFFFFF !important;
@@ -72,6 +77,13 @@ export default function Sidebar({ activeNav, onNavChange, usuario, configuracion
             background: #FFFFFF !important;
             color: #121212 !important;
           }
+          .sidebar .nav-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 18px;
+            height: 18px;
+          }
         `}} />
         {NAV_ITEMS.map(item => {
           const isActive = activeNav === item.id;
@@ -90,7 +102,7 @@ export default function Sidebar({ activeNav, onNavChange, usuario, configuracion
                 boxShadow: 'none'
               } : undefined}
             >
-              <span className="nav-icon">{item.icon}</span>
+              <span className="nav-icon">{getNavIcon(item.id)}</span>
               {item.label}
             </button>
           );
@@ -119,7 +131,7 @@ export default function Sidebar({ activeNav, onNavChange, usuario, configuracion
                 boxShadow: 'none'
               } : undefined}
             >
-              <span>⚙️</span> Configuración
+              <Settings2 size={16} /> Configuración
             </button>
           )}
           <button
@@ -128,7 +140,7 @@ export default function Sidebar({ activeNav, onNavChange, usuario, configuracion
               if (onLogout) onLogout();
             }}
           >
-            <span>⏻</span> Cerrar Sesión
+            <LogOut size={16} /> Cerrar Sesión
           </button>
         </div>
       </div>

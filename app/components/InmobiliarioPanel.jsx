@@ -455,7 +455,7 @@ export default function InmobiliarioPanel({
                               <div className="bien-icon">{item.categoriaInmobiliario?.icono || '🪑'}</div>
                               <div>
                                 <div className="bien-name" style={{ fontWeight: 600 }}>{item.descripcion}</div>
-                                <div className="bien-serial" style={{ fontSize: 11 }}>
+                                <div className="bien-serial" style={{ fontSize: 12.5 }}>
                                   {item.marca ? `${item.marca} ` : ''}{item.modelo || ''}
                                 </div>
                               </div>
@@ -517,7 +517,7 @@ export default function InmobiliarioPanel({
                                     {group.items.length} pzas
                                   </span>
                                 </div>
-                                <div className="bien-serial" style={{ fontSize: 11, fontWeight: 400 }}>
+                                <div className="bien-serial" style={{ fontSize: 12.5, fontWeight: 400 }}>
                                   {firstItem.marca ? `${firstItem.marca} ` : ''}{firstItem.modelo || ''}
                                 </div>
                               </div>

@@ -47,6 +47,23 @@ export async function GET(request) {
           }
         }
       });
+
+      if (bienEspecifico && !bienEspecifico.imagen_url) {
+        const fallbackBien = await prisma.bien.findFirst({
+          where: {
+            marca: { equals: bienEspecifico.marca, mode: 'insensitive' },
+            modelo: { equals: bienEspecifico.modelo, mode: 'insensitive' },
+            imagen_url: { not: null, notIn: [''] },
+            eliminado: false
+          },
+          select: { imagen_url: true }
+        });
+        if (fallbackBien && fallbackBien.imagen_url) {
+          bienEspecifico.imagen_url = fallbackBien.imagen_url;
+          bienEspecifico.imagen_compartida = true;
+        }
+      }
+
       return NextResponse.json(bienEspecifico);
     }
 

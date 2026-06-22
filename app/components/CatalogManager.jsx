@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
+import { Pencil, Trash2, Plus, Save, Loader2, X } from 'lucide-react';
 
 /**
  * Gestor Genérico de Catálogos (CRUD) - Premium Design
@@ -126,8 +127,10 @@ export default function CatalogManager({ title, subtitle, endpoint, icon, fields
             width: 46, height: 46, borderRadius: 'var(--radius-md)',
             background: 'linear-gradient(135deg, var(--primary) 0%, #0f766e 100%)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 22, boxShadow: '0 4px 12px rgba(13,148,136,0.3)', flexShrink: 0
-          }}>{icon}</div>
+            fontSize: typeof icon === 'string' ? 22 : undefined, boxShadow: '0 4px 12px rgba(13,148,136,0.3)', flexShrink: 0
+          }}>
+            {typeof icon === 'string' ? icon : React.createElement(icon, { size: 22, style: { color: '#fff' } })}
+          </div>
           <div>
             <h2 style={{ fontSize: 18, fontWeight: 700, margin: 0, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>{title}</h2>
             <div style={{ color: 'var(--text-secondary)', fontSize: 12, marginTop: 4 }}>{subtitle}</div>
@@ -146,7 +149,7 @@ export default function CatalogManager({ title, subtitle, endpoint, icon, fields
             }}
             className="btn-create-catalog"
           >
-            ＋ Nuevo Registro
+            <Plus size={15} /> Nuevo Registro
           </button>
         )}
       </div>
@@ -236,9 +239,9 @@ export default function CatalogManager({ title, subtitle, endpoint, icon, fields
                               width: 32, height: 32, borderRadius: '50%',
                               background: 'rgba(13,148,136,0.08)',
                               display: 'flex', alignItems: 'center', justifyContent: 'center',
-                              fontSize: 16, border: '1px solid rgba(13,148,136,0.2)', flexShrink: 0
+                              fontSize: row.icono || typeof icon === 'string' ? 16 : undefined, border: '1px solid rgba(13,148,136,0.2)', flexShrink: 0
                             }}>
-                              {row.icono || icon}
+                              {row.icono ? row.icono : (typeof icon === 'string' ? icon : React.createElement(icon, { size: 16, style: { color: 'var(--primary)' } }))}
                             </div>
                             <span>{displayVal || '—'}</span>
                           </div>
@@ -290,7 +293,7 @@ export default function CatalogManager({ title, subtitle, endpoint, icon, fields
                               className="btn-action-teal"
                               title="Editar registro"
                             >
-                              ✏️ Editar
+                              <Pencil size={12} /> Editar
                             </button>
                             <button 
                               onClick={() => handleDelete(row.id)}
@@ -312,7 +315,7 @@ export default function CatalogManager({ title, subtitle, endpoint, icon, fields
                               className="btn-action-red"
                               title="Eliminar registro"
                             >
-                              🗑️ Eliminar
+                              <Trash2 size={12} /> Eliminar
                             </button>
                           </>
                         )}
@@ -337,8 +340,9 @@ export default function CatalogManager({ title, subtitle, endpoint, icon, fields
               display: 'flex', alignItems: 'center', justifyContent: 'space-between'
             }}>
               <div>
-                <div className="modal-title" style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
-                  {isEdit ? '✏️ Editar' : '➕ Nuevo'} {title.split(' ')[0]}
+                <div className="modal-title" style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', margin: 0, display: 'flex', alignItems: 'center', gap: 6 }}>
+                  {isEdit ? <Pencil size={15} /> : <Plus size={15} />}
+                  <span>{isEdit ? 'Editar' : 'Nuevo'} {title.split(' ')[0]}</span>
                 </div>
                 <div className="modal-sub" style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 4 }}>
                   Completa los datos del formulario
@@ -348,8 +352,8 @@ export default function CatalogManager({ title, subtitle, endpoint, icon, fields
                 background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border)',
                 borderRadius: 'var(--radius-md)', cursor: 'pointer',
                 width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 14, color: 'var(--text-secondary)', transition: 'all 0.15s'
-              }}>✕</button>
+                color: 'var(--text-secondary)', transition: 'all 0.15s'
+              }}><X size={15} /></button>
             </div>
             <form onSubmit={handleSubmit}>
               <div className="modal-body" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -424,7 +428,7 @@ export default function CatalogManager({ title, subtitle, endpoint, icon, fields
                               />
                             </div>
                             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', background: 'var(--bg-body)', padding: 8, borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
-                              {['🏢', '🏫', '🚪', '🏷️', '💻', '🔬', '📚', '📦', '🔧', '⚙️', '🔑', '👤', '🛡️', '📊', '📢', '🎨', '🧪', '🧬', '🖥️', '🔊', '🔋', '🔌', '📡'].map(emoji => (
+                              {['🏢', '🏫', '🏷️', '💻', '🖥️', '📽️', '📱', '🖨️', '🖱️', '📡', '🔌', '🔋', '📷', '🎥', '🎙️', '🎧', '🔬', '🧪', '🧬', '🔧', '⚙️', '🛠️', '📦', '📁', '📊', '🔑', '👤', '👥', '👨‍💻', '👩‍💻', '👨‍🏫', '👩‍🏫', '👨‍💼', '👩‍💼', '🛡️', '🎨', '📚', '📢'].map(emoji => (
                                 <button
                                   key={emoji}
                                   type="button"
@@ -469,10 +473,27 @@ export default function CatalogManager({ title, subtitle, endpoint, icon, fields
                   padding: '10px 22px', borderRadius: 'var(--radius-md)',
                   background: 'linear-gradient(135deg, var(--primary) 0%, #0f766e 100%)',
                   border: 'none', color: '#fff', fontSize: 13, fontWeight: 700,
-                  cursor: 'pointer', transition: 'all 0.2s'
+                  cursor: 'pointer', transition: 'all 0.2s',
+                  display: 'inline-flex', alignItems: 'center', gap: 6
                 }} disabled={saving}>
-                  {saving ? '⏳ Guardando…' : '💾 Guardar'}
+                  {saving ? (
+                    <>
+                      <Loader2 size={15} style={{ animation: 'spin 1s linear infinite' }} />
+                      <span>Guardando…</span>
+                    </>
+                  ) : (
+                    <>
+                      <Save size={15} />
+                      <span>Guardar</span>
+                    </>
+                  )}
                 </button>
+                <style dangerouslySetInnerHTML={{ __html: `
+                  @keyframes spin {
+                    from { transform: rotate(0deg); }
+                    to { transform: rotate(360deg); }
+                  }
+                `}} />
               </div>
             </form>
           </div>

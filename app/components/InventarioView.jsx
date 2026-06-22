@@ -284,7 +284,7 @@ export default function InventarioView({
                           <div className="bien-icon">{bien.icono}</div>
                           <div>
                             <div className="bien-name">{bien.nombre}</div>
-                            <div className="bien-serial">{bien.serial}</div>
+                            <div className="bien-serial" style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: 550, fontFamily: 'monospace', marginTop: '2px' }}>{bien.serial}</div>
                           </div>
                         </div>
                       </td>
@@ -364,7 +364,7 @@ export default function InventarioView({
                               <div className="bien-icon">{bien.icono}</div>
                               <div>
                                 <div className="bien-name">{bien.nombre}</div>
-                                <div className="bien-serial">{bien.serial}</div>
+                                <div className="bien-serial" style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: 550, fontFamily: 'monospace', marginTop: '2px' }}>{bien.serial}</div>
                               </div>
                             </div>
                           </td>
@@ -465,7 +465,7 @@ export default function InventarioView({
                                     {group.items.length} pzas
                                   </span>
                                 </div>
-                                <div className="bien-serial" style={{ fontSize: 11, fontWeight: 400, color: 'var(--text-secondary)' }}>
+                                <div className="bien-serial" style={{ fontSize: 12.5, fontWeight: 400, color: 'var(--text-secondary)' }}>
                                   [Múltiples series]
                                 </div>
                               </div>
@@ -546,7 +546,7 @@ export default function InventarioView({
                                             {subItem.etiqueta.startsWith('SIN-NUMERO-') ? 'S/N' : subItem.etiqueta}
                                           </span>
                                         </td>
-                                        <td style={{ padding: '6px 8px', fontSize: 11, fontFamily: 'monospace' }}>
+                                        <td style={{ padding: '6px 8px', fontSize: 12.5, fontFamily: 'monospace' }}>
                                           {subItem.serial}
                                         </td>
                                         <td style={{ padding: '6px 8px', fontSize: 11 }}>

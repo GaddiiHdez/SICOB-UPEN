@@ -1,12 +1,13 @@
 'use client';
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Shield, User } from 'lucide-react';
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 const ROL_CONFIG = {
   ADMINISTRADOR: {
     label: 'Administrador',
     sub: 'Control Total',
-    icon: '🛡️',
+    icon: Shield,
     gradient: 'linear-gradient(135deg, #059669 0%, #10B981 100%)',
     bg: 'rgba(16,185,129,0.08)',
     border: 'rgba(16,185,129,0.2)',
@@ -15,7 +16,7 @@ const ROL_CONFIG = {
   USUARIO: {
     label: 'Usuario',
     sub: 'Consulta y Edición',
-    icon: '👤',
+    icon: User,
     gradient: 'linear-gradient(135deg, #0d9488 0%, #0891b2 100%)',
     bg: 'rgba(13,148,136,0.08)',
     border: 'rgba(13,148,136,0.2)',
@@ -84,7 +85,9 @@ function UserCard({ user, onEdit, onDelete, onReset }) {
           borderRadius: 'var(--radius-md)', padding: '7px 12px',
           alignSelf: 'flex-start'
         }}>
-          <span style={{ fontSize: 14 }}>{rol.icon}</span>
+          <span style={{ display: 'flex', alignItems: 'center' }}>
+            {React.createElement(rol.icon, { size: 14 })}
+          </span>
           <div>
             <div style={{ fontSize: 12, fontWeight: 700, color: rol.color, lineHeight: 1 }}>
               {rol.label}
@@ -296,7 +299,9 @@ function UserModal({ mode, user, onClose, onSaved }) {
                       display: 'flex', alignItems: 'center', gap: 10
                     }}
                   >
-                    <span style={{ fontSize: 20 }}>{cfg.icon}</span>
+                    <span style={{ display: 'flex', alignItems: 'center' }}>
+                      {React.createElement(cfg.icon, { size: 20 })}
+                    </span>
                     <div>
                       <div style={{ fontSize: 12, fontWeight: 700, color: form.rol === val ? cfg.color : 'var(--text-primary)' }}>
                         {cfg.label}
@@ -754,7 +759,9 @@ export default function TabAccesos() {
                           background: rol.bg, border: `1px solid ${rol.border}`,
                           borderRadius: 'var(--radius-md)', padding: '5px 12px'
                         }}>
-                          <span style={{ fontSize: 13 }}>{rol.icon}</span>
+                          <span style={{ display: 'flex', alignItems: 'center' }}>
+                            {React.createElement(rol.icon, { size: 13 })}
+                          </span>
                           <span style={{ fontSize: 12, fontWeight: 700, color: rol.color }}>
                             {rol.label}
                           </span>
