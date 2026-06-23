@@ -1423,6 +1423,7 @@ export default function HomePage() {
           key={`ficha-${selectedFichaBien.id}-${selectedFichaBien.updatedAt || ''}`}
           bien={selectedFichaBien}
           bienes={bienes}
+          onClose={() => setSelectedFichaBien(null)}
           onLinkMonitor={handleLinkMonitor}
           onUnlinkMonitor={handleUnlinkMonitor}
           onOpenFicha={setSelectedFichaBien}
