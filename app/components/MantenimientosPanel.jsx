@@ -156,7 +156,13 @@ export default function MantenimientosPanel({
       setEditingGroup(null);
       resetForm();
       setFormBienId(preselectedBien.id);
-      setBienSearchQuery(`${preselectedBien.nombre} (${preselectedBien.etiqueta.startsWith('SIN-NUMERO-') ? 'S/N' : preselectedBien.etiqueta})`);
+      
+      // Fallback robusto para nombre y etiqueta en caso de recibir objeto prisma crudo
+      const nombre = preselectedBien.nombre || `${preselectedBien.marca || ''} ${preselectedBien.modelo || ''}`.trim() || 'Equipo';
+      const etiqueta = preselectedBien.etiqueta || preselectedBien.codigo_inventario || '';
+      const etiquetaText = (etiqueta && etiqueta.startsWith('SIN-NUMERO-')) ? 'S/N' : (etiqueta || 'S/N');
+      
+      setBienSearchQuery(`${nombre} (${etiquetaText})`);
       setFormLiberarResguardo(!!preselectedBien.responsableId);
       setFormEstado('En proceso');
       setFormTipo('Correctivo');
