@@ -14,6 +14,7 @@ export default function LaboratorioMapa({ selectedLab, isAdmin, onSaveSuccess, o
   const [selectedElement, setSelectedElement] = useState(null);
   const [labelType, setLabelType] = useState('host'); // 'host' | 'ip' | 'codigo' | 'serie' | 'none'
   const [isSaving, setIsSaving] = useState(false);
+  const [pcSearchQuery, setPcSearchQuery] = useState('');
 
   // Referencia al contenedor de la cuadrícula para el cálculo de arrastre
   const gridRef = useRef(null);
@@ -34,6 +35,23 @@ export default function LaboratorioMapa({ selectedLab, isAdmin, onSaveSuccess, o
     const isPC = cat.includes('comput') || cat.includes('laptop') || cat.includes('pc') || b.tipo === 'Desktop' || b.tipo === 'Laptop' || b.tipo === 'Computadora';
     const isPlaced = currentPcs.some(p => Number(p.bienId) === Number(b.id));
     return isPC && !isPlaced && !b.eliminado;
+  });
+
+  const filteredUnassignedBienes = unassignedBienes.filter(b => {
+    const query = pcSearchQuery.trim().toLowerCase();
+    if (!query) return true;
+    
+    const host = (b.especificaciones?.host || '').toLowerCase();
+    const serial = (b.numero_serie || b.serial || '').toLowerCase();
+    const code = (b.codigo_inventario || '').toLowerCase();
+    const brand = (b.marca || '').toLowerCase();
+    const model = (b.modelo || '').toLowerCase();
+    
+    return host.includes(query) || 
+           serial.includes(query) || 
+           code.includes(query) || 
+           brand.includes(query) || 
+           model.includes(query);
   });
 
   // Cargar layout desde la base de datos
@@ -1461,8 +1479,73 @@ export default function LaboratorioMapa({ selectedLab, isAdmin, onSaveSuccess, o
               {/* Cajón de Computadoras sin Ubicar (Estilo Tarjetas) */}
               <div>
                 <span style={{ fontSize: '11.5px', fontWeight: '800', color: 'var(--text-secondary)', textTransform: 'uppercase', display: 'block', marginBottom: 8 }}>
-                  PCs sin Colocar ({unassignedBienes.length})
+                  {pcSearchQuery ? `PCs sin Colocar (${filteredUnassignedBienes.length} de ${unassignedBienes.length})` : `PCs sin Colocar (${unassignedBienes.length})`}
                 </span>
+
+                {/* Barra de Búsqueda Premium */}
+                {unassignedBienes.length > 0 && (
+                  <div style={{ position: 'relative', marginBottom: '10px' }}>
+                    <input
+                      type="text"
+                      placeholder="Buscar por S/N, Código o Host..."
+                      value={pcSearchQuery}
+                      onChange={(e) => setPcSearchQuery(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '8px 12px 8px 30px',
+                        fontSize: '11.5px',
+                        borderRadius: 'var(--radius-md)',
+                        border: '1px solid var(--border)',
+                        background: 'var(--bg-body)',
+                        color: 'var(--text-primary)',
+                        outline: 'none',
+                        transition: 'all 0.15s ease'
+                      }}
+                      className="pc-search-input"
+                    />
+                    <svg 
+                      width="12" 
+                      height="12" 
+                      viewBox="0 0 24 24" 
+                      fill="none" 
+                      stroke="var(--text-secondary)" 
+                      strokeWidth="2.5" 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round"
+                      style={{
+                        position: 'absolute',
+                        left: '10px',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        opacity: 0.7
+                      }}
+                    >
+                      <circle cx="11" cy="11" r="8"></circle>
+                      <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    {pcSearchQuery && (
+                      <button
+                        onClick={() => setPcSearchQuery('')}
+                        style={{
+                          position: 'absolute',
+                          right: '8px',
+                          top: '50%',
+                          transform: 'translateY(-50%)',
+                          background: 'none',
+                          border: 'none',
+                          color: 'var(--text-secondary)',
+                          cursor: 'pointer',
+                          fontSize: '11px',
+                          fontWeight: 'bold',
+                          padding: '2px 6px'
+                        }}
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+                )}
+
                 {unassignedBienes.length === 0 ? (
                   <div style={{
                     padding: 16,
@@ -1476,16 +1559,29 @@ export default function LaboratorioMapa({ selectedLab, isAdmin, onSaveSuccess, o
                       Todas las PCs colocadas.
                     </p>
                   </div>
+                ) : filteredUnassignedBienes.length === 0 ? (
+                  <div style={{
+                    padding: 20,
+                    border: '1px dashed var(--border)',
+                    borderRadius: 'var(--radius-md)',
+                    textAlign: 'center',
+                    background: 'var(--bg-body)'
+                  }}>
+                    <span style={{ fontSize: 16 }}>🔍</span>
+                    <p style={{ margin: '4px 0 0', fontSize: 11, color: 'var(--text-secondary)', fontStyle: 'italic' }}>
+                      No se encontraron PCs coincidentes.
+                    </p>
+                  </div>
                 ) : (
                   <div style={{
-                    maxHeight: '180px',
+                    maxHeight: '340px',
                     overflowY: 'auto',
                     display: 'flex',
                     flexDirection: 'column',
                     gap: 6,
                     paddingRight: 4
                   }}>
-                    {unassignedBienes.map(b => {
+                    {filteredUnassignedBienes.map(b => {
                       const isSelectedTool = selectedTool && selectedTool.bienId === b.id;
                       return (
                         <div
@@ -1493,16 +1589,17 @@ export default function LaboratorioMapa({ selectedLab, isAdmin, onSaveSuccess, o
                           onClick={() => selectPcToPlace(b.id)}
                           className="drawer-pc-card"
                           style={{
-                            padding: '8px 12px',
+                            padding: '10px 12px',
                             border: isSelectedTool ? '1.5px solid var(--primary)' : '1px solid var(--border)',
-                            borderRadius: 'var(--radius-sm)',
+                            borderRadius: 'var(--radius-md)',
                             background: isSelectedTool ? 'rgba(0, 113, 106, 0.05)' : 'var(--bg-card)',
                             cursor: 'pointer',
                             transition: 'all 0.2s ease',
                             display: 'flex',
                             alignItems: 'center',
                             gap: 10,
-                            position: 'relative'
+                            position: 'relative',
+                            boxShadow: isSelectedTool ? '0 2px 6px rgba(0, 113, 106, 0.08)' : 'none'
                           }}
                         >
                           {/* Indicador de arrastre */}
@@ -1512,30 +1609,55 @@ export default function LaboratorioMapa({ selectedLab, isAdmin, onSaveSuccess, o
                             <div style={{ display: 'flex', gap: 2 }}><span style={dotStyle}/><span style={dotStyle}/></div>
                           </div>
                           
-                          <div style={{ flex: 1, overflow: 'hidden' }}>
+                          <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column', gap: 2 }}>
                             <div style={{
                               fontSize: '11px',
                               fontWeight: '700',
                               color: isSelectedTool ? 'var(--primary)' : 'var(--text-primary)',
                               whiteSpace: 'nowrap',
                               overflow: 'hidden',
-                              textOverflow: 'ellipsis'
+                              textOverflow: 'ellipsis',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 4
                             }}>
                               💻 {b.especificaciones?.host || b.marca}
+                              {b.especificaciones?.host && (
+                                <span style={{ fontSize: '9px', fontWeight: 'normal', color: 'var(--text-secondary)', opacity: 0.7 }}>
+                                  ({b.marca})
+                                </span>
+                              )}
                             </div>
-                            <div style={{ fontSize: '9px', color: 'var(--text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginTop: 2 }}>
-                              {b.modelo}
+                            <div style={{
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: 1.5,
+                              fontSize: '9.5px',
+                              color: 'var(--text-secondary)',
+                              paddingLeft: 2
+                            }}>
+                              <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                {b.modelo}
+                              </div>
+                              <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
+                                <span>S/N: <span style={{ fontFamily: 'monospace', fontSize: '9px', fontWeight: '500' }}>{b.numero_serie || '—'}</span></span>
+                                {b.especificaciones?.ip && (
+                                  <span>• IP: <span style={{ fontFamily: 'monospace', fontSize: '9px' }}>{b.especificaciones.ip}</span></span>
+                                )}
+                              </div>
                             </div>
                           </div>
 
                           <span style={{
-                            fontSize: '9px',
+                            fontSize: '8.5px',
                             fontFamily: 'monospace',
-                            color: 'var(--text-secondary)',
-                            background: 'var(--bg-body)',
-                            padding: '1px 4px',
-                            borderRadius: 3,
-                            border: '1px solid var(--border-light)'
+                            color: isSelectedTool ? 'var(--primary)' : 'var(--text-secondary)',
+                            background: isSelectedTool ? 'rgba(0, 113, 106, 0.08)' : 'var(--bg-body)',
+                            padding: '2px 5px',
+                            borderRadius: '4px',
+                            border: isSelectedTool ? '1px solid rgba(0, 113, 106, 0.2)' : '1px solid var(--border-light)',
+                            fontWeight: '600',
+                            alignSelf: 'flex-start'
                           }}>
                             {b.codigo_inventario?.startsWith('SIN-NUMERO-') ? 'S/N' : b.codigo_inventario}
                           </span>
@@ -1769,6 +1891,11 @@ export default function LaboratorioMapa({ selectedLab, isAdmin, onSaveSuccess, o
         .selected-item-glow {
           animation: select-pulse 1.8s infinite ease-in-out !important;
           border-width: 2px !important;
+        }
+        .pc-search-input:focus {
+          border-color: var(--primary) !important;
+          box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15) !important;
+          background: var(--bg-card) !important;
         }
       `}</style>
     </div>
