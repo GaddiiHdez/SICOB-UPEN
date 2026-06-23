@@ -45,6 +45,15 @@ export default function ModalFichaBien({
   const categoryName = currentBien.categoria?.nombre || currentBien.categoria || '';
   const isPC = categoryName === 'Computadoras de Escritorio' || categoryName === 'Laptops' || currentBien.tipo === 'Desktop' || currentBien.tipo === 'Laptop';
   const isMonitor = categoryName === 'Monitores' || currentBien.tipo === 'Monitor';
+  
+  const categoryNameLower = categoryName.toLowerCase();
+  const isPrinterOrMultifunctional = 
+    categoryNameLower.includes('impres') || 
+    categoryNameLower.includes('multifuncional') || 
+    categoryNameLower.includes('copiadora') ||
+    String(currentBien.tipo || '').toLowerCase().includes('impresora') ||
+    String(currentBien.tipo || '').toLowerCase().includes('multifuncional') ||
+    String(currentBien.tipo || '').toLowerCase().includes('copiadora');
 
   // Safe references in case raw model object is passed
   const etiqueta = currentBien.etiqueta || currentBien.codigo_inventario || '';
@@ -1204,88 +1213,90 @@ export default function ModalFichaBien({
             </div>
 
             {/* SECCIÓN: Reemplazos de Suministros (Tóner / Tinta / etc.) */}
-            <div style={{ marginTop: 24 }}>
-              <h3 style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
-                🖨️ Reemplazos de Suministros (Tóners y Tintas)
-              </h3>
-              {loadingReplacements ? (
-                <div style={{ fontSize: 12, color: 'var(--text-secondary)', padding: '10px 0' }}>
-                  ⏳ Cargando registro de suministros...
-                </div>
-              ) : (replacements.length === 0) ? (
-                <div style={{ fontSize: 12, color: 'var(--text-secondary)', fontStyle: 'italic', padding: '10px 0' }}>
-                  Este equipo no registra reemplazos de consumibles o suministros en el sistema.
-                </div>
-              ) : (
-                <div style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 12,
-                  border: '1px solid var(--border)',
-                  borderRadius: 'var(--radius-md)',
-                  padding: '16px',
-                  background: 'var(--bg-body)',
-                  maxHeight: '180px',
-                  overflowY: 'auto'
-                }}>
-                  {replacements.map((mov, index) => {
-                    const dateStr = new Date(mov.fecha).toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-                    return (
-                      <div 
-                        key={mov.id} 
-                        style={{ 
-                          display: 'flex', 
-                          gap: 12, 
-                          alignItems: 'flex-start',
-                          paddingBottom: index !== replacements.length - 1 ? 12 : 0,
-                          borderBottom: index !== replacements.length - 1 ? '1px solid var(--border)' : 'none'
-                        }}
-                      >
-                        <div style={{
-                          width: 8,
-                          height: 8,
-                          borderRadius: '50%',
-                          background: '#0D9488',
-                          marginTop: 5,
-                          flexShrink: 0
-                        }} />
-                        <div style={{ flex: 1 }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)' }}>
-                              ⚡ {mov.consumible?.nombre || 'Consumible'} ({mov.consumible?.marca || ''})
-                            </span>
-                            <span style={{ 
-                              fontSize: 10, 
-                              fontWeight: 700, 
-                              color: '#0D9488',
-                              background: 'rgba(13, 148, 136, 0.1)',
-                              padding: '2px 6px',
-                              borderRadius: 4
-                            }}>
-                              -{mov.cantidad} pza(s)
-                            </span>
-                          </div>
-                          <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 4 }}>
-                            {mov.consumible?.modelo ? `Modelo: ${mov.consumible.modelo}` : ''}
-                            {mov.consumible?.color && mov.consumible.color !== 'N/A' ? ` • Color: ${mov.consumible.color}` : ''}
-                            {mov.consumible?.rendimiento ? ` • Rendimiento: ${mov.consumible.rendimiento} págs` : ''}
-                          </div>
-                          <div style={{ fontSize: 10, color: 'var(--text-secondary)', marginTop: 4, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-                            <span><strong>Fecha:</strong> {dateStr}</span>
-                            {mov.personal?.nombre && (
-                              <span><strong>Instaló:</strong> {mov.personal.nombre}</span>
-                            )}
-                            {mov.motivo && (
-                              <span style={{ fontStyle: 'italic' }}>&quot;{mov.motivo}&quot;</span>
-                            )}
+            {isPrinterOrMultifunctional && (
+              <div style={{ marginTop: 24 }}>
+                <h3 style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+                  🖨️ Reemplazos de Suministros (Tóners y Tintas)
+                </h3>
+                {loadingReplacements ? (
+                  <div style={{ fontSize: 12, color: 'var(--text-secondary)', padding: '10px 0' }}>
+                    ⏳ Cargando registro de suministros...
+                  </div>
+                ) : (replacements.length === 0) ? (
+                  <div style={{ fontSize: 12, color: 'var(--text-secondary)', fontStyle: 'italic', padding: '10px 0' }}>
+                    Este equipo no registra reemplazos de consumibles o suministros en el sistema.
+                  </div>
+                ) : (
+                  <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 12,
+                    border: '1px solid var(--border)',
+                    borderRadius: 'var(--radius-md)',
+                    padding: '16px',
+                    background: 'var(--bg-body)',
+                    maxHeight: '180px',
+                    overflowY: 'auto'
+                  }}>
+                    {replacements.map((mov, index) => {
+                      const dateStr = new Date(mov.fecha).toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                      return (
+                        <div 
+                          key={mov.id} 
+                          style={{ 
+                            display: 'flex', 
+                            gap: 12, 
+                            alignItems: 'flex-start',
+                            paddingBottom: index !== replacements.length - 1 ? 12 : 0,
+                            borderBottom: index !== replacements.length - 1 ? '1px solid var(--border)' : 'none'
+                          }}
+                        >
+                          <div style={{
+                            width: 8,
+                            height: 8,
+                            borderRadius: '50%',
+                            background: '#0D9488',
+                            marginTop: 5,
+                            flexShrink: 0
+                          }} />
+                          <div style={{ flex: 1 }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)' }}>
+                                ⚡ {mov.consumible?.nombre || 'Consumible'} ({mov.consumible?.marca || ''})
+                              </span>
+                              <span style={{ 
+                                fontSize: 10, 
+                                fontWeight: 700, 
+                                color: '#0D9488',
+                                background: 'rgba(13, 148, 136, 0.1)',
+                                padding: '2px 6px',
+                                borderRadius: 4
+                              }}>
+                                -{mov.cantidad} pza(s)
+                              </span>
+                            </div>
+                            <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 4 }}>
+                              {mov.consumible?.modelo ? `Modelo: ${mov.consumible.modelo}` : ''}
+                              {mov.consumible?.color && mov.consumible.color !== 'N/A' ? ` • Color: ${mov.consumible.color}` : ''}
+                              {mov.consumible?.rendimiento ? ` • Rendimiento: ${mov.consumible.rendimiento} págs` : ''}
+                            </div>
+                            <div style={{ fontSize: 10, color: 'var(--text-secondary)', marginTop: 4, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                              <span><strong>Fecha:</strong> {dateStr}</span>
+                              {mov.personal?.nombre && (
+                                <span><strong>Instaló:</strong> {mov.personal.nombre}</span>
+                              )}
+                              {mov.motivo && (
+                                <span style={{ fontStyle: 'italic' }}>&quot;{mov.motivo}&quot;</span>
+                              )}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
