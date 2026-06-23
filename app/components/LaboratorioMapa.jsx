@@ -28,8 +28,11 @@ export default function LaboratorioMapa({ selectedLab, isAdmin, onSaveSuccess, o
   // Limpiar PCs huérfanas
   const currentPcs = pcs.filter(p => activeBienes.some(b => b.id === p.bienId));
   
-  // Obtener bienes que no están colocados en el mapa
-  const unassignedBienes = activeBienes.filter(b => !currentPcs.some(p => p.bienId === b.id));
+  // Obtener bienes que no están colocados en el mapa (filtrando solo computadoras reales)
+  const unassignedBienes = activeBienes.filter(b => 
+    (b.tipo === 'Desktop' || b.tipo === 'Laptop' || b.tipo === 'Computadora') && 
+    !currentPcs.some(p => p.bienId === b.id)
+  );
 
   // Cargar layout desde la base de datos
   useEffect(() => {
@@ -1001,41 +1004,54 @@ export default function LaboratorioMapa({ selectedLab, isAdmin, onSaveSuccess, o
                     )}
 
                     {/* Tooltip Card Premium */}
-                    {!isEditing && (
-                      <div className="pc-tooltip-card">
-                        <div style={{
-                          fontWeight: '800',
-                          fontSize: '11.5px',
-                          borderBottom: '1px solid rgba(255,255,255,0.1)',
-                          paddingBottom: 6,
-                          marginBottom: 6,
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 6
-                        }}>
-                          <span style={{ width: 6, height: 6, borderRadius: '50%', background: statusColor, boxShadow: `0 0 6px ${statusColor}` }} />
-                          {details.marca} {details.modelo}
+                    {!isEditing && (() => {
+                      const monitor = details.especificaciones?.monitorId 
+                        ? activeBienes.find(m => m.id === Number(details.especificaciones.monitorId)) 
+                        : null;
+                      return (
+                        <div className="pc-tooltip-card">
+                          <div style={{
+                            fontWeight: '800',
+                            fontSize: '11.5px',
+                            borderBottom: '1px solid rgba(255,255,255,0.1)',
+                            paddingBottom: 6,
+                            marginBottom: 6,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 6
+                          }}>
+                            <span style={{ width: 6, height: 6, borderRadius: '50%', background: statusColor, boxShadow: `0 0 6px ${statusColor}` }} />
+                            {details.marca} {details.modelo}
+                          </div>
+                          <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '4px 10px', fontSize: '10px', color: 'rgba(255,255,255,0.7)' }}>
+                            <span style={{ fontWeight: '700' }}>Host:</span> <span style={{ fontFamily: 'monospace', color: '#ffffff' }}>{details.especificaciones?.host || '—'}</span>
+                            <span style={{ fontWeight: '700' }}>IP:</span> <span style={{ fontFamily: 'monospace', color: '#ffffff' }}>{details.especificaciones?.ip || '—'}</span>
+                            <span style={{ fontWeight: '700' }}>S/N:</span> <span style={{ fontFamily: 'monospace', color: '#ffffff' }}>{details.numero_serie || '—'}</span>
+                            <span style={{ fontWeight: '700' }}>Código:</span> <span style={{ color: '#ffffff' }}>{details.codigo_inventario?.startsWith('SIN-NUMERO-') ? 'S/N' : details.codigo_inventario}</span>
+                            <span style={{ fontWeight: '700' }}>Estado:</span> <span style={{ color: statusColor, fontWeight: '800' }}>{details.estado}</span>
+                            {monitor && (
+                              <>
+                                <span style={{ fontWeight: '700' }}>Monitor:</span> 
+                                <span style={{ color: '#5eead4', fontWeight: '600' }}>
+                                  🖥️ {monitor.marca} {monitor.modelo} ({monitor.numero_serie || 'S/N'})
+                                </span>
+                              </>
+                            )}
+                          </div>
+                          <div style={{
+                            fontSize: '8.5px',
+                            color: 'rgba(255,255,255,0.4)',
+                            textAlign: 'center',
+                            borderTop: '1px solid rgba(255,255,255,0.1)',
+                            paddingTop: 5,
+                            marginTop: 8,
+                            fontStyle: 'italic'
+                          }}>
+                            Doble clic para ver ficha técnica
+                          </div>
                         </div>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '4px 10px', fontSize: '10px', color: 'rgba(255,255,255,0.7)' }}>
-                          <span style={{ fontWeight: '700' }}>Host:</span> <span style={{ fontFamily: 'monospace', color: '#ffffff' }}>{details.especificaciones?.host || '—'}</span>
-                          <span style={{ fontWeight: '700' }}>IP:</span> <span style={{ fontFamily: 'monospace', color: '#ffffff' }}>{details.especificaciones?.ip || '—'}</span>
-                          <span style={{ fontWeight: '700' }}>S/N:</span> <span style={{ fontFamily: 'monospace', color: '#ffffff' }}>{details.numero_serie || '—'}</span>
-                          <span style={{ fontWeight: '700' }}>Código:</span> <span style={{ color: '#ffffff' }}>{details.codigo_inventario?.startsWith('SIN-NUMERO-') ? 'S/N' : details.codigo_inventario}</span>
-                          <span style={{ fontWeight: '700' }}>Estado:</span> <span style={{ color: statusColor, fontWeight: '800' }}>{details.estado}</span>
-                        </div>
-                        <div style={{
-                          fontSize: '8.5px',
-                          color: 'rgba(255,255,255,0.4)',
-                          textAlign: 'center',
-                          borderTop: '1px solid rgba(255,255,255,0.1)',
-                          paddingTop: 5,
-                          marginTop: 8,
-                          fontStyle: 'italic'
-                        }}>
-                          Doble clic para ver ficha técnica
-                        </div>
-                      </div>
-                    )}
+                      );
+                    })()}
                     {isEditing && isSelected && renderQuickActions(item)}
                   </div>
                 );
@@ -1348,6 +1364,9 @@ export default function LaboratorioMapa({ selectedLab, isAdmin, onSaveSuccess, o
                   
                   {(() => {
                     const b = getBienDetails(selectedElement.id);
+                    const monitor = b.especificaciones?.monitorId 
+                      ? activeBienes.find(m => m.id === Number(b.especificaciones.monitorId)) 
+                      : null;
                     return (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: 12 }}>
                         <div><strong style={{ color: 'var(--text-secondary)' }}>Equipo:</strong> {b.marca} {b.modelo}</div>
@@ -1355,6 +1374,16 @@ export default function LaboratorioMapa({ selectedLab, isAdmin, onSaveSuccess, o
                         <div><strong style={{ color: 'var(--text-secondary)' }}>Cód. Inv:</strong> <span style={{ fontFamily: 'monospace', fontWeight: '600' }}>{b.codigo_inventario?.startsWith('SIN-NUMERO-') ? 'S/N' : b.codigo_inventario}</span></div>
                         <div><strong style={{ color: 'var(--text-secondary)' }}>Host:</strong> <span style={{ fontFamily: 'monospace', color: 'var(--primary)', fontWeight: '700' }}>{b.especificaciones?.host || '—'}</span></div>
                         <div><strong style={{ color: 'var(--text-secondary)' }}>Dirección IP:</strong> <span style={{ fontFamily: 'monospace', color: 'var(--primary)', fontWeight: '700' }}>{b.especificaciones?.ip || '—'}</span></div>
+                        <div>
+                          <strong style={{ color: 'var(--text-secondary)' }}>🖥️ Monitor:</strong>{' '}
+                          {monitor ? (
+                            <span style={{ color: 'var(--primary)', fontWeight: '600' }}>
+                              {monitor.marca} {monitor.modelo} <span style={{ fontSize: 10, color: 'var(--text-secondary)', fontWeight: '400' }}>(S/N: {monitor.numero_serie || '—'})</span>
+                            </span>
+                          ) : (
+                            <span style={{ color: 'var(--text-secondary)', fontStyle: 'italic' }}>Sin monitor enlazado</span>
+                          )}
+                        </div>
                         
                         <button
                           onClick={() => onViewFicha && onViewFicha(b)}

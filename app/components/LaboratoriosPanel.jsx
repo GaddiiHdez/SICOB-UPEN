@@ -19,9 +19,11 @@ export default function LaboratoriosPanel({ ubicaciones = [], bienes = [], showT
 
   const labSuggestions = useMemo(() => {
     return unlinkedLocations.filter(u => {
-      const nameMatch = /lab|comput|redes|aula/i.test(u.nombre);
       const pcsInLocation = bienes.filter(b => b.ubicacionId === u.id && !b.eliminado);
-      return nameMatch || pcsInLocation.length > 0;
+      const hasPcs = pcsInLocation.length > 0;
+      // Solo sugerir por nombre si contiene palabras de laboratorio/cómputo y NO es bodega, aula, oficina o site
+      const isStrictLabName = /lab|comput|redes/i.test(u.nombre) && !/bodega|oficina|site|aula/i.test(u.nombre);
+      return hasPcs || isStrictLabName;
     }).map(u => {
       const pcsInLocation = bienes.filter(b => b.ubicacionId === u.id && !b.eliminado);
       return {
@@ -813,6 +815,17 @@ export default function LaboratoriosPanel({ ubicaciones = [], bienes = [], showT
                       const hostVal = specs.host || '';
                       const ipVal = specs.ip || '';
                       
+                      const cat = row.categoria?.nombre || row.categoria || '';
+                      const isRowPC = cat === 'Computadoras de Escritorio' || cat === 'Laptops' || row.tipo === 'Desktop' || row.tipo === 'Laptop' || row.tipo === 'Computadora';
+                      const isRowMonitor = cat === 'Monitores' || row.tipo === 'Monitor';
+                      
+                      let linkedDevice = null;
+                      if (isRowPC && specs.monitorId) {
+                        linkedDevice = selectedLab.ubicacion.bienes.find(b => b.id === Number(specs.monitorId));
+                      } else if (isRowMonitor && specs.pcId) {
+                        linkedDevice = selectedLab.ubicacion.bienes.find(b => b.id === Number(specs.pcId));
+                      }
+                      
                       return (
                         <tr 
                           key={row.id} 
@@ -824,13 +837,81 @@ export default function LaboratoriosPanel({ ubicaciones = [], bienes = [], showT
                           </td>
                           <td style={{ padding: '14px 20px', fontWeight: '600' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                              <span>💻</span>
+                              <span style={{ fontSize: '18px' }}>
+                                {isRowMonitor ? '🖥️' : isRowPC ? '💻' : '📦'}
+                              </span>
                               <div>
                                 <span>{row.marca}</span>
                                 <div style={{ fontSize: 10.5, color: 'var(--text-secondary)', fontWeight: '400' }}>{row.modelo}</div>
                                 <div className="bien-serial" style={{ marginTop: '2px' }}>
                                   S/N: {row.numero_serie || 'N/S'}
                                 </div>
+                                {isRowPC && (
+                                  linkedDevice ? (
+                                    <div style={{
+                                      marginTop: 4,
+                                      fontSize: 10,
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      gap: 4,
+                                      padding: '2px 6px',
+                                      borderRadius: 4,
+                                      background: 'rgba(0, 113, 106, 0.08)',
+                                      color: 'var(--primary)',
+                                      border: '1px solid rgba(0, 113, 106, 0.15)'
+                                    }}>
+                                      🖥️ Monitor: {linkedDevice.marca} {linkedDevice.modelo} <span style={{ fontSize: 9, opacity: 0.8 }}>(S/N: {linkedDevice.numero_serie || '—'})</span>
+                                    </div>
+                                  ) : (
+                                    <div style={{
+                                      marginTop: 4,
+                                      fontSize: 10,
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      gap: 4,
+                                      padding: '2px 6px',
+                                      borderRadius: 4,
+                                      background: 'rgba(239, 68, 68, 0.06)',
+                                      color: 'var(--danger)',
+                                      border: '1px solid rgba(239, 68, 68, 0.15)'
+                                    }}>
+                                      ⚠️ Sin monitor asignado
+                                    </div>
+                                  )
+                                )}
+                                {isRowMonitor && (
+                                  linkedDevice ? (
+                                    <div style={{
+                                      marginTop: 4,
+                                      fontSize: 10,
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      gap: 4,
+                                      padding: '2px 6px',
+                                      borderRadius: 4,
+                                      background: 'rgba(14, 116, 144, 0.08)',
+                                      color: '#0e7490',
+                                      border: '1px solid rgba(14, 116, 144, 0.15)'
+                                    }}>
+                                      💻 PC: {linkedDevice.marca} {linkedDevice.modelo} <span style={{ fontSize: 9, opacity: 0.8 }}>(S/N: {linkedDevice.numero_serie || '—'})</span>
+                                    </div>
+                                  ) : (
+                                    <div style={{
+                                      marginTop: 4,
+                                      fontSize: 10,
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      gap: 4,
+                                      padding: '2px 6px',
+                                      borderRadius: 4,
+                                      background: 'rgba(234, 179, 8, 0.06)',
+                                      color: '#ca8a04',
+                                      border: '1px solid rgba(234, 179, 8, 0.15)'
+                                    }}>
+                                      ⚠️ Sin PC asignada
+                                    </div>
+                                  )
+                                )}
                               </div>
                             </div>
                           </td>
