@@ -155,114 +155,125 @@ export default function ModalFichaBien({
 
     if (isPC) {
       const monitorId = specifications.monitorId;
-      const linkedMonitor = monitorId ? bienes.find(b => b.id === monitorId) : null;
-
-      if (monitorId) {
+      const monitorIds = specifications.monitorIds || [];
+      const linkedMonitors = bienes.filter(b => {
+        const cat = b.categoria?.nombre || b.categoria || '';
+        const isMon = cat === 'Monitores' || b.tipo === 'Monitor';
         return (
-          <div style={{ marginBottom: 20, padding: 14, background: 'var(--bg-body)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)' }} className="no-print">
-            <h4 style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
-              🖥️ Monitor Vinculado
-            </h4>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-              {linkedMonitor ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
-                    {linkedMonitor.marca} {linkedMonitor.modelo}
-                  </span>
-                  <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
-                    Cód. Inv: <strong style={{ fontFamily: 'monospace' }}>{String(linkedMonitor.etiqueta || linkedMonitor.codigo_inventario || '').startsWith('SIN-NUMERO-') ? 'S/N' : (linkedMonitor.etiqueta || linkedMonitor.codigo_inventario)}</strong> | Serie: {linkedMonitor.serial || linkedMonitor.numero_serie || 'N/S'}
-                  </span>
-                </div>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                  <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontStyle: 'italic' }}>
-                    Monitor ID: {monitorId} (No encontrado en inventario activo)
-                  </span>
-                </div>
-              )}
-              <div style={{ display: 'flex', gap: 8 }}>
-                {linkedMonitor && onOpenFicha && (
-                  <button
-                    type="button"
-                    onClick={() => onOpenFicha(linkedMonitor)}
-                    className="btn btn-ghost"
-                    style={{ fontSize: 11, padding: '4px 8px', height: 'auto', minHeight: 'unset', display: 'flex', alignItems: 'center', gap: 4 }}
-                  >
-                    🔍 Ver Ficha
-                  </button>
-                )}
-                <button
-                  type="button"
-                  disabled={isLinking}
-                  onClick={async () => {
-                    if (onUnlinkMonitor) {
-                      setIsLinking(true);
-                      try {
-                        await onUnlinkMonitor(currentBien.id, monitorId);
-                      } catch (err) {
-                        console.error(err);
-                      } finally {
-                        setIsLinking(false);
-                      }
-                    }
-                  }}
-                  className="btn btn-danger-ghost"
-                  style={{ fontSize: 11, padding: '4px 8px', height: 'auto', minHeight: 'unset', color: '#ef4444', display: 'flex', alignItems: 'center', gap: 4 }}
-                >
-                  {isLinking ? 'Desvinculando...' : '🔗 Desvincular'}
-                </button>
-              </div>
-            </div>
-          </div>
+          isMon &&
+          !b.eliminado &&
+          (b.especificaciones?.pcId === currentBien.id ||
+           b.id === Number(monitorId) ||
+           monitorIds.map(Number).includes(b.id))
         );
-      } else {
-        const sameLocationMonitors = bienes.filter(b => {
-          const cat = b.categoria?.nombre || b.categoria || '';
-          const isMon = cat === 'Monitores' || b.tipo === 'Monitor';
-          return (
-            isMon &&
-            b.id !== currentBien.id &&
-            b.ubicacionId === currentBien.ubicacionId &&
-            !b.especificaciones?.pcId &&
-            !b.eliminado
-          );
-        });
+      });
 
-        const filteredMonitors = sameLocationMonitors.filter(m => {
-          const text = `${m.marca} ${m.modelo} ${m.etiqueta || m.codigo_inventario || ''} ${m.serial || m.numero_serie || ''}`.toLowerCase();
-          return text.includes(searchQuery.toLowerCase());
-        });
-
-        const handleLink = async () => {
-          if (!selectedAssociationId) return;
-          setIsLinking(true);
-          try {
-            await onLinkMonitor(currentBien.id, parseInt(selectedAssociationId, 10));
-            setSelectedAssociationId('');
-            setSearchQuery('');
-          } catch (err) {
-            console.error(err);
-          } finally {
-            setIsLinking(false);
-          }
-        };
-
+      const sameLocationMonitors = bienes.filter(b => {
+        const cat = b.categoria?.nombre || b.categoria || '';
+        const isMon = cat === 'Monitores' || b.tipo === 'Monitor';
         return (
-          <div style={{ marginBottom: 20, padding: 14, background: 'var(--bg-body)', border: '1px dashed var(--border)', borderRadius: 'var(--radius-md)' }} className="no-print">
-            <h4 style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
-              🖥️ Monitor Vinculado
-            </h4>
-            <p style={{ fontSize: 11, color: 'var(--text-secondary)', marginBottom: 12 }}>
-              Este equipo no tiene un monitor asociado. Vincula un monitor disponible en el mismo laboratorio u oficina.
-            </p>
+          isMon &&
+          b.id !== currentBien.id &&
+          b.ubicacionId === currentBien.ubicacionId &&
+          !b.especificaciones?.pcId &&
+          !linkedMonitors.some(lm => lm.id === b.id) &&
+          !b.eliminado
+        );
+      });
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <div style={{ display: 'flex', gap: 8 }}>
-                <div style={{ position: 'relative', flex: 1 }}>
+      const filteredMonitors = sameLocationMonitors.filter(m => {
+        const text = `${m.marca} ${m.modelo} ${m.etiqueta || m.codigo_inventario || ''} ${m.serial || m.numero_serie || ''}`.toLowerCase();
+        return text.includes(searchQuery.toLowerCase());
+      });
+
+      const handleLink = async () => {
+        if (!selectedAssociationId) return;
+        setIsLinking(true);
+        try {
+          await onLinkMonitor(currentBien.id, parseInt(selectedAssociationId, 10));
+          setSelectedAssociationId('');
+          setSearchQuery('');
+        } catch (err) {
+          console.error(err);
+        } finally {
+          setIsLinking(false);
+        }
+      };
+
+      return (
+        <div style={{ marginBottom: 20, padding: 14, background: 'var(--bg-body)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)' }} className="no-print">
+          <h4 style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
+            🖥️ Monitores Vinculados ({linkedMonitors.length})
+          </h4>
+
+          {linkedMonitors.length > 0 ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: sameLocationMonitors.length > 0 ? 16 : 0 }}>
+              {linkedMonitors.map(monitor => (
+                <div key={monitor.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '8px 10px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
+                      {monitor.marca} {monitor.modelo}
+                    </span>
+                    <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
+                      Cód. Inv: <strong style={{ fontFamily: 'monospace' }}>{String(monitor.etiqueta || monitor.codigo_inventario || '').startsWith('SIN-NUMERO-') ? 'S/N' : (monitor.etiqueta || monitor.codigo_inventario)}</strong> | Serie: {monitor.serial || monitor.numero_serie || 'N/S'}
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', gap: 6 }}>
+                    {onOpenFicha && (
+                      <button
+                        type="button"
+                        onClick={() => onOpenFicha(monitor)}
+                        className="btn btn-ghost"
+                        style={{ fontSize: 11, padding: '4px 8px', height: 'auto', minHeight: 'unset', display: 'flex', alignItems: 'center', gap: 4 }}
+                      >
+                        🔍 Ver Ficha
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      disabled={isLinking}
+                      onClick={async () => {
+                        if (onUnlinkMonitor) {
+                          setIsLinking(true);
+                          try {
+                            await onUnlinkMonitor(currentBien.id, monitor.id);
+                          } catch (err) {
+                            console.error(err);
+                          } finally {
+                            setIsLinking(false);
+                          }
+                        }
+                      }}
+                      className="btn btn-danger-ghost"
+                      style={{ fontSize: 11, padding: '4px 8px', height: 'auto', minHeight: 'unset', color: '#ef4444', display: 'flex', alignItems: 'center', gap: 4 }}
+                    >
+                      {isLinking ? 'Desvinculando...' : '🔗 Desvincular'}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p style={{ fontSize: 11, color: 'var(--text-secondary)', marginBottom: 12 }}>
+              Este equipo no tiene ningún monitor asociado. Vincula un monitor disponible en el mismo laboratorio u oficina.
+            </p>
+          )}
+
+          {sameLocationMonitors.length > 0 ? (
+            <div style={{
+              marginTop: linkedMonitors.length > 0 ? 12 : 0,
+              paddingTop: linkedMonitors.length > 0 ? 12 : 0,
+              borderTop: linkedMonitors.length > 0 ? '1px dashed var(--border)' : 'none'
+            }}>
+              <span style={{ fontSize: 11.5, fontWeight: '700', color: 'var(--text-secondary)', display: 'block', marginBottom: 8 }}>
+                {linkedMonitors.length > 0 ? '🔗 Vincular monitor adicional:' : '🔗 Vincular un monitor:'}
+              </span>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <div style={{ position: 'relative', width: '100%' }}>
                   <input
                     type="text"
                     disabled={isLinking}
-                    placeholder="Buscar monitor disponible en la misma ubicación..."
+                    placeholder="Buscar monitor disponible..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     style={{
@@ -296,13 +307,7 @@ export default function ModalFichaBien({
                     </button>
                   )}
                 </div>
-              </div>
 
-              {sameLocationMonitors.length === 0 ? (
-                <div style={{ fontSize: 11, color: '#b45309', fontStyle: 'italic', padding: '4px 0' }}>
-                  ⚠️ No hay monitores disponibles (sin vincular) registrados en esta ubicación.
-                </div>
-              ) : (
                 <div style={{ display: 'flex', gap: 8 }}>
                   <select
                     disabled={isLinking}
@@ -348,11 +353,17 @@ export default function ModalFichaBien({
                     {isLinking ? 'Vinculando...' : '🔗 Vincular'}
                   </button>
                 </div>
-              )}
+              </div>
             </div>
-          </div>
-        );
-      }
+          ) : (
+            linkedMonitors.length === 0 && (
+              <div style={{ fontSize: 11, color: '#b45309', fontStyle: 'italic', padding: '4px 0' }}>
+                ⚠️ No hay monitores disponibles (sin vincular) registrados en esta ubicación.
+              </div>
+            )
+          )}
+        </div>
+      );
     }
 
     if (isMonitor) {

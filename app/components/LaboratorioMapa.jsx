@@ -1005,9 +1005,19 @@ export default function LaboratorioMapa({ selectedLab, isAdmin, onSaveSuccess, o
 
                     {/* Tooltip Card Premium */}
                     {!isEditing && (() => {
-                      const monitor = details.especificaciones?.monitorId 
-                        ? activeBienes.find(m => m.id === Number(details.especificaciones.monitorId)) 
-                        : null;
+                      const monitorId = details.especificaciones?.monitorId;
+                      const monitorIds = details.especificaciones?.monitorIds || [];
+                      const linkedMonitors = activeBienes.filter(m => {
+                        const cat = m.categoria?.nombre || m.categoria || '';
+                        const isMon = cat === 'Monitores' || m.tipo === 'Monitor';
+                        return (
+                          isMon &&
+                          !m.eliminado &&
+                          (m.especificaciones?.pcId === details.id ||
+                           m.id === Number(monitorId) ||
+                           monitorIds.map(Number).includes(m.id))
+                        );
+                      });
                       return (
                         <div className="pc-tooltip-card">
                           <div style={{
@@ -1029,11 +1039,13 @@ export default function LaboratorioMapa({ selectedLab, isAdmin, onSaveSuccess, o
                             <span style={{ fontWeight: '700' }}>S/N:</span> <span style={{ fontFamily: 'monospace', color: '#ffffff' }}>{details.numero_serie || '—'}</span>
                             <span style={{ fontWeight: '700' }}>Código:</span> <span style={{ color: '#ffffff' }}>{details.codigo_inventario?.startsWith('SIN-NUMERO-') ? 'S/N' : details.codigo_inventario}</span>
                             <span style={{ fontWeight: '700' }}>Estado:</span> <span style={{ color: statusColor, fontWeight: '800' }}>{details.estado}</span>
-                            {monitor && (
+                            {linkedMonitors.length > 0 && (
                               <>
-                                <span style={{ fontWeight: '700' }}>Monitor:</span> 
-                                <span style={{ color: '#5eead4', fontWeight: '600' }}>
-                                  🖥️ {monitor.marca} {monitor.modelo} ({monitor.numero_serie || 'S/N'})
+                                <span style={{ fontWeight: '700' }}>{linkedMonitors.length > 1 ? 'Monitores:' : 'Monitor:'}</span> 
+                                <span style={{ color: '#5eead4', fontWeight: '600', display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                  {linkedMonitors.map(m => (
+                                    <span key={m.id}>🖥️ {m.marca} {m.modelo} ({m.numero_serie || 'S/N'})</span>
+                                  ))}
                                 </span>
                               </>
                             )}
@@ -1364,9 +1376,19 @@ export default function LaboratorioMapa({ selectedLab, isAdmin, onSaveSuccess, o
                   
                   {(() => {
                     const b = getBienDetails(selectedElement.id);
-                    const monitor = b.especificaciones?.monitorId 
-                      ? activeBienes.find(m => m.id === Number(b.especificaciones.monitorId)) 
-                      : null;
+                    const monitorId = b.especificaciones?.monitorId;
+                    const monitorIds = b.especificaciones?.monitorIds || [];
+                    const linkedMonitors = activeBienes.filter(m => {
+                      const cat = m.categoria?.nombre || m.categoria || '';
+                      const isMon = cat === 'Monitores' || m.tipo === 'Monitor';
+                      return (
+                        isMon &&
+                        !m.eliminado &&
+                        (m.especificaciones?.pcId === b.id ||
+                         m.id === Number(monitorId) ||
+                         monitorIds.map(Number).includes(m.id))
+                      );
+                    });
                     return (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: 12 }}>
                         <div><strong style={{ color: 'var(--text-secondary)' }}>Equipo:</strong> {b.marca} {b.modelo}</div>
@@ -1375,11 +1397,15 @@ export default function LaboratorioMapa({ selectedLab, isAdmin, onSaveSuccess, o
                         <div><strong style={{ color: 'var(--text-secondary)' }}>Host:</strong> <span style={{ fontFamily: 'monospace', color: 'var(--primary)', fontWeight: '700' }}>{b.especificaciones?.host || '—'}</span></div>
                         <div><strong style={{ color: 'var(--text-secondary)' }}>Dirección IP:</strong> <span style={{ fontFamily: 'monospace', color: 'var(--primary)', fontWeight: '700' }}>{b.especificaciones?.ip || '—'}</span></div>
                         <div>
-                          <strong style={{ color: 'var(--text-secondary)' }}>🖥️ Monitor:</strong>{' '}
-                          {monitor ? (
-                            <span style={{ color: 'var(--primary)', fontWeight: '600' }}>
-                              {monitor.marca} {monitor.modelo} <span style={{ fontSize: 10, color: 'var(--text-secondary)', fontWeight: '400' }}>(S/N: {monitor.numero_serie || '—'})</span>
-                            </span>
+                          <strong style={{ color: 'var(--text-secondary)' }}>🖥️ {linkedMonitors.length > 1 ? 'Monitores:' : 'Monitor:'}</strong>{' '}
+                          {linkedMonitors.length > 0 ? (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 4, paddingLeft: 8 }}>
+                              {linkedMonitors.map(monitor => (
+                                <span key={monitor.id} style={{ color: 'var(--primary)', fontWeight: '600' }}>
+                                  🖥️ {monitor.marca} {monitor.modelo} <span style={{ fontSize: 10, color: 'var(--text-secondary)', fontWeight: '400' }}>(S/N: {monitor.numero_serie || '—'})</span>
+                                </span>
+                              ))}
+                            </div>
                           ) : (
                             <span style={{ color: 'var(--text-secondary)', fontStyle: 'italic' }}>Sin monitor enlazado</span>
                           )}

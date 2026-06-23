@@ -326,6 +326,13 @@ export default function HomePage() {
     if (!pc || !monitor) return;
 
     try {
+      const currentMonitorIds = Array.isArray(pc.especificaciones?.monitorIds)
+        ? pc.especificaciones.monitorIds
+        : pc.especificaciones?.monitorId
+          ? [pc.especificaciones.monitorId]
+          : [];
+      const newMonitorIds = Array.from(new Set([...currentMonitorIds, monitor.id].map(Number)));
+
       const payloadPc = {
         id: pc.id,
         codigo_inventario: pc.etiqueta,
@@ -339,7 +346,8 @@ export default function HomePage() {
         departamentoId: pc.departamentoId,
         especificaciones: {
           ...pc.especificaciones,
-          monitorId: monitor.id
+          monitorId: monitor.id,
+          monitorIds: newMonitorIds
         }
       };
 
@@ -389,7 +397,11 @@ export default function HomePage() {
           if (prev.id === pcId) {
             return {
               ...prev,
-              especificaciones: { ...prev.especificaciones, monitorId },
+              especificaciones: {
+                ...prev.especificaciones,
+                monitorId: monitor.id,
+                monitorIds: newMonitorIds
+              },
               updatedAt: new Date().toISOString()
             };
           }
@@ -418,7 +430,22 @@ export default function HomePage() {
       const promises = [];
 
       if (pc) {
-        const { monitorId: _, ...cleanPcSpecs } = pc.especificaciones || {};
+        const currentMonitorIds = Array.isArray(pc.especificaciones?.monitorIds)
+          ? pc.especificaciones.monitorIds
+          : pc.especificaciones?.monitorId
+            ? [pc.especificaciones.monitorId]
+            : [];
+        const newMonitorIds = currentMonitorIds.map(Number).filter(id => id !== Number(monitorId));
+        
+        const cleanPcSpecs = { ...(pc.especificaciones || {}) };
+        if (newMonitorIds.length === 0) {
+          delete cleanPcSpecs.monitorId;
+          delete cleanPcSpecs.monitorIds;
+        } else {
+          cleanPcSpecs.monitorIds = newMonitorIds;
+          cleanPcSpecs.monitorId = newMonitorIds[newMonitorIds.length - 1];
+        }
+
         const payloadPc = {
           id: pc.id,
           codigo_inventario: pc.etiqueta,
@@ -484,7 +511,20 @@ export default function HomePage() {
         setSelectedFichaBien(prev => {
           if (!prev) return null;
           if (prev.id === pcId) {
-            const { monitorId: _, ...cleanSpecs } = prev.especificaciones || {};
+            const currentMonitorIds = Array.isArray(prev.especificaciones?.monitorIds)
+              ? prev.especificaciones.monitorIds
+              : prev.especificaciones?.monitorId
+                ? [prev.especificaciones.monitorId]
+                : [];
+            const newMonitorIds = currentMonitorIds.map(Number).filter(id => id !== Number(monitorId));
+            const cleanSpecs = { ...(prev.especificaciones || {}) };
+            if (newMonitorIds.length === 0) {
+              delete cleanSpecs.monitorId;
+              delete cleanSpecs.monitorIds;
+            } else {
+              cleanSpecs.monitorIds = newMonitorIds;
+              cleanSpecs.monitorId = newMonitorIds[newMonitorIds.length - 1];
+            }
             return {
               ...prev,
               especificaciones: cleanSpecs,
