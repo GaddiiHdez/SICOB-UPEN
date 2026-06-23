@@ -431,9 +431,7 @@ export default function LaboratorioMapa({ selectedLab, isAdmin, onSaveSuccess, o
     }
   };
 
-  const renderQuickActions = (item) => {
-    const isTopRow = item.y === 0;
-    const counterRot = -item.rot;
+  const renderQuickActions = (item, left, top) => {
     return (
       <div
         className="context-floating-toolbar"
@@ -441,10 +439,9 @@ export default function LaboratorioMapa({ selectedLab, isAdmin, onSaveSuccess, o
         onMouseDown={(e) => e.stopPropagation()}
         style={{
           position: 'absolute',
-          left: '50%',
-          top: isTopRow ? '110%' : '-52px',
-          transform: `translateX(-50%) rotate(${counterRot}deg)`,
-          transformOrigin: 'center center',
+          left: left,
+          top: top,
+          transform: 'translateX(-50%)',
           background: 'rgba(15, 23, 42, 0.92)',
           backdropFilter: 'blur(10px)',
           border: '1px solid rgba(255, 255, 255, 0.15)',
@@ -456,7 +453,7 @@ export default function LaboratorioMapa({ selectedLab, isAdmin, onSaveSuccess, o
           boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.4)',
           zIndex: 1000,
           whiteSpace: 'nowrap',
-          transition: 'top 0.2s, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1)'
+          transition: draggedItem ? 'none' : 'all 0.15s cubic-bezier(0.16, 1, 0.3, 1)'
         }}
       >
         {/* Botón Rotar */}
@@ -846,7 +843,6 @@ export default function LaboratorioMapa({ selectedLab, isAdmin, onSaveSuccess, o
                       <span style={{ fontSize: '8.5px', fontWeight: '800', color: '#d97706', opacity: 0.6, letterSpacing: 0.5 }}>
                         MESA
                       </span>
-                      {isEditing && isSelected && renderQuickActions(item)}
                     </div>
                   );
                 }
@@ -901,7 +897,6 @@ export default function LaboratorioMapa({ selectedLab, isAdmin, onSaveSuccess, o
                           zIndex: 2
                         }} />
                       </div>
-                      {isEditing && isSelected && renderQuickActions(item)}
                     </div>
                   );
                 }
@@ -936,7 +931,6 @@ export default function LaboratorioMapa({ selectedLab, isAdmin, onSaveSuccess, o
                         {/* Arco de swing */}
                         <path d="M 0 0 A 36 36 0 0 1 36 36" stroke="var(--danger)" strokeWidth="1.5" strokeDasharray="3 3" opacity="0.5" />
                       </svg>
-                      {isEditing && isSelected && renderQuickActions(item)}
                     </div>
                   );
                 }
@@ -978,7 +972,6 @@ export default function LaboratorioMapa({ selectedLab, isAdmin, onSaveSuccess, o
                         {/* Repisa para marcadores */}
                         <div style={{ position: 'absolute', bottom: -1, left: '25%', right: '25%', height: 2, background: '#475569', borderRadius: 1 }} />
                       </div>
-                      {isEditing && isSelected && renderQuickActions(item)}
                     </div>
                   );
                 }
@@ -1033,7 +1026,6 @@ export default function LaboratorioMapa({ selectedLab, isAdmin, onSaveSuccess, o
                         </div>
                         <div style={{ position: 'absolute', bottom: 2, right: 6, width: 3, height: 3, borderRadius: '50%', background: '#10b981' }} />
                       </div>
-                      {isEditing && isSelected && renderQuickActions(item)}
                     </div>
                   );
                 }
@@ -1270,10 +1262,35 @@ export default function LaboratorioMapa({ selectedLab, isAdmin, onSaveSuccess, o
                         </div>
                       );
                     })()}
-                    {isEditing && isSelected && renderQuickActions(item)}
                   </div>
                 );
               })}
+
+              {/* Contextual Floating Toolbar (Rendered at unrotated grid level) */}
+              {isEditing && selectedElement && (() => {
+                let item = null;
+                if (selectedElement.type === 'furniture') {
+                  item = furniture.find(f => f.id === selectedElement.id);
+                } else if (selectedElement.type === 'pc') {
+                  item = pcs.find(p => Number(p.bienId) === Number(selectedElement.id));
+                }
+
+                if (!item) return null;
+
+                const itemW = selectedElement.type === 'pc' ? 1 : (item.w || 1);
+                const itemH = selectedElement.type === 'pc' ? 1 : (item.h || 1);
+
+                const pixelX = item.x * CELL_SIZE;
+                const pixelY = item.y * CELL_SIZE;
+                const pixelW = itemW * CELL_SIZE;
+                const pixelH = itemH * CELL_SIZE;
+
+                const isTopRow = item.y === 0;
+                const toolbarTop = isTopRow ? (pixelY + pixelH + 8) : (pixelY - 52);
+                const toolbarLeft = pixelX + pixelW / 2;
+
+                return renderQuickActions(item, toolbarLeft, toolbarTop);
+              })()}
             </div>
           </div>
         </div>
