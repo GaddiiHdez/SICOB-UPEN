@@ -569,7 +569,7 @@ export default function LaboratorioMapa({ selectedLab, isAdmin, onSaveSuccess, o
         display: 'flex',
         gap: 20,
         alignItems: 'flex-start',
-        flexWrap: 'wrap-reverse'
+        flexWrap: 'wrap'
       }}>
         
         {/* Contenedor del Plano Plano CAD / Blueprint */}
@@ -1018,8 +1018,9 @@ export default function LaboratorioMapa({ selectedLab, isAdmin, onSaveSuccess, o
                            monitorIds.map(Number).includes(m.id))
                         );
                       });
+                      const isNearTop = item.y < 2;
                       return (
-                        <div className="pc-tooltip-card">
+                        <div className={`pc-tooltip-card ${isNearTop ? 'tooltip-position-bottom' : ''}`}>
                           <div style={{
                             fontWeight: '800',
                             fontSize: '11.5px',
@@ -1478,10 +1479,17 @@ export default function LaboratorioMapa({ selectedLab, isAdmin, onSaveSuccess, o
           transition: opacity 0.2s, visibility 0.2s, transform 0.2s;
           border: 1px solid rgba(255, 255, 255, 0.12);
         }
+        .pc-tooltip-card.tooltip-position-bottom {
+          bottom: auto;
+          top: 135%;
+        }
         .interactive-pc-node:hover .pc-tooltip-card {
           opacity: 1;
           visibility: visible;
           transform: translateX(-50%) translateY(-2px);
+        }
+        .interactive-pc-node:hover .pc-tooltip-card.tooltip-position-bottom {
+          transform: translateX(-50%) translateY(2px);
         }
         .btn-edit-plano:hover {
           background: var(--primary) !important;
