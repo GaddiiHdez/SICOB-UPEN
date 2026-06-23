@@ -1018,7 +1018,7 @@ export default function LaboratorioMapa({ selectedLab, isAdmin, onSaveSuccess, o
                            monitorIds.map(Number).includes(m.id))
                         );
                       });
-                      const isNearTop = item.y < 2;
+                      const isNearTop = item.y < 4;
                       return (
                         <div className={`pc-tooltip-card ${isNearTop ? 'tooltip-position-bottom' : ''}`}>
                           <div style={{
