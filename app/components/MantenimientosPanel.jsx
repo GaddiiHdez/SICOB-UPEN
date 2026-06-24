@@ -208,8 +208,11 @@ export default function MantenimientosPanel({
     if (!bienSearchQuery.trim()) return bienesDisponibles;
     const q = bienSearchQuery.toLowerCase();
     return bienesDisponibles.filter(b => {
-      const etq = b.etiqueta.startsWith('SIN-NUMERO-') ? 's/n sin numero' : b.etiqueta.toLowerCase();
-      return b.nombre.toLowerCase().includes(q) || b.serial.toLowerCase().includes(q) || etq.includes(q);
+      const etiqueta = b.etiqueta || b.codigo_inventario || '';
+      const serial   = b.serial   || b.numero_serie     || '';
+      const nombre   = b.nombre   || `${b.marca || ''} ${b.modelo || ''}`.trim() || '';
+      const etq = etiqueta.startsWith('SIN-NUMERO-') ? 's/n sin numero' : etiqueta.toLowerCase();
+      return nombre.toLowerCase().includes(q) || serial.toLowerCase().includes(q) || etq.includes(q);
     });
   }, [bienesDisponibles, bienSearchQuery]);
 
@@ -290,8 +293,10 @@ export default function MantenimientosPanel({
   };
 
   const handleSelectBien = (bien) => {
+    const etiqueta = bien.etiqueta || bien.codigo_inventario || '';
+    const nombre   = bien.nombre   || `${bien.marca || ''} ${bien.modelo || ''}`.trim() || 'Equipo';
     setFormBienId(bien.id);
-    setBienSearchQuery(`${bien.nombre} (${bien.etiqueta.startsWith('SIN-NUMERO-') ? 'S/N' : bien.etiqueta})`);
+    setBienSearchQuery(`${nombre} (${etiqueta.startsWith('SIN-NUMERO-') ? 'S/N' : etiqueta})`);
     setShowBienDropdown(false);
     setFormLiberarResguardo(!!bien.responsableId);
   };
