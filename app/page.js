@@ -17,6 +17,7 @@ import InventarioView from '@/app/components/InventarioView';
 import ModalImportador from '@/app/components/ModalImportador';
 import ModalAutogenerarLote from '@/app/components/ModalAutogenerarLote';
 import ModalConfirmarBorrado from '@/app/components/ModalConfirmarBorrado';
+import ModalCalibradorEtiquetas from '@/app/components/ModalCalibradorEtiquetas';
 import AuditoriaPanel from '@/app/components/auditoria/AuditoriaPanel';
 import ValesPanel from '@/app/components/ValesPanel';
 import InmobiliarioPanel from '@/app/components/InmobiliarioPanel';
@@ -59,6 +60,7 @@ export default function HomePage() {
   const [showImportModal, setShowImportModal] = useState(false);
   const [showAutogenerarModal, setShowAutogenerarModal] = useState(false);
   const [bienesEtiquetasPrint, setBienesEtiquetasPrint] = useState([]);
+  const [bienesEtiquetasCalibrar, setBienesEtiquetasCalibrar] = useState([]);
 
   // ── Estado de selección de inventario ──────────────────────
   const [selected,     setSelected]     = useState([]);      // IDs con checkbox marcado
@@ -668,7 +670,7 @@ export default function HomePage() {
       showToast('Este bien no cuenta con un número de inventario válido para generar un código de barras.', 'warning');
       return;
     }
-    setBienesEtiquetasPrint([bien]);
+    setBienesEtiquetasCalibrar([bien]);
   }, [showToast]);
 
   const handlePrintBulkLabels = useCallback(() => {
@@ -684,10 +686,30 @@ export default function HomePage() {
     }
     const skippedCount = selectedBienes.length - validBienes.length;
     if (skippedCount > 0) {
-      showToast(`Imprimiendo lote. Se omitieron ${skippedCount} bienes por no contar con número de inventario.`, 'info');
+      showToast(`Preparando calibración. Se omitieron ${skippedCount} bienes por no contar con número de inventario.`, 'info');
     }
-    setBienesEtiquetasPrint(validBienes);
+    setBienesEtiquetasCalibrar(validBienes);
   }, [bienes, selected, showToast]);
+
+  const handleSaveConfig = useCallback(async (newConfig) => {
+    try {
+      const res = await fetch('/api/configuracion', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newConfig)
+      });
+      if (!res.ok) throw new Error('Error al guardar la configuración');
+      showToast('Calibración guardada exitosamente', 'success');
+      fetchData();
+    } catch (error) {
+      console.error(error);
+      showToast('Error al guardar la calibración', 'error');
+    }
+  }, [fetchData, showToast]);
+
+  const handleStartPrinting = useCallback((items) => {
+    setBienesEtiquetasPrint(items);
+  }, []);
 
   useEffect(() => {
     if (bienesEtiquetasPrint.length > 0) {
@@ -1515,6 +1537,18 @@ export default function HomePage() {
           onClose={() => setBienToDeletePermanent(null)}
           onConfirm={handleConfirmDeletePermanent}
           isLoading={isDeletingPermanent}
+        />
+      )}
+
+      {/* ══ MODAL DE CALIBRACIÓN DE ETIQUETAS EN TIEMPO REAL ════ */}
+      {bienesEtiquetasCalibrar.length > 0 && (
+        <ModalCalibradorEtiquetas
+          isOpen={true}
+          onClose={() => setBienesEtiquetasCalibrar([])}
+          bienes={bienesEtiquetasCalibrar}
+          configuracion={configuracion}
+          onSaveConfig={handleSaveConfig}
+          onPrint={handleStartPrinting}
         />
       )}
 
