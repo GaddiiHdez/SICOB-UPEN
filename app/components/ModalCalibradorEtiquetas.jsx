@@ -555,8 +555,6 @@ export default function ModalCalibradorEtiquetas({
             padding: '24px', 
             overflow: 'auto',
             display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
             position: 'relative'
           }}>
             {/* Control Flotante de Zoom */}
