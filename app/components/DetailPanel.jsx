@@ -33,225 +33,375 @@ export default function DetailPanel({ bien, selected, personal = [], ubicaciones
     <div className="detail-sidebar">
       {/* ── Acciones masivas ─────────────────────────── */}
       {selected.length > 0 && (
-        <div className="detail-section" style={{ borderBottom: '1px solid var(--border)', paddingBottom: 20 }}>
-          <div className="detail-section-label">Acciones masivas en lote</div>
-          <div className="detail-section-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ color: 'var(--primary)', fontWeight: 700 }}>⚡ {selected.length} seleccionado{selected.length > 1 ? 's' : ''}</span>
+        <div style={{
+          borderBottom: '1px solid var(--border)',
+          paddingBottom: 20,
+          padding: '16px 16px 20px',
+        }}>
+
+          {/* Header premium */}
+          <div style={{
+            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+            marginBottom: 16,
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{
+                width: 28, height: 28, borderRadius: 8, flexShrink: 0,
+                background: 'linear-gradient(135deg, var(--primary) 0%, #004d48 100%)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                boxShadow: '0 2px 8px rgba(0,113,106,0.3)',
+                fontSize: 13,
+              }}>⚡</div>
+              <div>
+                <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-secondary)' }}>
+                  Acciones en Lote
+                </div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--primary)', lineHeight: 1 }}>
+                  {selected.length} equipo{selected.length > 1 ? 's' : ''} seleccionado{selected.length > 1 ? 's' : ''}
+                </div>
+              </div>
+            </div>
             <button
-              className="btn btn-ghost"
-              style={{ fontSize: 11, padding: '4px 8px', height: 'auto', border: '1px solid var(--border)', borderRadius: '6px' }}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 4,
+                padding: '5px 10px', fontSize: 11, fontWeight: 600,
+                background: 'transparent',
+                border: '1px solid var(--border)',
+                borderRadius: 8, cursor: 'pointer',
+                color: 'var(--text-secondary)',
+                transition: 'all 0.15s ease',
+              }}
               onClick={onClearSelection}
+              onMouseEnter={e => {
+                e.currentTarget.style.background = 'rgba(239,68,68,0.08)';
+                e.currentTarget.style.borderColor = 'rgba(239,68,68,0.3)';
+                e.currentTarget.style.color = '#EF4444';
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.background = 'transparent';
+                e.currentTarget.style.borderColor = 'var(--border)';
+                e.currentTarget.style.color = 'var(--text-secondary)';
+              }}
             >
               ✕ Desmarcar
             </button>
           </div>
 
-          {/* Selector de Estado Masivo */}
+          {/* Grupo de selectores con diseño premium */}
           {isAdmin && (
-            <div style={{ marginTop: 14 }}>
-              <label className="form-label" style={{ fontSize: 10, textTransform: 'uppercase', color: 'var(--text-secondary)', fontWeight: 700, marginBottom: 4, display: 'block' }}>Cambiar Estado:</label>
-              <div style={{ display: 'flex', gap: 6 }}>
-                <select 
-                  className="form-select" 
-                  value={bulkEstado} 
-                  onChange={e => setBulkEstado(e.target.value)}
-                  style={{ height: 36, fontSize: 12, padding: '0 8px', flex: 1 }}
-                >
-                  <option value="">Selecciona...</option>
-                  {ESTADOS_BIEN.map(e => <option key={e} value={e}>{e}</option>)}
-                </select>
-                <button 
-                  className="btn btn-primary" 
-                  onClick={() => {
-                    if (bulkEstado) {
-                      onBulkUpdate({ estado: bulkEstado });
-                      setBulkEstado('');
-                    }
-                  }}
-                  disabled={!bulkEstado}
-                  style={{ height: 36, padding: '0 14px' }}
-                  title="Aplicar estado"
-                >
-                  ✓
-                </button>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, background: 'rgba(255,255,255,0.02)', padding: 12, borderRadius: 10, border: '1px solid var(--border)', marginBottom: 14 }}>
+              {/* Selector de Estado */}
+              <div>
+                <label style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, display: 'block' }}>
+                  Cambiar Estado:
+                </label>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  <select 
+                    className="form-select" 
+                    value={bulkEstado} 
+                    onChange={e => setBulkEstado(e.target.value)}
+                    style={{ height: 34, fontSize: 12, padding: '0 8px', flex: 1, borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg-card)', color: 'var(--text-primary)' }}
+                  >
+                    <option value="">Selecciona estado...</option>
+                    {ESTADOS_BIEN.map(e => <option key={e} value={e}>{e}</option>)}
+                  </select>
+                  <button 
+                    className="btn btn-primary" 
+                    onClick={() => {
+                      if (bulkEstado) {
+                        onBulkUpdate({ estado: bulkEstado });
+                        setBulkEstado('');
+                      }
+                    }}
+                    disabled={!bulkEstado}
+                    style={{
+                      height: 34,
+                      padding: '0 12px',
+                      borderRadius: 6,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      background: bulkEstado ? 'var(--primary)' : 'rgba(255,255,255,0.05)',
+                      color: bulkEstado ? '#fff' : 'var(--text-muted)',
+                      border: 'none',
+                      cursor: bulkEstado ? 'pointer' : 'not-allowed',
+                      transition: 'all 0.15s',
+                      fontWeight: 'bold'
+                    }}
+                    title="Aplicar estado"
+                  >
+                    ✓
+                  </button>
+                </div>
+              </div>
+
+              {/* Selector de Custodio */}
+              <div>
+                <label style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, display: 'block' }}>
+                  Reasignar Custodio:
+                </label>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  <select 
+                    className="form-select" 
+                    value={bulkCustodio} 
+                    onChange={e => setBulkCustodio(e.target.value)}
+                    style={{ height: 34, fontSize: 12, padding: '0 8px', flex: 1, borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg-card)', color: 'var(--text-primary)' }}
+                  >
+                    <option value="">Selecciona custodio...</option>
+                    <option value="none">📦 Desasignar (Mandar a Bodega)</option>
+                    {personal.map(p => (
+                      <option key={p.id} value={p.id}>
+                        {p.nombre} {p.noRegistrado ? '(⚠️ Temp)' : ''}
+                      </option>
+                    ))}
+                  </select>
+                  <button 
+                    className="btn btn-primary" 
+                    onClick={() => {
+                      if (bulkCustodio) {
+                        onBulkUpdate({ 
+                          responsableId: bulkCustodio === 'none' ? null : bulkCustodio 
+                        });
+                        setBulkCustodio('');
+                      }
+                    }}
+                    disabled={!bulkCustodio}
+                    style={{
+                      height: 34,
+                      padding: '0 12px',
+                      borderRadius: 6,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      background: bulkCustodio ? 'var(--primary)' : 'rgba(255,255,255,0.05)',
+                      color: bulkCustodio ? '#fff' : 'var(--text-muted)',
+                      border: 'none',
+                      cursor: bulkCustodio ? 'pointer' : 'not-allowed',
+                      transition: 'all 0.15s',
+                      fontWeight: 'bold'
+                    }}
+                    title="Asignar custodio"
+                  >
+                    ✓
+                  </button>
+                </div>
+              </div>
+
+              {/* Selector de Ubicación */}
+              <div>
+                <label style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, display: 'block' }}>
+                  Cambiar Ubicación:
+                </label>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  <select 
+                    className="form-select" 
+                    value={bulkUbicacion} 
+                    onChange={e => setBulkUbicacion(e.target.value)}
+                    style={{ height: 34, fontSize: 12, padding: '0 8px', flex: 1, borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg-card)', color: 'var(--text-primary)' }}
+                  >
+                    <option value="">Selecciona ubicación...</option>
+                    {ubicaciones.map(u => (
+                      <option key={u.id} value={u.id}>{u.nombre}</option>
+                    ))}
+                  </select>
+                  <button 
+                    className="btn btn-primary" 
+                    onClick={() => {
+                      if (bulkUbicacion) {
+                        onBulkUpdate({ ubicacionId: bulkUbicacion });
+                        setBulkUbicacion('');
+                      }
+                    }}
+                    disabled={!bulkUbicacion}
+                    style={{
+                      height: 34,
+                      padding: '0 12px',
+                      borderRadius: 6,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      background: bulkUbicacion ? 'var(--primary)' : 'rgba(255,255,255,0.05)',
+                      color: bulkUbicacion ? '#fff' : 'var(--text-muted)',
+                      border: 'none',
+                      cursor: bulkUbicacion ? 'pointer' : 'not-allowed',
+                      transition: 'all 0.15s',
+                      fontWeight: 'bold'
+                    }}
+                    title="Cambiar ubicación"
+                  >
+                    ✓
+                  </button>
+                </div>
               </div>
             </div>
           )}
 
-          {/* Selector de Custodio Masivo */}
-          {isAdmin && (
-            <div style={{ marginTop: 12 }}>
-              <label className="form-label" style={{ fontSize: 10, textTransform: 'uppercase', color: 'var(--text-secondary)', fontWeight: 700, marginBottom: 4, display: 'block' }}>Reasignar Custodio:</label>
-              <div style={{ display: 'flex', gap: 6 }}>
-                <select 
-                  className="form-select" 
-                  value={bulkCustodio} 
-                  onChange={e => setBulkCustodio(e.target.value)}
-                  style={{ height: 36, fontSize: 12, padding: '0 8px', flex: 1 }}
-                >
-                  <option value="">Selecciona...</option>
-                  <option value="none">📦 Desasignar (Mandar a Bodega)</option>
-                  {personal.map(p => (
-                    <option key={p.id} value={p.id}>
-                      {p.nombre} {p.noRegistrado ? '(⚠️ Temporal)' : ''}
-                    </option>
-                  ))}
-                </select>
-                <button 
-                  className="btn btn-primary" 
-                  onClick={() => {
-                    if (bulkCustodio) {
-                      onBulkUpdate({ 
-                        responsableId: bulkCustodio === 'none' ? null : bulkCustodio 
-                      });
-                      setBulkCustodio('');
-                    }
-                  }}
-                  disabled={!bulkCustodio}
-                  style={{ height: 36, padding: '0 14px' }}
-                  title="Asignar custodio"
-                >
-                  ✓
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Selector de Ubicación Masiva */}
-          {isAdmin && (
-            <div style={{ marginTop: 12 }}>
-              <label className="form-label" style={{ fontSize: 10, textTransform: 'uppercase', color: 'var(--text-secondary)', fontWeight: 700, marginBottom: 4, display: 'block' }}>Cambiar Ubicación:</label>
-              <div style={{ display: 'flex', gap: 6 }}>
-                <select 
-                  className="form-select" 
-                  value={bulkUbicacion} 
-                  onChange={e => setBulkUbicacion(e.target.value)}
-                  style={{ height: 36, fontSize: 12, padding: '0 8px', flex: 1 }}
-                >
-                  <option value="">Selecciona...</option>
-                  {ubicaciones.map(u => (
-                    <option key={u.id} value={u.id}>{u.nombre}</option>
-                  ))}
-                </select>
-                <button 
-                  className="btn btn-primary" 
-                  onClick={() => {
-                    if (bulkUbicacion) {
-                      onBulkUpdate({ ubicacionId: bulkUbicacion });
-                      setBulkUbicacion('');
-                    }
-                  }}
-                  disabled={!bulkUbicacion}
-                  style={{ height: 36, padding: '0 14px' }}
-                  title="Cambiar ubicación"
-                >
-                  ✓
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Generación de etiquetas masiva */}
-          <div style={{ marginTop: 12, borderTop: '1px dashed var(--border)', paddingTop: 14 }}>
+          {/* Botones de acción masiva con grid de 2 columnas y diseño premium */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap: '8px',
+            marginTop: 12
+          }}>
+            {/* Generar Etiquetas */}
             <button 
-              className="btn" 
               onClick={() => onPrintBulkLabels && onPrintBulkLabels()}
               style={{ 
-                width: '100%', 
-                background: 'rgba(13, 148, 136, 0.1)', 
+                gridColumn: 'span 2',
+                background: 'linear-gradient(135deg, rgba(13, 148, 136, 0.15) 0%, rgba(20, 184, 166, 0.05) 100%)', 
                 color: '#0D9488', 
-                border: '1px solid rgba(13, 148, 136, 0.2)',
+                border: '1px solid rgba(13, 148, 136, 0.25)',
                 fontSize: 12,
-                padding: '8px 12px',
+                padding: '10px 12px',
                 fontWeight: 600,
-                borderRadius: '6px',
+                borderRadius: '8px',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: 8
+                gap: 8,
+                transition: 'all 0.2s ease',
+                boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.background = 'linear-gradient(135deg, rgba(13, 148, 136, 0.25) 0%, rgba(20, 184, 166, 0.1) 100%)';
+                e.currentTarget.style.borderColor = 'rgba(13, 148, 136, 0.4)';
+                e.currentTarget.style.transform = 'translateY(-1px)';
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.background = 'linear-gradient(135deg, rgba(13, 148, 136, 0.15) 0%, rgba(20, 184, 166, 0.05) 100%)';
+                e.currentTarget.style.borderColor = 'rgba(13, 148, 136, 0.25)';
+                e.currentTarget.style.transform = 'none';
               }}
             >
-              🏷️ Generar Etiquetas en Lote
+              <span>🏷️ Generar Etiquetas</span>
             </button>
-          </div>
 
-          {/* Eliminar No. de Inventario en Lote */}
-          {isAdmin && (
-            <div style={{ marginTop: 12 }}>
+            {/* Autogenerar No. Inventario */}
+            {isAdmin && (
               <button 
-                className="btn" 
+                onClick={() => onBulkUpdate({ abrirAutogenerarModal: true })}
+                style={{ 
+                  background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.12) 0%, rgba(129, 140, 248, 0.04) 100%)', 
+                  color: '#6366F1', 
+                  border: '1px solid rgba(99, 102, 241, 0.2)',
+                  fontSize: 11,
+                  padding: '10px 8px',
+                  fontWeight: 600,
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 4,
+                  textAlign: 'center',
+                  minHeight: '56px',
+                  transition: 'all 0.2s ease',
+                  lineHeight: '1.2'
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.background = 'linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(129, 140, 248, 0.08) 100%)';
+                  e.currentTarget.style.borderColor = 'rgba(99, 102, 241, 0.35)';
+                  e.currentTarget.style.transform = 'translateY(-1px)';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.background = 'linear-gradient(135deg, rgba(99, 102, 241, 0.12) 0%, rgba(129, 140, 248, 0.04) 100%)';
+                  e.currentTarget.style.borderColor = 'rgba(99, 102, 241, 0.2)';
+                  e.currentTarget.style.transform = 'none';
+                }}
+                title="Autogenerar Números de Inventario en lote"
+              >
+                <span style={{ fontSize: 14 }}>🔄</span>
+                <span>Asignar No. Inv.</span>
+              </button>
+            )}
+
+            {/* Quitar No. Inventario */}
+            {isAdmin && (
+              <button 
                 onClick={() => {
                   if (confirm(`¿Estás seguro de borrar el No. de Inventario de los ${selected.length} equipos seleccionados? Esto no borrará los equipos, solo dejará vacío su número de inventario.`)) {
                     onBulkUpdate({ eliminarNoInventario: true });
                   }
                 }}
                 style={{ 
-                  width: '100%', 
-                  background: 'rgba(245, 158, 11, 0.1)', 
+                  background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(251, 191, 36, 0.04) 100%)', 
                   color: '#D97706', 
                   border: '1px solid rgba(245, 158, 11, 0.2)',
-                  fontSize: 12,
-                  padding: '8px 12px',
+                  fontSize: 11,
+                  padding: '10px 8px',
                   fontWeight: 600,
-                  borderRadius: '6px',
-                  cursor: 'pointer'
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 4,
+                  textAlign: 'center',
+                  minHeight: '56px',
+                  transition: 'all 0.2s ease',
+                  lineHeight: '1.2'
                 }}
-              >
-                🚫 Quitar No. de Inventario en Lote
-              </button>
-            </div>
-          )}
-
-          {/* Autogenerar No. de Inventario en Lote */}
-          {isAdmin && (
-            <div style={{ marginTop: 12 }}>
-              <button 
-                className="btn" 
-                onClick={() => onBulkUpdate({ abrirAutogenerarModal: true })}
-                style={{ 
-                  width: '100%', 
-                  background: 'rgba(13, 148, 136, 0.1)', 
-                  color: '#0D9488', 
-                  border: '1px solid rgba(13, 148, 136, 0.2)',
-                  fontSize: 12,
-                  padding: '8px 12px',
-                  fontWeight: 600,
-                  borderRadius: '6px',
-                  cursor: 'pointer'
+                onMouseEnter={e => {
+                  e.currentTarget.style.background = 'linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(251, 191, 36, 0.08) 100%)';
+                  e.currentTarget.style.borderColor = 'rgba(245, 158, 11, 0.35)';
+                  e.currentTarget.style.transform = 'translateY(-1px)';
                 }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.background = 'linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(251, 191, 36, 0.04) 100%)';
+                  e.currentTarget.style.borderColor = 'rgba(245, 158, 11, 0.2)';
+                  e.currentTarget.style.transform = 'none';
+                }}
+                title="Quitar Números de Inventario en lote"
               >
-                🔄 Autogenerar No. de Inventario en Lote
+                <span style={{ fontSize: 14 }}>🚫</span>
+                <span>Quitar No. Inv.</span>
               </button>
-            </div>
-          )}
+            )}
 
-          {/* Dar de Baja Lógica Masiva */}
-          {isAdmin && (
-            <div style={{ marginTop: 12 }}>
+            {/* Dar de Baja */}
+            {isAdmin && (
               <button 
-                className="btn" 
                 onClick={() => {
                   if (confirm(`¿Estás seguro de dar de baja los ${selected.length} equipos seleccionados? Esta acción conservará el registro histórico pero cambiará su estatus a Baja.`)) {
                     onBulkUpdate({ darDeBaja: true });
                   }
                 }}
                 style={{ 
-                  width: '100%', 
-                  background: 'rgba(239, 68, 68, 0.1)', 
+                  gridColumn: 'span 2',
+                  background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.12) 0%, rgba(248, 113, 113, 0.04) 100%)', 
                   color: '#EF4444', 
                   border: '1px solid rgba(239, 68, 68, 0.2)',
                   fontSize: 12,
-                  padding: '8px 12px',
+                  padding: '10px 12px',
                   fontWeight: 600,
-                  borderRadius: '6px',
-                  cursor: 'pointer'
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 8,
+                  transition: 'all 0.2s ease',
+                  marginTop: 4
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.background = 'linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(248, 113, 113, 0.08) 100%)';
+                  e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.35)';
+                  e.currentTarget.style.transform = 'translateY(-1px)';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.background = 'linear-gradient(135deg, rgba(239, 68, 68, 0.12) 0%, rgba(248, 113, 113, 0.04) 100%)';
+                  e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.2)';
+                  e.currentTarget.style.transform = 'none';
                 }}
               >
-                🗑️ Dar de Baja en Lote
+                <span>🗑️ Dar de Baja en Lote</span>
               </button>
-            </div>
-          )}
+            )}
+          </div>
+
         </div>
       )}
 
