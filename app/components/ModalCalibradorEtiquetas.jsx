@@ -559,6 +559,118 @@ export default function ModalCalibradorEtiquetas({
             justifyContent: 'center',
             position: 'relative'
           }}>
+            {/* Control Flotante de Zoom */}
+            <div style={{
+              position: 'absolute',
+              top: '16px',
+              right: '24px',
+              zIndex: 10,
+              background: 'var(--bg-card)',
+              border: '1px solid var(--border)',
+              borderRadius: '24px',
+              padding: '6px 14px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 12,
+              boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+              userSelect: 'none'
+            }}>
+              <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                Zoom:
+              </span>
+              <button 
+                type="button"
+                onClick={() => setScale(prev => Math.max(0.2, +(prev - 0.05).toFixed(2)))}
+                style={{
+                  background: 'rgba(255,255,255,0.05)',
+                  border: 'none',
+                  color: 'var(--text-primary)',
+                  fontSize: 14,
+                  fontWeight: 'bold',
+                  width: 24,
+                  height: 24,
+                  borderRadius: '50%',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'background 0.15s'
+                }}
+                onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
+                onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+              >
+                -
+              </button>
+              <input 
+                type="range" 
+                min="0.2" 
+                max="1.5" 
+                step="0.05"
+                value={scale} 
+                onChange={e => setScale(parseFloat(e.target.value))}
+                style={{ width: 100, accentColor: 'var(--primary)', cursor: 'pointer', margin: 0 }}
+              />
+              <button 
+                type="button"
+                onClick={() => setScale(prev => Math.min(1.5, +(prev + 0.05).toFixed(2)))}
+                style={{
+                  background: 'rgba(255,255,255,0.05)',
+                  border: 'none',
+                  color: 'var(--text-primary)',
+                  fontSize: 14,
+                  fontWeight: 'bold',
+                  width: 24,
+                  height: 24,
+                  borderRadius: '50%',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'background 0.15s'
+                }}
+                onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
+                onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+              >
+                +
+              </button>
+              <span style={{ fontSize: 12, fontWeight: 700, minWidth: 40, textAlign: 'right', color: 'var(--text-primary)' }}>
+                {Math.round(scale * 100)}%
+              </span>
+              <button 
+                type="button"
+                onClick={() => {
+                  if (window.innerWidth < 1200) {
+                    setScale(0.35);
+                  } else if (window.innerWidth < 1400) {
+                    setScale(0.42);
+                  } else {
+                    setScale(0.48);
+                  }
+                }}
+                style={{
+                  background: 'transparent',
+                  border: '1px solid var(--border)',
+                  color: 'var(--text-secondary)',
+                  fontSize: 10,
+                  padding: '3px 8px',
+                  borderRadius: 12,
+                  cursor: 'pointer',
+                  fontWeight: 600,
+                  transition: 'all 0.15s'
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.borderColor = 'var(--primary)';
+                  e.currentTarget.style.color = 'var(--primary)';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.borderColor = 'var(--border)';
+                  e.currentTarget.style.color = 'var(--text-secondary)';
+                }}
+              >
+                Ajustar
+              </button>
+            </div>
+
             {/* Hoja de papel Carta a escala */}
             <div 
               style={{
