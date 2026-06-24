@@ -671,21 +671,33 @@ export default function ModalCalibradorEtiquetas({
               </button>
             </div>
 
-            {/* Hoja de papel Carta a escala */}
-            <div 
-              style={{
-                width: '21.59cm',
-                height: '27.94cm',
-                backgroundColor: '#FFFFFF',
-                boxShadow: '0 10px 30px rgba(0,0,0,0.25)',
-                transform: `scale(${scale})`,
-                transformOrigin: 'center center',
-                position: 'relative',
-                flexShrink: 0,
-                boxSizing: 'border-box',
-                transition: 'all 0.1s ease'
-              }}
-            >
+            {/* Contenedor del tamaño real de la escala para prevenir recortes de scroll */}
+            <div style={{
+              width: `${21.59 * scale}cm`,
+              height: `${27.94 * scale}cm`,
+              position: 'relative',
+              flexShrink: 0,
+              margin: 'auto',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'flex-start'
+            }}>
+              {/* Hoja de papel Carta a escala */}
+              <div 
+                style={{
+                  width: '21.59cm',
+                  height: '27.94cm',
+                  backgroundColor: '#FFFFFF',
+                  boxShadow: '0 10px 30px rgba(0,0,0,0.25)',
+                  transform: `scale(${scale})`,
+                  transformOrigin: 'top left',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  boxSizing: 'border-box',
+                  transition: 'all 0.1s ease'
+                }}
+              >
               {/* Imagen de la plantilla de fondo para calibración */}
               {mostrarPlantillaFondo && formatoPapel === 'avery_5167' && (
                 <div 
@@ -822,6 +834,7 @@ export default function ModalCalibradorEtiquetas({
                   </div>
                 ))}
               </div>
+            </div>
             </div>
           </div>
 
