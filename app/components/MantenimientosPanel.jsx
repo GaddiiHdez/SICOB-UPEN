@@ -1,5 +1,18 @@
 'use client';
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+
+/**
+ * useDebounce — Retarda la actualización de un valor hasta que el usuario
+ * deja de escribir por `delay` ms. Evita re-renders excesivos en búsquedas.
+ */
+function useDebounce(value, delay = 250) {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedValue(value), delay);
+    return () => clearTimeout(timer);
+  }, [value, delay]);
+  return debouncedValue;
+}
 import { createPortal } from 'react-dom';
 import { formatCurrency } from '@/lib/formatters';
 import TabBar from '@/app/components/shared/TabBar';
@@ -104,6 +117,10 @@ export default function MantenimientosPanel({
   const [printMantenimiento, setPrintMantenimiento] = useState(null);
   const [printPlanMes, setPrintPlanMes]             = useState(null);
 
+  // Debounce de la búsqueda: espera 250ms antes de filtrar para evitar
+  // re-cálculos del useMemo en cada pulsación de tecla en listas grandes.
+  const debouncedBienSearch = useDebounce(bienSearchQuery, 250);
+
   // ── Carga de datos ─────────────────────────────────────────
   const fetchMantenimientos = useCallback(async () => {
     setLoading(true);
@@ -205,8 +222,8 @@ export default function MantenimientosPanel({
   const bienesDisponibles = useMemo(() => bienes.filter(b => b.estado !== 'Mantenimiento' && b.estado !== 'Baja' && !b.eliminado), [bienes]);
 
   const bienesBuscados = useMemo(() => {
-    if (!bienSearchQuery.trim()) return bienesDisponibles;
-    const q = bienSearchQuery.toLowerCase();
+    const q = debouncedBienSearch.trim().toLowerCase();
+    if (!q) return bienesDisponibles;
     return bienesDisponibles.filter(b => {
       const etiqueta = b.etiqueta || b.codigo_inventario || '';
       const serial   = b.serial   || b.numero_serie     || '';
@@ -214,7 +231,7 @@ export default function MantenimientosPanel({
       const etq = etiqueta.startsWith('SIN-NUMERO-') ? 's/n sin numero' : etiqueta.toLowerCase();
       return nombre.toLowerCase().includes(q) || serial.toLowerCase().includes(q) || etq.includes(q);
     });
-  }, [bienesDisponibles, bienSearchQuery]);
+  }, [bienesDisponibles, debouncedBienSearch]);
 
   const bienesAfectados = useMemo(() => {
     if (modoAsignacion !== 'masivo') return [];

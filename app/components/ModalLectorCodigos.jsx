@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 
 /**
  * ModalLectorCodigos — Modal del Lector/Escáner de Códigos de Barras y QR.
@@ -135,7 +135,7 @@ export default function ModalLectorCodigos({ onClose, onScan, bienes }) {
         html5QrCode.stop().catch(err => console.error("Error al apagar la cámara en cleanup:", err));
       }
     };
-  }, [scanMode, libraryLoaded]);
+  }, [scanMode, libraryLoaded, triggerSearch]);
 
   const stopCamera = (callback) => {
     if (scannerRef.current && scannerRef.current.isScanning) {
@@ -155,18 +155,20 @@ export default function ModalLectorCodigos({ onClose, onScan, bienes }) {
     }
   };
 
-  const triggerSearch = (cleanCode) => {
+  const triggerSearch = useCallback((cleanCode) => {
     setIsSearching(true);
     setScanStatus({ type: 'searching', msg: `Buscando código "${cleanCode}"...` });
 
     setTimeout(() => {
       const match = bienes.find(b => 
-        b.etiqueta.toUpperCase() === cleanCode.toUpperCase() || 
-        b.serial.toUpperCase() === cleanCode.toUpperCase()
+        (b.etiqueta && b.etiqueta.toUpperCase() === cleanCode.toUpperCase()) || 
+        (b.serial   && b.serial.toUpperCase()   === cleanCode.toUpperCase())   ||
+        (b.codigo_inventario && b.codigo_inventario.toUpperCase() === cleanCode.toUpperCase()) ||
+        (b.numero_serie      && b.numero_serie.toUpperCase()      === cleanCode.toUpperCase())
       );
 
       if (match) {
-        setScanStatus({ type: 'success', msg: `¡Equipo encontrado! Abriendo ficha de "${match.nombre}"...` });
+        setScanStatus({ type: 'success', msg: `¡Equipo encontrado! Abriendo ficha de "${match.nombre || match.marca}"...` });
         setTimeout(() => {
           onScan(cleanCode, match);
           setCode('');
@@ -181,7 +183,7 @@ export default function ModalLectorCodigos({ onClose, onScan, bienes }) {
         }, 1500);
       }
     }, 500);
-  };
+  }, [bienes, onScan]);
 
   const handleSubmit = (e) => {
     e.preventDefault();

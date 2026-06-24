@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 
 /**
  * Audio cue helper using Web Audio API to play synthetic sound feedback.
@@ -182,7 +182,7 @@ export default function ScannerPanel({
         html5QrCode.stop().catch(err => console.error(err));
       }
     };
-  }, [cameraActive, libraryLoaded]);
+  }, [cameraActive, libraryLoaded, processCode]);
 
   const stopCamera = () => {
     if (scannerRef.current && scannerRef.current.isScanning) {
@@ -200,17 +200,19 @@ export default function ScannerPanel({
   };
 
   // Procesar código leído (sea de cámara, manual o lector físico)
-  const processCode = (rawCode) => {
+  const processCode = useCallback((rawCode) => {
     const cleanCode = rawCode.trim();
     if (!cleanCode) return;
 
     // Verificar si ya se escaneó en esta sesión
     const isDuplicate = scannedCodes.some(c => c.toUpperCase() === cleanCode.toUpperCase());
     
-    // Buscar coincidencia en bienes
+    // Buscar coincidencia en bienes (null-safe)
     const match = bienes.find(b => 
-      (b.etiqueta && b.etiqueta.toUpperCase() === cleanCode.toUpperCase()) || 
-      (b.serial && b.serial.toUpperCase() === cleanCode.toUpperCase())
+      (b.etiqueta          && b.etiqueta.toUpperCase()          === cleanCode.toUpperCase()) || 
+      (b.serial            && b.serial.toUpperCase()            === cleanCode.toUpperCase()) ||
+      (b.codigo_inventario && b.codigo_inventario.toUpperCase() === cleanCode.toUpperCase()) ||
+      (b.numero_serie      && b.numero_serie.toUpperCase()      === cleanCode.toUpperCase())
     );
 
     if (isDuplicate) {
@@ -220,25 +222,25 @@ export default function ScannerPanel({
     }
 
     if (match) {
-      const isCorrectLocation = match.ubicacionId === ubicacion.id;
+      const isCorrectLocation = match.ubicacionId === ubicacion?.id;
       if (isCorrectLocation) {
         playAudioCue('success');
-        triggerFlashMessage(`✅ Correcto: ${match.nombre} (${match.marca})`, 'success');
+        triggerFlashMessage(`✅ Correcto: ${match.nombre || match.marca} (${match.marca})`, 'success');
       } else {
         playAudioCue('warning');
-        triggerFlashMessage(`⚠️ Otra área: ${match.nombre} (Registrado en: ${match.area || 'Bodega'})`, 'warning');
+        triggerFlashMessage(`⚠️ Otra área: ${match.nombre || match.marca} (Registrado en: ${match.area || 'Bodega'})`, 'warning');
       }
-      onScanCode(match.etiqueta); // Guardar por código de inventario
+      onScanCode(match.etiqueta || match.codigo_inventario || cleanCode);
     } else {
       playAudioCue('warning');
       triggerFlashMessage(`❓ No registrado: "${cleanCode}" no existe en el sistema`, 'not_found');
-      onScanCode(cleanCode); // Guardar el código crudo para listar como no registrado
+      onScanCode(cleanCode);
     }
 
     if (navigator.vibrate) {
       navigator.vibrate(80);
     }
-  };
+  }, [bienes, scannedCodes, onScanCode, ubicacion]);
 
   const triggerFlashMessage = (msg, type) => {
     setFlashMessage({ msg, type });
