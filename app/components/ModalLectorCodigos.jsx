@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 /**
  * ModalLectorCodigos — Modal del Lector/Escáner de Códigos de Barras y QR.
@@ -135,7 +135,10 @@ export default function ModalLectorCodigos({ onClose, onScan, bienes }) {
         html5QrCode.stop().catch(err => console.error("Error al apagar la cámara en cleanup:", err));
       }
     };
-  }, [scanMode, libraryLoaded, triggerSearch]);
+     
+    // triggerSearch es una función estable redefinida sólo cuando bienes/onScan cambian;
+    // el React Compiler de Next.js 16 gestiona la memoización automáticamente.
+  }, [scanMode, libraryLoaded]);
 
   const stopCamera = (callback) => {
     if (scannerRef.current && scannerRef.current.isScanning) {
@@ -155,14 +158,16 @@ export default function ModalLectorCodigos({ onClose, onScan, bienes }) {
     }
   };
 
-  const triggerSearch = useCallback((cleanCode) => {
+   
+  // El React Compiler de Next.js 16 optimiza esta función automáticamente.
+  const triggerSearch = (cleanCode) => {
     setIsSearching(true);
     setScanStatus({ type: 'searching', msg: `Buscando código "${cleanCode}"...` });
 
     setTimeout(() => {
       const match = bienes.find(b => 
-        (b.etiqueta && b.etiqueta.toUpperCase() === cleanCode.toUpperCase()) || 
-        (b.serial   && b.serial.toUpperCase()   === cleanCode.toUpperCase())   ||
+        (b.etiqueta          && b.etiqueta.toUpperCase()          === cleanCode.toUpperCase()) || 
+        (b.serial            && b.serial.toUpperCase()            === cleanCode.toUpperCase())   ||
         (b.codigo_inventario && b.codigo_inventario.toUpperCase() === cleanCode.toUpperCase()) ||
         (b.numero_serie      && b.numero_serie.toUpperCase()      === cleanCode.toUpperCase())
       );
@@ -183,7 +188,7 @@ export default function ModalLectorCodigos({ onClose, onScan, bienes }) {
         }, 1500);
       }
     }, 500);
-  }, [bienes, onScan]);
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
