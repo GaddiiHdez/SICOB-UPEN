@@ -17,7 +17,8 @@ import { jwtVerify } from 'jose';
 
 // Rutas que NO requieren autenticación
 const RUTAS_PUBLICAS = [
-  { path: '/api/auth', methods: ['POST'] },
+  { path: '/api/auth', methods: ['GET', 'POST'] },
+  { path: '/api/auth/reset-confirm', methods: ['POST'] },
   { path: '/api/bienes/auto-registrar', methods: ['POST'] },
 ];
 
