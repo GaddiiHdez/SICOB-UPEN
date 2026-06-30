@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Manual de Usuario — SICOB UPEN</title>
+  <title>Manual Oficial de Operación y Usuario — SICOB UPEN</title>
   <style>
     /* ==========================================
        ESTILOS GLOBALES - IDENTIDAD VISUAL SICOB
@@ -34,7 +34,7 @@
       color: var(--text-main);
       background-color: #FAFAFA;
       line-height: 1.6;
-      font-size: 15px;
+      font-size: 14.5px;
     }
 
     .container {
@@ -123,7 +123,7 @@
 
     .cover-title {
       font-family: var(--font-title);
-      font-size: 46px;
+      font-size: 44px;
       font-weight: 800;
       line-height: 1.15;
       color: var(--secondary);
@@ -165,18 +165,18 @@
        ÍNDICE / CONTENIDO GENERAL
        ========================================== */
     .page {
-      padding: 2.5cm 2cm;
+      padding: 2.2cm 2cm;
       position: relative;
     }
 
     .chapter-title {
       font-family: var(--font-title);
-      font-size: 26px;
+      font-size: 24px;
       font-weight: 800;
       color: var(--secondary);
       border-bottom: 2px solid var(--primary);
-      padding-bottom: 10px;
-      margin-bottom: 24px;
+      padding-bottom: 8px;
+      margin-bottom: 20px;
       display: flex;
       align-items: center;
       gap: 10px;
@@ -185,41 +185,45 @@
     .chapter-number {
       color: var(--primary);
       opacity: 0.4;
-      font-size: 32px;
+      font-size: 28px;
     }
 
     h3 {
       font-family: var(--font-title);
-      font-size: 18px;
+      font-size: 16px;
       font-weight: 700;
       color: var(--secondary);
-      margin-top: 24px;
-      margin-bottom: 10px;
+      margin-top: 20px;
+      margin-bottom: 8px;
+      border-left: 3px solid var(--primary);
+      padding-left: 8px;
     }
 
     p {
-      margin-bottom: 14px;
+      margin-bottom: 12px;
       color: var(--text-main);
       text-align: justify;
+      font-size: 14px;
     }
 
     ul, ol {
-      margin-bottom: 16px;
+      margin-bottom: 14px;
       margin-left: 20px;
+      font-size: 14px;
     }
 
     li {
-      margin-bottom: 8px;
+      margin-bottom: 6px;
     }
 
     /* Callouts / Alertas */
     .alert-box {
-      padding: 16px 20px;
+      padding: 14px 18px;
       border-left: 4px solid var(--primary);
       background-color: var(--primary-light);
       border-radius: 0 8px 8px 0;
-      margin: 20px 0;
-      font-size: 14px;
+      margin: 18px 0;
+      font-size: 13.5px;
     }
 
     .alert-box strong {
@@ -243,13 +247,13 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      margin: 20px 0;
-      font-size: 13.5px;
+      margin: 18px 0;
+      font-size: 13px;
     }
 
     th, td {
       border: 1px solid var(--border);
-      padding: 10px 12px;
+      padding: 8px 10px;
       text-align: left;
     }
 
@@ -274,7 +278,7 @@
       display: flex;
       justify-content: space-between;
       align-items: flex-end;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
     }
 
     .index-name {
@@ -285,7 +289,7 @@
     .index-dots {
       flex-grow: 1;
       border-bottom: 2px dotted var(--border);
-      margin: 0 10px;
+      margin: 0 8px;
       position: relative;
       top: -4px;
     }
@@ -305,8 +309,9 @@
 
     .step-item {
       position: relative;
-      padding-left: 45px;
-      margin-bottom: 20px;
+      padding-left: 36px;
+      margin-bottom: 14px;
+      font-size: 14px;
     }
 
     .step-item::before {
@@ -314,9 +319,9 @@
       content: counter(steps);
       position: absolute;
       left: 0;
-      top: 2px;
-      width: 28px;
-      height: 28px;
+      top: 1px;
+      width: 24px;
+      height: 24px;
       background: var(--primary);
       color: #FFFFFF;
       border-radius: 50%;
@@ -324,7 +329,7 @@
       align-items: center;
       justify-content: center;
       font-weight: 700;
-      font-size: 13px;
+      font-size: 11px;
     }
 
     /* ==========================================
@@ -334,7 +339,7 @@
       body {
         background-color: #FFFFFF !important;
         color: #000000 !important;
-        font-size: 12pt;
+        font-size: 11.5pt;
       }
 
       .container {
@@ -354,7 +359,7 @@
       .page {
         page-break-before: always !important;
         break-before: page !important;
-        padding: 1.5cm 0 !important;
+        padding: 1.2cm 0 !important;
       }
 
       .chapter-title {
@@ -381,7 +386,6 @@
         print-color-adjust: exact !important;
       }
 
-      /* Ocultar botones de impresión si existieran */
       .no-print {
         display: none !important;
       }
@@ -405,27 +409,27 @@
     </div>
 
     <div class="cover-body">
-      <span class="cover-tag">Documento Oficial</span>
-      <h1 class="cover-title">Manual de Usuario<br>y Operación</h1>
-      <div class="cover-subtitle">Sistema de Control y Operación de Bienes (SICOB)</div>
+      <span class="cover-tag">Manual Oficial del Sistema</span>
+      <h1 class="cover-title">Manual de Operación<br>e Interfaces</h1>
+      <div class="cover-subtitle">Guía Completa para la Gestión Integral de SICOB</div>
     </div>
 
     <div class="cover-footer">
       <div class="meta-item">
-        <strong>Preparado para:</strong>
-        <span>Personal Administrativo y TI</span>
+        <strong>Administrador Local:</strong>
+        <span>Henry Hernandez</span>
       </div>
       <div class="meta-item">
         <strong>Versión del Sistema:</strong>
-        <span>v1.0.0 (Junio 2026)</span>
+        <span>v1.0.0 (Producción Sólida)</span>
       </div>
       <div class="meta-item">
-        <strong>Estado de Operación:</strong>
-        <span>Producción y Servicio Local</span>
+        <strong>Base de Datos:</strong>
+        <span>PostgreSQL & Prisma Client</span>
       </div>
       <div class="meta-item">
-        <strong>Desarrollo:</strong>
-        <span>Control de Activos de la UPEN</span>
+        <strong>Plataforma:</strong>
+        <span>Next.js 16 (PWA Habilitada)</span>
       </div>
     </div>
   </div>
@@ -434,302 +438,373 @@
        ÍNDICE
        ========================================== -->
   <div class="page">
-    <h2 class="chapter-title"><span class="chapter-number">0.</span> Tabla de Contenidos</h2>
+    <h2 class="chapter-title"><span class="chapter-number">0.</span> Índice del Manual</h2>
     <ul class="index-list">
       <li class="index-item">
-        <span class="index-name">1. Introducción y Arquitectura General</span>
+        <span class="index-name">Sección 1. Panel (Dashboard de Control)</span>
         <span class="index-dots"></span>
         <span class="index-num">1</span>
       </li>
       <li class="index-item">
-        <span class="index-name">2. Panel de Control (Dashboard) y Métricas</span>
+        <span class="index-name">Sección 2. Inventario (Bienes Tecnológicos)</span>
         <span class="index-dots"></span>
         <span class="index-num">2</span>
       </li>
       <li class="index-item">
-        <span class="index-name">3. Inventario de Bienes (Tecnológico e Inmobiliario)</span>
+        <span class="index-name">Sección 3. Laboratorios (Control de Incidentes & Software)</span>
         <span class="index-dots"></span>
         <span class="index-num">3</span>
       </li>
       <li class="index-item">
-        <span class="index-name">4. Actas de Resguardo y Firma Digital Táctil</span>
+        <span class="index-name">Sección 4. Mobiliario (Bienes Inmobiliarios)</span>
         <span class="index-dots"></span>
         <span class="index-num">4</span>
       </li>
       <li class="index-item">
-        <span class="index-name">5. Vales de Salida y Préstamos Temporales</span>
+        <span class="index-name">Sección 5. Consumibles (Papelería & Entradas/Salidas)</span>
         <span class="index-dots"></span>
         <span class="index-num">5</span>
       </li>
       <li class="index-item">
-        <span class="index-name">6. Almacén de Consumibles y Stock Crítico</span>
+        <span class="index-name">Sección 6. Auditoría Rápida (Escáner & Audio feedback)</span>
         <span class="index-dots"></span>
         <span class="index-num">6</span>
       </li>
       <li class="index-item">
-        <span class="index-name">7. Mantenimiento Preventivo y Correctivo</span>
+        <span class="index-name">Sección 7. Personal (Alta de Custodios & Firmas)</span>
         <span class="index-dots"></span>
         <span class="index-num">7</span>
       </li>
       <li class="index-item">
-        <span class="index-name">8. Calibrador de Etiquetas y Formatos de Impresión</span>
+        <span class="index-name">Sección 8. Catálogos (Gestión de Tablas & Usuarios)</span>
         <span class="index-dots"></span>
         <span class="index-num">8</span>
       </li>
       <li class="index-item">
-        <span class="index-name">9. Seguridad, Respaldos e Inicio Automático</span>
+        <span class="index-name">Sección 9. Resguardos (Emisión de Actas de Asignación)</span>
         <span class="index-dots"></span>
         <span class="index-num">9</span>
       </li>
+      <li class="index-item">
+        <span class="index-name">Sección 10. Vales de Salida (Préstamos Temporales)</span>
+        <span class="index-dots"></span>
+        <span class="index-num">10</span>
+      </li>
+      <li class="index-item">
+        <span class="index-name">Sección 11. Mantenimientos (Servicios Preventivos & Correctivos)</span>
+        <span class="index-dots"></span>
+        <span class="index-num">11</span>
+      </li>
+      <li class="index-item">
+        <span class="index-name">Sección 12. Reportes e Historial (Exportación Excel/PDF)</span>
+        <span class="index-dots"></span>
+        <span class="index-num">12</span>
+      </li>
+      <li class="index-item">
+        <span class="index-name">Sección 13. Configuración, Calibración & Respaldos</span>
+        <span class="index-dots"></span>
+        <span class="index-num">13</span>
+      </li>
+      <li class="index-item">
+        <span class="index-name">Sección 14. Puesta en Marcha & Arranque Automático</span>
+        <span class="index-dots"></span>
+        <span class="index-num">14</span>
+      </li>
     </ul>
   </div>
 
   <!-- ==========================================
-       CAPÍTULO 1
+       SECCIÓN 1
        ========================================== -->
   <div class="page">
-    <h2 class="chapter-title"><span class="chapter-number">1.</span> Introducción y Arquitectura</h2>
+    <h2 class="chapter-title"><span class="chapter-number">1.</span> Panel (Dashboard)</h2>
     <p>
-      El <strong>Sistema de Control y Operación de Bienes (SICOB)</strong> es la plataforma institucional de la Universidad Politécnica del Estado de Nayarit para el control de su infraestructura física y tecnológica. Diseñado para simplificar las auditorías de activos fijos, agilizar el mantenimiento correctivo y registrar asignaciones legales de resguardo.
+      El <strong>Panel</strong> es el módulo central de visualización y monitoreo rápido de SICOB. Muestra los indicadores clave de rendimiento (KPIs) sobre el estado actual del inventario universitario en tiempo real.
     </p>
 
-    <div class="alert-box alert-important">
-      <strong>[!] NOTA DE DISEÑO PWA:</strong> El sistema está configurado como una Aplicación Web Progresiva. Puede instalarse en tabletas y celulares directamente desde el navegador Chrome, permitiendo consultar la base de datos local bajo intermitencias de red.
-    </div>
-
-    <h3>Componentes de la Arquitectura Local</h3>
+    <h3>Características Principales del Panel:</h3>
     <ul>
-      <li><strong>Frontend</strong>: Diseñado en Next.js utilizando layouts limpios en Vanilla CSS, libre de dependencias pesadas.</li>
-      <li><strong>Base de Datos</strong>: Motor PostgreSQL local integrado mediante Prisma ORM para consultas rápidas y estructuradas.</li>
-      <li><strong>Proxy / Seguridad</strong>: Middleware local que intercepta peticiones a la API para asegurar que solo usuarios autorizados realicen cambios en el inventario.</li>
+      <li><strong>KPIs en Bloque</strong>: Tarjetas informativas de conteo rápido (Bienes Totales, Bienes en Mantenimiento, Artículos Críticos de Papelería, Reportes Activos en Laboratorios).</li>
+      <li><strong>Distribución por Categorías</strong>: Gráfica de barras horizontales mostrando la cantidad de bienes por tipo de activo.</li>
+      <li><strong>Estado Operativo</strong>: Gráfica circular que ilustra cuántos bienes se encuentran en estado Bueno, Regular, Defectuoso, en Reserva, o Dado de Baja.</li>
+      <li><strong>Accesos Directos</strong>: Permite hacer clic sobre la tarjeta de "Mantenimiento" o "Incidentes" para redirigirse de inmediato a los respectivos paneles de atención técnica.</li>
     </ul>
   </div>
 
   <!-- ==========================================
-       CAPÍTULO 2
+       SECCIÓN 2
        ========================================== -->
   <div class="page">
-    <h2 class="chapter-title"><span class="chapter-number">2.</span> Panel de Control (Dashboard)</h2>
+    <h2 class="chapter-title"><span class="chapter-number">2.</span> Inventario</h2>
     <p>
-      Al iniciar sesión, se presenta la pantalla principal con métricas generales del patrimonio institucional.
+      El módulo de <strong>Inventario</strong> controla de manera exclusiva los **Bienes Tecnológicos** de la universidad. Contiene todos los equipos electrónicos que poseen especificaciones complejas (procesadores, almacenamiento, memoria RAM).
     </p>
 
-    <table>
-      <thead>
-        <tr>
-          <th style="width: 30%">Métrica</th>
-          <th style="width: 50%">Descripción</th>
-          <th style="width: 20%">Estado Óptimo</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><strong>Total de Bienes</strong></td>
-          <td>Suma de activos tecnológicos y mobiliarios vigentes en el sistema.</td>
-          <td>Informativo</td>
-        </tr>
-        <tr>
-          <td><strong>En Mantenimiento</strong></td>
-          <td>Activos en taller, revisión de software o reparación física.</td>
-          <td>Bajo (&lt; 5%)</td>
-        </tr>
-        <tr>
-          <td><strong>Consumibles Críticos</strong></td>
-          <td>Artículos en almacén que han caído por debajo de su stock de seguridad.</td>
-          <td>Cero (0)</td>
-        </tr>
-        <tr>
-          <td><strong>Incidentes Abiertos</strong></td>
-          <td>Reportes de fallas pendientes en laboratorios y aulas de clase.</td>
-          <td>Cero (0)</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <p>
-      Las gráficas dinámicas permiten identificar qué categorías de activos representan la mayor inversión y qué áreas de la universidad (oficinas, laboratorios, aulas) tienen asignada la mayor cantidad de equipamiento.
-    </p>
+    <h3>Funcionalidades del Formulario de Bienes:</h3>
+    <ul>
+      <li><strong>Campos Obligatorios</strong>: Descripción, Marca, Modelo, Estado, Ubicación Física, y Categoría.</li>
+      <li><strong>Especificaciones Técnicas (Formato JSON Flex)</strong>: Permite guardar atributos dinámicos (ej: <em>Procesador: Core i7, Memoria RAM: 16GB, Almacenamiento: 512GB SSD</em>) sin alterar la estructura básica de la base de datos.</li>
+      <li><strong>Registro Unitario vs Registro en Lote</strong>: Al registrar múltiples computadoras idénticas, se puede escribir el número en el campo "Cantidad". El sistema autogenerará los folios de inventario de forma consecutiva e individual en PostgreSQL.</li>
+      <li><strong>Importación Masiva (Excel)</strong>: Permite subir una plantilla de cálculo `.xlsx` para registrar cientos de bienes a la vez.</li>
+    </ul>
   </div>
 
   <!-- ==========================================
-       CAPÍTULO 3
+       SECCIÓN 3
        ========================================== -->
   <div class="page">
-    <h2 class="chapter-title"><span class="chapter-number">3.</span> Inventario de Bienes</h2>
+    <h2 class="chapter-title"><span class="chapter-number">3.</span> Laboratorios (Beta)</h2>
     <p>
-      El sistema almacena por separado los <strong>Bienes Tecnológicos</strong> (computadoras, routers, proyectores, drones) de los <strong>Bienes Inmobiliarios</strong> (sillas, mesas, pizarrones, escritorios) para facilitar el filtrado de inventarios especializados.
+      El módulo de <strong>Laboratorios</strong> permite a los jefes de departamento y encargados de aulas registrar fallas de hardware y llevar el control del software con licencia instalado en cada equipo de cómputo.
     </p>
 
-    <h3>Procedimiento para Registrar Nuevos Activos</h3>
+    <h3>Estructura Operativa:</h3>
     <ol class="step-list">
       <li class="step-item">
-        <strong>Ingresar al Panel de Inventario:</strong> Haz clic en la sección "Inventario" en el menú lateral.
+        <strong>Reporte de Incidentes:</strong> Si un ratón, teclado, o monitor de un laboratorio falla, se abre un reporte de incidente vinculado a esa máquina específica, describiendo la falla y el nivel de urgencia.
       </li>
       <li class="step-item">
-        <strong>Abrir Formulario:</strong> Selecciona "Nuevo Bien" (tecnológico) o "Nuevo Mobiliario" (inmobiliario).
+        <strong>Control de Software:</strong> Registra las instalaciones de licencias de software (ej. AutoCAD, Matlab, Office) indicando la clave de licencia y fecha de expiración por equipo, lo que previene problemas en auditorías de auditoría de licencias.
       </li>
       <li class="step-item">
-        <strong>Definir Cantidad:</strong> Si registras un solo bien, introduce sus especificaciones particulares. Si registras un lote idéntico (ej: 20 bancas), define la cantidad y el sistema creará los 20 registros correlativos de forma automática.
-      </li>
-      <li class="step-item">
-        <strong>Autogeneración de Códigos:</strong> Si dejas el campo "Código de Inventario" vacío, el sistema aplicará la nomenclatura configurada para tu universidad (ej. <em>UPEN-COMP-2026-0042</em>) autoincrementando el consecutivo de forma segura.
+        <strong>Canalización Directa:</strong> Los incidentes reportados aquí pueden marcarse en estado *"Resuelto"*, o bien ser canalizados al módulo de **Mantenimiento** si requieren la intervención de un técnico o la compra de refacciones.
       </li>
     </ol>
   </div>
 
   <!-- ==========================================
-       CAPÍTULO 4
+       SECCIÓN 4
        ========================================== -->
   <div class="page">
-    <h2 class="chapter-title"><span class="chapter-number">4.</span> Actas de Resguardo y Firma Digital</h2>
+    <h2 class="chapter-title"><span class="chapter-number">4.</span> Mobiliario</h2>
     <p>
-      El módulo de Resguardos gestiona la responsabilidad legal de los bienes asignados al personal de la universidad.
+      El módulo de <strong>Mobiliario</strong> gestiona los **Bienes Inmobiliarios** de la universidad. Incluye todo el equipo mecánico o estático que no cuenta con especificaciones lógicas de red (escritorios, sillas de paleta, libreros, pintarrones, proyectores de pantalla estática, ventiladores).
     </p>
 
     <div class="alert-box alert-important">
-      <strong>[!] AUTOGUARDADO DE FIRMA:</strong> Las firmas recolectadas se guardan de forma persistente en formato Base64 directamente en PostgreSQL. Al generar de nuevo el acta en PDF, la firma aparecerá impresa de forma automática.
+      <strong>[!] DISEÑO INDEPENDIENTE:</strong> A pesar de estar en una pestaña separada, los bienes de Mobiliario se integran de manera transparente en las actas de resguardo colectivo de los custodios, garantizando que un docente firme por todo su salón de clases (bancas e inmobiliarios incluidos).
     </div>
 
-    <h3>Flujo para Firmar un Acta Colectiva</h3>
+    <p>
+      El procedimiento de alta en lote también se aplica a este módulo. Por ejemplo, al recibir una compra de 50 sillas para un aula, el sistema generará automáticamente 50 registros independientes (ej: <em>UPEN-MOB-2026-0001</em> al <em>0050</em>) listos para ser etiquetados físicamente.
+    </p>
+  </div>
+
+  <!-- ==========================================
+       SECCIÓN 5
+       ========================================== -->
+  <div class="page">
+    <h2 class="chapter-title"><span class="chapter-number">5.</span> Consumibles</h2>
+    <p>
+      El módulo de <strong>Consumibles</strong> permite administrar el almacén de refacciones y materiales de desgaste rápido (toners, resmas de papel, marcadores, jabón de limpieza, adaptadores HDMI).
+    </p>
+
+    <h3>Operaciones en Almacén:</h3>
+    <ul>
+      <li><strong>Entradas (Abastecimiento)</strong>: Registra la compra de insumos, indicando el costo unitario, cantidad adquirida y proveedor, incrementando el stock disponible.</li>
+      <li><strong>Salidas (Consumo)</strong>: Registra la entrega de material a un docente o departamento (ej. 2 toners al Departamento de Servicios Escolares), restando del stock y guardando el registro de la persona que lo recibió.</li>
+      <li><strong>Stock Crítico</strong>: Si un consumible desciende de su inventario mínimo de seguridad, se activará una alerta roja en el listado y en el Dashboard de inicio para su reposición inmediata.</li>
+    </ul>
+  </div>
+
+  <!-- ==========================================
+       SECCIÓN 6
+       ========================================== -->
+  <div class="page">
+    <h2 class="chapter-title"><span class="chapter-number">6.</span> Auditoría Rápida</h2>
+    <p>
+      El módulo de <strong>Auditoría Rápida</strong> es una herramienta interactiva diseñada para realizar inventarios físicos en caliente de forma ágil mediante dispositivos móviles o lectores de códigos de barras portátiles.
+    </p>
+
+    <h3>Flujo de Operación en Auditoría:</h3>
     <ol class="step-list">
       <li class="step-item">
-        <strong>Seleccionar al Responsable:</strong> Entra al módulo de "Resguardos" y busca al custodio (ej. Jefe de Departamento, Docente).
+        <strong>Seleccionar Ubicación:</strong> El auditor elige el edificio, aula o laboratorio que va a inspeccionar físicamente.
       </li>
       <li class="step-item">
-        <strong>Verificar Activos:</strong> El sistema listará todos los bienes que tiene asignados bajo su control.
+        <strong>Escaneo Activo:</strong> Se utiliza la cámara del móvil (PWA) o una pistola de escáner USB para leer las etiquetas consecutivamente.
       </li>
       <li class="step-item">
-        <strong>Estampar Firma Táctil:</strong> Si el custodio está conforme, haz clic en "Firmar Conformidad". Dibuja la firma en el panel digital usando el mouse, lápiz táctil o dedo.
+        <strong>Audio Feedback / Alertas Visuales:</strong> El sistema emite pitidos audibles específicos:
+        <br>• <em>Pitido Normal</em>: Bien encontrado y registrado en su ubicación correspondiente.
+        <br>• <em>Pitido de Advertencia</em>: Bien encontrado pero reubicado (estaba registrado en otra oficina en la base de datos).
+        <br>• <em>Pitido de Error</em>: Código de barra no registrado en el sistema.
       </li>
       <li class="step-item">
-        <strong>Guardar e Imprimir:</strong> Al hacer clic en "Guardar", se consolidará el acta. Puedes pulsar "Ver Acta" para mandarla a imprimir o guardarla directamente como PDF.
+        <strong>Reporte Final:</strong> Al terminar la auditoría, el sistema muestra el balance final: cuántos bienes están completos, cuáles faltan en el salón y cuáles fueron movidos de su área original.
       </li>
     </ol>
   </div>
 
   <!-- ==========================================
-       CAPÍTULO 5
+       SECCIÓN 7
        ========================================== -->
   <div class="page">
-    <h2 class="chapter-title"><span class="chapter-number">5.</span> Vales de Salida Temporales</h2>
+    <h2 class="chapter-title"><span class="chapter-number">7.</span> Personal</h2>
     <p>
-      Para el equipo de tránsito o de comisiones externas que sale temporalmente de la institución, se utiliza el módulo de <strong>Vales de Salida</strong>.
+      El módulo de <strong>Personal</strong> almacena el catálogo de trabajadores de la universidad (docentes, directivos, administrativos y auxiliares) que son elegibles para ser custodios y responsables de los bienes universitarios.
     </p>
 
-    <h3>Estados de un Vale de Salida</h3>
+    <h3>Características Principales:</h3>
     <ul>
-      <li><strong>PENDIENTE</strong>: El vale ha sido emitido, los equipos han salido de almacén y están en poder del responsable de comisión. El bloque de firma de salida debe estar firmado.</li>
-      <li><strong>DEVUELTO</strong>: Los equipos han ingresado nuevamente a la universidad. Se registra la fecha y hora reales de retorno, liberando los activos en el inventario y solicitando la firma de "Recibió de Retorno".</li>
+      <li><strong>Campos del Personal</strong>: Nombre completo, correo electrónico, departamento administrativo, cargo/puesto y número de empleado.</li>
+      <li><strong>Almacenamiento de Firmas Digitales</strong>: Permite registrar y actualizar la firma del empleado en PostgreSQL. Si un empleado cambia de firma, la actualización de su firma en este módulo impactará automáticamente a todas las actas de resguardo vigentes a su nombre.</li>
+      <li><strong>Historial de Bienes por Custodio</strong>: Ofrece una pestaña para verificar de inmediato una lista consolidada de todo el equipamiento del que es responsable legal.</li>
     </ul>
-
-    <div class="alert-box alert-warning">
-      <strong>ATENCIÓN:</strong> No se pueden editar los bienes incluidos en un vale una vez creado. Si la comisión cambia de equipamiento, debes cancelar el vale actual y generar uno nuevo para mantener la trazabilidad.
-    </div>
   </div>
 
   <!-- ==========================================
-       CAPÍTULO 6
+       SECCIÓN 8
        ========================================== -->
   <div class="page">
-    <h2 class="chapter-title"><span class="chapter-number">6.</span> Almacén de Consumibles</h2>
+    <h2 class="chapter-title"><span class="chapter-number">8.</span> Catálogos</h2>
     <p>
-      Este módulo está destinado a insumos y papelería que se desgastan o distribuyen recurrentemente (toners, hojas Carta, cables Ethernet, etc.).
+      El módulo de <strong>Catálogos</strong> administra las tablas maestras que estructuran las relaciones del sistema. Solo es editable por usuarios con rol <strong>ADMINISTRADOR</strong>.
     </p>
 
-    <h3>Registro de Movimientos</h3>
-    <ul>
-      <li><strong>Entrada (Abastecimiento)</strong>: Se registra al recibir compras o donaciones de insumos, incrementando el stock físico.</li>
-      <li><strong>Salida (Consumo)</strong>: Se registra al entregar materiales a profesores, oficinas o laboratorios, restando del stock y guardando el destino final para fines de auditoría.</li>
-    </ul>
-
-    <div class="alert-box alert-important">
-      <strong>STOCK CRÍTICO:</strong> En el listado, los consumibles cuyo stock actual sea igual o menor a su "Mínimo Requerido" aparecerán resaltados en color rojo. Esto indica que se debe realizar una orden de compra de forma urgente.
-    </div>
-  </div>
-
-  <!-- ==========================================
-       CAPÍTULO 7
-       ========================================== -->
-  <div class="page">
-    <h2 class="chapter-title"><span class="chapter-number">7.</span> Historial de Mantenimientos</h2>
-    <p>
-      SICOB realiza el seguimiento técnico de todos los activos tecnológicos e inmobiliarios para garantizar su vida útil.
-    </p>
-
-    <h3>Tipos de Mantenimiento</h3>
+    <h3>Tablas Maestras Disponibles:</h3>
     <ol>
-      <li><strong>Preventivo</strong>: Programado con anterioridad para limpieza física, optimización de software o lubricación de partes.</li>
-      <li><strong>Correctivo</strong>: Derivado de una falla imprevista o reporte de incidente.</li>
+      <li><strong>Categorías</strong>: Clasificaciones del inventario (ej. Cómputo, Monitores, Mobiliario de Aula, Drones) con iconos personalizados.</li>
+      <li><strong>Ubicaciones</strong>: Edificios, aulas, almacenes o laboratorios físicos de la universidad.</li>
+      <li><strong>Departamentos</strong>: Oficinas administrativas de la institución (ej. Recursos Humanos, Servicios Escolares, Departamento de Informática).</li>
+      <li><strong>Usuarios</strong>: Gestión de accesos al sistema con asignación de roles y herramientas de seguridad (como la generación de códigos para restablecer contraseñas).</li>
     </ol>
-
-    <p>
-      Al poner un bien en estado de "Mantenimiento", se bloquea temporalmente para que no pueda ser asignado en Vales de Salida o Resguardos, asegurando que no se preste equipo defectuoso.
-    </p>
   </div>
 
   <!-- ==========================================
-       CAPÍTULO 8
+       SECCIÓN 9
        ========================================== -->
   <div class="page">
-    <h2 class="chapter-title"><span class="chapter-number">8.</span> Calibrador de Etiquetas</h2>
+    <h2 class="chapter-title"><span class="chapter-number">9.</span> Resguardos</h2>
     <p>
-      El sistema cuenta con un generador milimétrico de códigos de barras para etiquetar los activos físicamente.
+      El módulo de <strong>Resguardos</strong> emite las actas de resguardo colectivo, que son el documento legal probatorio de que un empleado es responsable de la tenencia y cuidado de los bienes institucionales.
     </p>
 
-    <h3>Formatos de Papel Soportados</h3>
-    <table>
-      <thead>
-        <tr>
-          <th>Formato</th>
-          <th>Distribución</th>
-          <th>Medidas por Etiqueta</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><strong>Avery 5167</strong></td>
-          <td>4 columnas x 20 filas (80 por hoja Carta)</td>
-          <td>44.0 mm x 13.0 mm</td>
-        </tr>
-        <tr>
-          <td><strong>ULINE S-10425SIL</strong></td>
-          <td>3 columnas x 10 filas (30 por hoja Carta)</td>
-          <td>66.7 mm x 25.4 mm</td>
-        </tr>
-        <tr>
-          <td><strong>Rollo Continuo</strong></td>
-          <td>1 columna (impresora térmica directa)</td>
-          <td>Personalizable (ej. 30mm x 15mm)</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <div class="alert-box alert-warning">
-      <strong>[!] REQUISITO DE IMPRESIÓN:</strong> Para evitar desalineaciones en la impresión de hojas de etiquetas, debes ajustar los márgenes de tu navegador en <strong>"Ninguno" (None)</strong> y la escala en <strong>"100%"</strong>. De lo contrario, el navegador encogerá la página y las etiquetas se desalinearán gradualmente hacia abajo.
-    </div>
-  </div>
-
-  <!-- ==========================================
-       CAPÍTULO 9
-       ========================================== -->
-  <div class="page">
-    <h2 class="chapter-title"><span class="chapter-number">9.</span> Seguridad y Respaldos</h2>
-    <p>
-      Para garantizar la permanencia y protección de los datos recopilados por la universidad, se deben seguir las siguientes medidas operativas:
-    </p>
-
-    <h3>Respaldos Automáticos (Backups)</h3>
-    <p>
-      Desde la sección "Configuración" del panel de Administrador, se cuenta con la opción de exportar un respaldo completo del sistema en un solo archivo `.json`. 
-    </p>
     <div class="alert-box alert-important">
-      <strong>RECOMENDACIÓN:</strong> Realizar un respaldo de base de datos el último día hábil de cada mes y guardarlo en un almacenamiento en la nube externo o disco duro físico institucional.
+      <strong>[!] INTEGRACIÓN CON FIRMA DIGITAL:</strong> Si el personal ya cuenta con su firma guardada en el sistema, al hacer clic en "Ver Acta", se renderizará automáticamente su imagen de firma Base64 en el pie del documento. No es necesario volver a firmar en cada impresión.
     </div>
 
-    <h3>Inicio Automático de SICOB con Windows</h3>
+    <h3>Procedimiento de Emisión:</h3>
+    <ol class="step-list">
+      <li class="step-item">
+        <strong>Filtro de Custodio:</strong> Selecciona el nombre del custodio en el listado principal.
+      </li>
+      <li class="step-item">
+        <strong>Revisión Legal:</strong> El sistema consolida en una sola hoja todos los bienes asignados.
+      </li>
+      <li class="step-item">
+        <strong>Firma Interactiva:</strong> Si no cuenta con firma previa, se despliega el canvas interactivo para dibujar la rúbrica y guardarla directamente.
+      </li>
+      <li class="step-item">
+        <strong>Exportar o Imprimir:</strong> Presiona "Ver Acta" y ejecuta la impresión (guardar como PDF) utilizando la plantilla institucional de la universidad.
+      </li>
+    </ol>
+  </div>
+
+  <!-- ==========================================
+       SECCIÓN 10
+       ========================================== -->
+  <div class="page">
+    <h2 class="chapter-title"><span class="chapter-number">10.</span> Vales de Salida</h2>
     <p>
-      El servidor se ejecuta automáticamente al encender la computadora gracias al archivo invisible `run_production.vbs` colocado en la carpeta de Inicio de Windows. Esto asegura que la base de datos y el servicio estén listos para su uso sin necesidad de que el personal técnico tenga que abrir terminales o escribir código.
+      El módulo de <strong>Vales de Salida</strong> regula la salida temporal de activos de la universidad para comisiones, eventos especiales, préstamos a alumnos o auditorías externas.
     </p>
+
+    <h3>Flujo de Operación de un Vale de Salida:</h3>
+    <ol class="step-list">
+      <li class="step-item">
+        <strong>Crear Vale:</strong> Se define el custodio responsable, los bienes en préstamo y la fecha pactada de devolución. El custodio dibuja su firma digital táctil autorizando la salida y comprometiéndose a retornar los equipos en buen estado.
+      </li>
+      <li class="step-item">
+        <strong>Salida y Tránsito:</strong> Los bienes cambian automáticamente a estado "En Préstamo", quedando bloqueados para otras acciones del sistema.
+      </li>
+      <li class="step-item">
+        <strong>Retorno y Liberación:</strong> Al devolver los equipos físicos, el administrador abre el vale y hace clic en "Registrar Retorno de Equipos". El sistema registra el retorno en base de datos y libera los bienes para que puedan volver a ser inventariados o prestados de inmediato.
+      </li>
+    </ol>
+  </div>
+
+  <!-- ==========================================
+       SECCIÓN 11
+       ========================================== -->
+  <div class="page">
+    <h2 class="chapter-title"><span class="chapter-number">11.</span> Mantenimientos</h2>
+    <p>
+      El módulo de <strong>Mantenimientos</strong> registra y planifica todas las reparaciones, optimizaciones, revisiones periódicas o compras de refacciones de los activos institucionales.
+    </p>
+
+    <h3>Campos Clave del Registro de Mantenimiento:</h3>
+    <ul>
+      <li><strong>Costo del Servicio</strong>: Monto total invertido en la reparación, acumulándose automáticamente en la gráfica de egresos por activos en el Dashboard.</li>
+      <li><strong>Técnico Encargado</strong>: Persona o empresa proveedora que aplicó el servicio técnico.</li>
+      <li><strong>Próximo Mantenimiento</strong>: Fecha recomendada para la siguiente revisión preventiva (el sistema enviará alertas en la campana de notificaciones del Dashboard al acercarse esta fecha).</li>
+      <li><strong>Tipo de Mantenimiento</strong>: Clasificación en Preventivo o Correctivo.</li>
+    </ul>
+  </div>
+
+  <!-- ==========================================
+       SECCIÓN 12
+       ========================================== -->
+  <div class="page">
+    <h2 class="chapter-title"><span class="chapter-number">12.</span> Reportes e Historial</h2>
+    <p>
+      El módulo de <strong>Reportes e Historial</strong> es la herramienta centralizada para auditorías externas, conciliaciones contables y revisión de trazabilidad de los bienes.
+    </p>
+
+    <h3>Herramientas de Exportación y Filtro:</h3>
+    <ul>
+      <li><strong>Generación de Reportes en Excel</strong>: Permite filtrar bienes por estado, categoría o ubicación y descargar una hoja de cálculo formateada en `.xlsx` con un solo clic.</li>
+      <li><strong>Reportes PDF de Auditoría</strong>: Imprime listas de verificación foliadas con firmas oficiales del titular de control patrimonial.</li>
+      <li><strong>Historial de Bitácora (Audit Trail)</strong>: Registra todos los movimientos críticos del sistema indicando la fecha, hora, usuario operador y el cambio detallado que se realizó sobre la base de datos PostgreSQL.</li>
+    </ul>
+  </div>
+
+  <!-- ==========================================
+       SECCIÓN 13
+       ========================================== -->
+  <div class="page">
+    <h2 class="chapter-title"><span class="chapter-number">13.</span> Configuración, Calibración & Respaldos</h2>
+    <p>
+      El panel de Configuración es el cerebro administrativo del sistema. Administra la identidad de la universidad, plantillas de impresión y seguridad de bases de datos.
+    </p>
+
+    <h3>13.1 Identidad de la Institución</h3>
+    <p>
+      Permite definir las siglas oficiales (ej. <em>UPEN</em>), el nombre oficial de la universidad, subir el logotipo digital en formato PNG transparente y definir los nombres de los firmantes oficiales de control patrimonial y recursos materiales para todos los documentos imprimibles.
+    </p>
+
+    <h3>13.2 Calibrador de Etiquetas</h3>
+    <p>
+      SICOB incluye un calibrador milimétrico visual e interactivo para ajustar el centrado, margen, ancho y alto de los códigos de barras impresos en hojas de etiquetas Avery, Uline o rollo continuo. Cuenta con una plantilla guía digital traslúcida que se puede sobreponer a las hojas de etiquetas reales para alinear la calibración antes de imprimir.
+    </p>
+
+    <h3>13.3 Copias de Seguridad (Backup)</h3>
+    <p>
+      Permite exportar toda la base de datos PostgreSQL a un archivo compacto en formato JSON. En caso de fallos del servidor, este archivo se puede volver a importar en la misma pantalla para restaurar el sistema al 100% de manera inmediata.
+    </p>
+  </div>
+
+  <!-- ==========================================
+       SECCIÓN 14
+       ========================================== -->
+  <div class="page">
+    <h2 class="chapter-title"><span class="chapter-number">14.</span> Puesta en Marcha & Arranque Automático</h2>
+    <p>
+      Para garantizar que SICOB funcione de manera autónoma sin necesidad de soporte técnico constante, se ha configurado para arrancar de forma silenciosa al encender el equipo servidor local de Windows.
+    </p>
+
+    <h3>Flujo de Arranque Automático en el Servidor:</h3>
+    <ol class="step-list">
+      <li class="step-item">
+        <strong>Servicio de PostgreSQL:</strong> El motor de base de datos arranca por defecto de forma nativa al encender la computadora (Servicio Windows: <em>postgresql-x64-18</em>).
+      </li>
+      <li class="step-item">
+        <strong>Script VBS Silencioso:</strong> Se ha integrado un script invisible llamado `run_production.vbs` en la carpeta de Inicio de Windows. Al encender la PC, este script ejecuta de forma silenciosa el servidor de Next.js (`npm run start`) sin abrir terminales de consola ni interrumpir al usuario operador de la PC.
+      </li>
+      <li class="step-item">
+        <strong>Túnel de Red (Opcional)</strong>: Si el conector de Cloudflare está instalado como servicio, se conectará inmediatamente de manera remota al encender el equipo, permitiendo el acceso seguro a SICOB desde internet.
+      </li>
+    </ol>
   </div>
 
 </div>
