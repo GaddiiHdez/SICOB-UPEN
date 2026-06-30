@@ -745,7 +745,7 @@ export default function ValesPanel({ bienes, personal, configuracion = {}, showT
                       Universidad Politécnica del Estado de Nayarit
                     </h3>
                     <h4 style={{ margin: '2px 0 0', fontSize: 11, fontWeight: 700, color: '#333333' }}>
-                      Departamento de Informática y Telecomunicaciones
+                      Departamento de Informática
                     </h4>
                   </div>
                 </div>
