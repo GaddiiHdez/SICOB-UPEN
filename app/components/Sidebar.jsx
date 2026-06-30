@@ -2,7 +2,7 @@
 import Image from 'next/image';
 import { NAV_ITEMS } from '@/lib/constants';
 import { getNavIcon } from '@/lib/icons';
-import { Settings2, LogOut } from 'lucide-react';
+import { Settings2, LogOut, BookOpen } from 'lucide-react';
 
 /**
  * Sidebar — Navegación lateral del sistema.
@@ -117,6 +117,15 @@ export default function Sidebar({ activeNav, onNavChange, usuario, configuracion
               <Settings2 size={16} /> Configuración
             </button>
           )}
+          <a
+            href="/MANUAL.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="sidebar-user-action-btn"
+            style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 12 }}
+          >
+            <BookOpen size={16} /> Manual de Usuario
+          </a>
           <button
             className="sidebar-user-action-btn sidebar-user-action-btn-danger"
             onClick={() => {

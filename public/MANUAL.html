@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Manual de Usuario — SICOB UPEN</title>
+  <style>
+    /* ==========================================
+       ESTILOS GLOBALES - IDENTIDAD VISUAL SICOB
+       ========================================== */
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap');
+
+    :root {
+      --primary: #00716A;
+      --primary-dark: #004D48;
+      --primary-light: rgba(0, 113, 106, 0.06);
+      --secondary: #1E1E1E;
+      --text-main: #2D3748;
+      --text-muted: #718096;
+      --border: #E2E8F0;
+      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+      --radius: 12px;
+      --font-title: 'Outfit', sans-serif;
+      --font-body: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-body);
+      color: var(--text-main);
+      background-color: #FAFAFA;
+      line-height: 1.6;
+      font-size: 15px;
+    }
+
+    .container {
+      max-width: 850px;
+      margin: 0 auto;
+      background: #FFFFFF;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+    }
+
+    /* ==========================================
+       PORTADA PREMIUM
+       ========================================== */
+    .cover-page {
+      height: 29.7cm; /* A4/Letter aprox */
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 3cm 2cm;
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(135deg, #FFFFFF 60%, var(--primary-light) 100%);
+    }
+
+    .cover-page::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 15px;
+      height: 100%;
+      background: var(--primary);
+    }
+
+    .cover-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .cover-logo-sim {
+      width: 60px;
+      height: 60px;
+      background: var(--primary);
+      color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-title);
+      font-weight: 800;
+      font-size: 24px;
+      border-radius: 14px;
+      box-shadow: 0 8px 16px rgba(0, 113, 106, 0.2);
+    }
+
+    .cover-header-text h2 {
+      font-family: var(--font-title);
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--secondary);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .cover-header-text p {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .cover-body {
+      margin-top: 4cm;
+    }
+
+    .cover-tag {
+      display: inline-block;
+      padding: 6px 14px;
+      background: var(--primary-light);
+      color: var(--primary);
+      border-radius: 99px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+
+    .cover-title {
+      font-family: var(--font-title);
+      font-size: 46px;
+      font-weight: 800;
+      line-height: 1.15;
+      color: var(--secondary);
+      margin-bottom: 12px;
+    }
+
+    .cover-subtitle {
+      font-size: 18px;
+      color: var(--primary);
+      font-weight: 600;
+      margin-bottom: 40px;
+    }
+
+    .cover-footer {
+      border-top: 1px solid var(--border);
+      padding-top: 30px;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      font-size: 13px;
+    }
+
+    .meta-item strong {
+      display: block;
+      color: var(--secondary);
+      font-family: var(--font-title);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 2px;
+    }
+
+    .meta-item span {
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    /* ==========================================
+       ÍNDICE / CONTENIDO GENERAL
+       ========================================== */
+    .page {
+      padding: 2.5cm 2cm;
+      position: relative;
+    }
+
+    .chapter-title {
+      font-family: var(--font-title);
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--secondary);
+      border-bottom: 2px solid var(--primary);
+      padding-bottom: 10px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .chapter-number {
+      color: var(--primary);
+      opacity: 0.4;
+      font-size: 32px;
+    }
+
+    h3 {
+      font-family: var(--font-title);
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--secondary);
+      margin-top: 24px;
+      margin-bottom: 10px;
+    }
+
+    p {
+      margin-bottom: 14px;
+      color: var(--text-main);
+      text-align: justify;
+    }
+
+    ul, ol {
+      margin-bottom: 16px;
+      margin-left: 20px;
+    }
+
+    li {
+      margin-bottom: 8px;
+    }
+
+    /* Callouts / Alertas */
+    .alert-box {
+      padding: 16px 20px;
+      border-left: 4px solid var(--primary);
+      background-color: var(--primary-light);
+      border-radius: 0 8px 8px 0;
+      margin: 20px 0;
+      font-size: 14px;
+    }
+
+    .alert-box strong {
+      color: var(--primary-dark);
+      font-family: var(--font-title);
+    }
+
+    .alert-warning {
+      border-left-color: #F59E0B;
+      background-color: rgba(245, 158, 11, 0.05);
+    }
+    .alert-warning strong { color: #D97706; }
+
+    .alert-important {
+      border-left-color: #3B82F6;
+      background-color: rgba(59, 130, 246, 0.05);
+    }
+    .alert-important strong { color: #2563EB; }
+
+    /* Tablas */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+      font-size: 13.5px;
+    }
+
+    th, td {
+      border: 1px solid var(--border);
+      padding: 10px 12px;
+      text-align: left;
+    }
+
+    th {
+      background-color: var(--primary-light);
+      color: var(--primary-dark);
+      font-family: var(--font-title);
+      font-weight: 700;
+    }
+
+    tr:nth-child(even) {
+      background-color: #FAFAFA;
+    }
+
+    /* Índice punteado */
+    .index-list {
+      list-style: none;
+      margin-left: 0;
+    }
+
+    .index-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 12px;
+    }
+
+    .index-name {
+      font-weight: 600;
+      color: var(--secondary);
+    }
+
+    .index-dots {
+      flex-grow: 1;
+      border-bottom: 2px dotted var(--border);
+      margin: 0 10px;
+      position: relative;
+      top: -4px;
+    }
+
+    .index-num {
+      font-family: var(--font-title);
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    /* Instructivos paso a paso */
+    .step-list {
+      list-style: none;
+      margin-left: 0;
+      counter-reset: steps;
+    }
+
+    .step-item {
+      position: relative;
+      padding-left: 45px;
+      margin-bottom: 20px;
+    }
+
+    .step-item::before {
+      counter-increment: steps;
+      content: counter(steps);
+      position: absolute;
+      left: 0;
+      top: 2px;
+      width: 28px;
+      height: 28px;
+      background: var(--primary);
+      color: #FFFFFF;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 13px;
+    }
+
+    /* ==========================================
+       ESTILOS EXCLUSIVOS PARA IMPRESIÓN (PDF)
+       ========================================== */
+    @media print {
+      body {
+        background-color: #FFFFFF !important;
+        color: #000000 !important;
+        font-size: 12pt;
+      }
+
+      .container {
+        max-width: 100% !important;
+        width: 100% !important;
+        box-shadow: none !important;
+        background: transparent !important;
+      }
+
+      .cover-page {
+        height: 100vh !important;
+        page-break-after: always !important;
+        break-after: page !important;
+        padding: 3cm 2cm !important;
+      }
+
+      .page {
+        page-break-before: always !important;
+        break-before: page !important;
+        padding: 1.5cm 0 !important;
+      }
+
+      .chapter-title {
+        border-bottom-color: #000000 !important;
+      }
+
+      .chapter-number {
+        color: #000000 !important;
+      }
+
+      .alert-box {
+        background-color: #F9FAFB !important;
+        border-left-color: #000000 !important;
+      }
+
+      th {
+        background-color: #F3F4F6 !important;
+        color: #000000 !important;
+      }
+
+      /* Forzar que los colores de fondo se impriman en Chrome/Safari */
+      * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      /* Ocultar botones de impresión si existieran */
+      .no-print {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- ==========================================
+       PORTADA
+       ========================================== -->
+  <div class="cover-page">
+    <div class="cover-header">
+      <div class="cover-logo-sim">UP</div>
+      <div class="cover-header-text">
+        <h2>Universidad Politécnica del Estado de Nayarit</h2>
+        <p>Departamento de Informática y Telecomunicaciones</p>
+      </div>
+    </div>
+
+    <div class="cover-body">
+      <span class="cover-tag">Documento Oficial</span>
+      <h1 class="cover-title">Manual de Usuario<br>y Operación</h1>
+      <div class="cover-subtitle">Sistema de Control y Operación de Bienes (SICOB)</div>
+    </div>
+
+    <div class="cover-footer">
+      <div class="meta-item">
+        <strong>Preparado para:</strong>
+        <span>Personal Administrativo y TI</span>
+      </div>
+      <div class="meta-item">
+        <strong>Versión del Sistema:</strong>
+        <span>v1.0.0 (Junio 2026)</span>
+      </div>
+      <div class="meta-item">
+        <strong>Estado de Operación:</strong>
+        <span>Producción y Servicio Local</span>
+      </div>
+      <div class="meta-item">
+        <strong>Desarrollo:</strong>
+        <span>Control de Activos de la UPEN</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       ÍNDICE
+       ========================================== -->
+  <div class="page">
+    <h2 class="chapter-title"><span class="chapter-number">0.</span> Tabla de Contenidos</h2>
+    <ul class="index-list">
+      <li class="index-item">
+        <span class="index-name">1. Introducción y Arquitectura General</span>
+        <span class="index-dots"></span>
+        <span class="index-num">1</span>
+      </li>
+      <li class="index-item">
+        <span class="index-name">2. Panel de Control (Dashboard) y Métricas</span>
+        <span class="index-dots"></span>
+        <span class="index-num">2</span>
+      </li>
+      <li class="index-item">
+        <span class="index-name">3. Inventario de Bienes (Tecnológico e Inmobiliario)</span>
+        <span class="index-dots"></span>
+        <span class="index-num">3</span>
+      </li>
+      <li class="index-item">
+        <span class="index-name">4. Actas de Resguardo y Firma Digital Táctil</span>
+        <span class="index-dots"></span>
+        <span class="index-num">4</span>
+      </li>
+      <li class="index-item">
+        <span class="index-name">5. Vales de Salida y Préstamos Temporales</span>
+        <span class="index-dots"></span>
+        <span class="index-num">5</span>
+      </li>
+      <li class="index-item">
+        <span class="index-name">6. Almacén de Consumibles y Stock Crítico</span>
+        <span class="index-dots"></span>
+        <span class="index-num">6</span>
+      </li>
+      <li class="index-item">
+        <span class="index-name">7. Mantenimiento Preventivo y Correctivo</span>
+        <span class="index-dots"></span>
+        <span class="index-num">7</span>
+      </li>
+      <li class="index-item">
+        <span class="index-name">8. Calibrador de Etiquetas y Formatos de Impresión</span>
+        <span class="index-dots"></span>
+        <span class="index-num">8</span>
+      </li>
+      <li class="index-item">
+        <span class="index-name">9. Seguridad, Respaldos e Inicio Automático</span>
+        <span class="index-dots"></span>
+        <span class="index-num">9</span>
+      </li>
+    </ul>
+  </div>
+
+  <!-- ==========================================
+       CAPÍTULO 1
+       ========================================== -->
+  <div class="page">
+    <h2 class="chapter-title"><span class="chapter-number">1.</span> Introducción y Arquitectura</h2>
+    <p>
+      El <strong>Sistema de Control y Operación de Bienes (SICOB)</strong> es la plataforma institucional de la Universidad Politécnica del Estado de Nayarit para el control de su infraestructura física y tecnológica. Diseñado para simplificar las auditorías de activos fijos, agilizar el mantenimiento correctivo y registrar asignaciones legales de resguardo.
+    </p>
+
+    <div class="alert-box alert-important">
+      <strong>[!] NOTA DE DISEÑO PWA:</strong> El sistema está configurado como una Aplicación Web Progresiva. Puede instalarse en tabletas y celulares directamente desde el navegador Chrome, permitiendo consultar la base de datos local bajo intermitencias de red.
+    </div>
+
+    <h3>Componentes de la Arquitectura Local</h3>
+    <ul>
+      <li><strong>Frontend</strong>: Diseñado en Next.js utilizando layouts limpios en Vanilla CSS, libre de dependencias pesadas.</li>
+      <li><strong>Base de Datos</strong>: Motor PostgreSQL local integrado mediante Prisma ORM para consultas rápidas y estructuradas.</li>
+      <li><strong>Proxy / Seguridad</strong>: Middleware local que intercepta peticiones a la API para asegurar que solo usuarios autorizados realicen cambios en el inventario.</li>
+    </ul>
+  </div>
+
+  <!-- ==========================================
+       CAPÍTULO 2
+       ========================================== -->
+  <div class="page">
+    <h2 class="chapter-title"><span class="chapter-number">2.</span> Panel de Control (Dashboard)</h2>
+    <p>
+      Al iniciar sesión, se presenta la pantalla principal con métricas generales del patrimonio institucional.
+    </p>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 30%">Métrica</th>
+          <th style="width: 50%">Descripción</th>
+          <th style="width: 20%">Estado Óptimo</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Total de Bienes</strong></td>
+          <td>Suma de activos tecnológicos y mobiliarios vigentes en el sistema.</td>
+          <td>Informativo</td>
+        </tr>
+        <tr>
+          <td><strong>En Mantenimiento</strong></td>
+          <td>Activos en taller, revisión de software o reparación física.</td>
+          <td>Bajo (&lt; 5%)</td>
+        </tr>
+        <tr>
+          <td><strong>Consumibles Críticos</strong></td>
+          <td>Artículos en almacén que han caído por debajo de su stock de seguridad.</td>
+          <td>Cero (0)</td>
+        </tr>
+        <tr>
+          <td><strong>Incidentes Abiertos</strong></td>
+          <td>Reportes de fallas pendientes en laboratorios y aulas de clase.</td>
+          <td>Cero (0)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>
+      Las gráficas dinámicas permiten identificar qué categorías de activos representan la mayor inversión y qué áreas de la universidad (oficinas, laboratorios, aulas) tienen asignada la mayor cantidad de equipamiento.
+    </p>
+  </div>
+
+  <!-- ==========================================
+       CAPÍTULO 3
+       ========================================== -->
+  <div class="page">
+    <h2 class="chapter-title"><span class="chapter-number">3.</span> Inventario de Bienes</h2>
+    <p>
+      El sistema almacena por separado los <strong>Bienes Tecnológicos</strong> (computadoras, routers, proyectores, drones) de los <strong>Bienes Inmobiliarios</strong> (sillas, mesas, pizarrones, escritorios) para facilitar el filtrado de inventarios especializados.
+    </p>
+
+    <h3>Procedimiento para Registrar Nuevos Activos</h3>
+    <ol class="step-list">
+      <li class="step-item">
+        <strong>Ingresar al Panel de Inventario:</strong> Haz clic en la sección "Inventario" en el menú lateral.
+      </li>
+      <li class="step-item">
+        <strong>Abrir Formulario:</strong> Selecciona "Nuevo Bien" (tecnológico) o "Nuevo Mobiliario" (inmobiliario).
+      </li>
+      <li class="step-item">
+        <strong>Definir Cantidad:</strong> Si registras un solo bien, introduce sus especificaciones particulares. Si registras un lote idéntico (ej: 20 bancas), define la cantidad y el sistema creará los 20 registros correlativos de forma automática.
+      </li>
+      <li class="step-item">
+        <strong>Autogeneración de Códigos:</strong> Si dejas el campo "Código de Inventario" vacío, el sistema aplicará la nomenclatura configurada para tu universidad (ej. <em>UPEN-COMP-2026-0042</em>) autoincrementando el consecutivo de forma segura.
+      </li>
+    </ol>
+  </div>
+
+  <!-- ==========================================
+       CAPÍTULO 4
+       ========================================== -->
+  <div class="page">
+    <h2 class="chapter-title"><span class="chapter-number">4.</span> Actas de Resguardo y Firma Digital</h2>
+    <p>
+      El módulo de Resguardos gestiona la responsabilidad legal de los bienes asignados al personal de la universidad.
+    </p>
+
+    <div class="alert-box alert-important">
+      <strong>[!] AUTOGUARDADO DE FIRMA:</strong> Las firmas recolectadas se guardan de forma persistente en formato Base64 directamente en PostgreSQL. Al generar de nuevo el acta en PDF, la firma aparecerá impresa de forma automática.
+    </div>
+
+    <h3>Flujo para Firmar un Acta Colectiva</h3>
+    <ol class="step-list">
+      <li class="step-item">
+        <strong>Seleccionar al Responsable:</strong> Entra al módulo de "Resguardos" y busca al custodio (ej. Jefe de Departamento, Docente).
+      </li>
+      <li class="step-item">
+        <strong>Verificar Activos:</strong> El sistema listará todos los bienes que tiene asignados bajo su control.
+      </li>
+      <li class="step-item">
+        <strong>Estampar Firma Táctil:</strong> Si el custodio está conforme, haz clic en "Firmar Conformidad". Dibuja la firma en el panel digital usando el mouse, lápiz táctil o dedo.
+      </li>
+      <li class="step-item">
+        <strong>Guardar e Imprimir:</strong> Al hacer clic en "Guardar", se consolidará el acta. Puedes pulsar "Ver Acta" para mandarla a imprimir o guardarla directamente como PDF.
+      </li>
+    </ol>
+  </div>
+
+  <!-- ==========================================
+       CAPÍTULO 5
+       ========================================== -->
+  <div class="page">
+    <h2 class="chapter-title"><span class="chapter-number">5.</span> Vales de Salida Temporales</h2>
+    <p>
+      Para el equipo de tránsito o de comisiones externas que sale temporalmente de la institución, se utiliza el módulo de <strong>Vales de Salida</strong>.
+    </p>
+
+    <h3>Estados de un Vale de Salida</h3>
+    <ul>
+      <li><strong>PENDIENTE</strong>: El vale ha sido emitido, los equipos han salido de almacén y están en poder del responsable de comisión. El bloque de firma de salida debe estar firmado.</li>
+      <li><strong>DEVUELTO</strong>: Los equipos han ingresado nuevamente a la universidad. Se registra la fecha y hora reales de retorno, liberando los activos en el inventario y solicitando la firma de "Recibió de Retorno".</li>
+    </ul>
+
+    <div class="alert-box alert-warning">
+      <strong>ATENCIÓN:</strong> No se pueden editar los bienes incluidos en un vale una vez creado. Si la comisión cambia de equipamiento, debes cancelar el vale actual y generar uno nuevo para mantener la trazabilidad.
+    </div>
+  </div>
+
+  <!-- ==========================================
+       CAPÍTULO 6
+       ========================================== -->
+  <div class="page">
+    <h2 class="chapter-title"><span class="chapter-number">6.</span> Almacén de Consumibles</h2>
+    <p>
+      Este módulo está destinado a insumos y papelería que se desgastan o distribuyen recurrentemente (toners, hojas Carta, cables Ethernet, etc.).
+    </p>
+
+    <h3>Registro de Movimientos</h3>
+    <ul>
+      <li><strong>Entrada (Abastecimiento)</strong>: Se registra al recibir compras o donaciones de insumos, incrementando el stock físico.</li>
+      <li><strong>Salida (Consumo)</strong>: Se registra al entregar materiales a profesores, oficinas o laboratorios, restando del stock y guardando el destino final para fines de auditoría.</li>
+    </ul>
+
+    <div class="alert-box alert-important">
+      <strong>STOCK CRÍTICO:</strong> En el listado, los consumibles cuyo stock actual sea igual o menor a su "Mínimo Requerido" aparecerán resaltados en color rojo. Esto indica que se debe realizar una orden de compra de forma urgente.
+    </div>
+  </div>
+
+  <!-- ==========================================
+       CAPÍTULO 7
+       ========================================== -->
+  <div class="page">
+    <h2 class="chapter-title"><span class="chapter-number">7.</span> Historial de Mantenimientos</h2>
+    <p>
+      SICOB realiza el seguimiento técnico de todos los activos tecnológicos e inmobiliarios para garantizar su vida útil.
+    </p>
+
+    <h3>Tipos de Mantenimiento</h3>
+    <ol>
+      <li><strong>Preventivo</strong>: Programado con anterioridad para limpieza física, optimización de software o lubricación de partes.</li>
+      <li><strong>Correctivo</strong>: Derivado de una falla imprevista o reporte de incidente.</li>
+    </ol>
+
+    <p>
+      Al poner un bien en estado de "Mantenimiento", se bloquea temporalmente para que no pueda ser asignado en Vales de Salida o Resguardos, asegurando que no se preste equipo defectuoso.
+    </p>
+  </div>
+
+  <!-- ==========================================
+       CAPÍTULO 8
+       ========================================== -->
+  <div class="page">
+    <h2 class="chapter-title"><span class="chapter-number">8.</span> Calibrador de Etiquetas</h2>
+    <p>
+      El sistema cuenta con un generador milimétrico de códigos de barras para etiquetar los activos físicamente.
+    </p>
+
+    <h3>Formatos de Papel Soportados</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Formato</th>
+          <th>Distribución</th>
+          <th>Medidas por Etiqueta</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Avery 5167</strong></td>
+          <td>4 columnas x 20 filas (80 por hoja Carta)</td>
+          <td>44.0 mm x 13.0 mm</td>
+        </tr>
+        <tr>
+          <td><strong>ULINE S-10425SIL</strong></td>
+          <td>3 columnas x 10 filas (30 por hoja Carta)</td>
+          <td>66.7 mm x 25.4 mm</td>
+        </tr>
+        <tr>
+          <td><strong>Rollo Continuo</strong></td>
+          <td>1 columna (impresora térmica directa)</td>
+          <td>Personalizable (ej. 30mm x 15mm)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="alert-box alert-warning">
+      <strong>[!] REQUISITO DE IMPRESIÓN:</strong> Para evitar desalineaciones en la impresión de hojas de etiquetas, debes ajustar los márgenes de tu navegador en <strong>"Ninguno" (None)</strong> y la escala en <strong>"100%"</strong>. De lo contrario, el navegador encogerá la página y las etiquetas se desalinearán gradualmente hacia abajo.
+    </div>
+  </div>
+
+  <!-- ==========================================
+       CAPÍTULO 9
+       ========================================== -->
+  <div class="page">
+    <h2 class="chapter-title"><span class="chapter-number">9.</span> Seguridad y Respaldos</h2>
+    <p>
+      Para garantizar la permanencia y protección de los datos recopilados por la universidad, se deben seguir las siguientes medidas operativas:
+    </p>
+
+    <h3>Respaldos Automáticos (Backups)</h3>
+    <p>
+      Desde la sección "Configuración" del panel de Administrador, se cuenta con la opción de exportar un respaldo completo del sistema en un solo archivo `.json`. 
+    </p>
+    <div class="alert-box alert-important">
+      <strong>RECOMENDACIÓN:</strong> Realizar un respaldo de base de datos el último día hábil de cada mes y guardarlo en un almacenamiento en la nube externo o disco duro físico institucional.
+    </div>
+
+    <h3>Inicio Automático de SICOB con Windows</h3>
+    <p>
+      El servidor se ejecuta automáticamente al encender la computadora gracias al archivo invisible `run_production.vbs` colocado en la carpeta de Inicio de Windows. Esto asegura que la base de datos y el servicio estén listos para su uso sin necesidad de que el personal técnico tenga que abrir terminales o escribir código.
+    </p>
+  </div>
+
+</div>
+
+</body>
+</html>
