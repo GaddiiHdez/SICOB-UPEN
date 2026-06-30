@@ -136,6 +136,7 @@ export async function GET(request) {
             id: true,
             fecha_asignacion: true,
             fecha_retorno: true,
+            firma: true,
             personal: { select: { id: true, nombre: true, puesto: true } }
           }
         }
