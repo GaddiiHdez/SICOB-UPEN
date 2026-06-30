@@ -3,6 +3,7 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import { DynamicIcon } from '@/lib/icons';
 import { createPortal } from 'react-dom';
 import { formatDateLong as formatDate } from '@/lib/formatters';
+import SignaturePad from './SignaturePad';
 
 export default function ValesPanel({ bienes, personal, configuracion = {}, showToast, refreshBienes, isAdmin = false }) {
   const [vales, setVales] = useState([]);
@@ -15,6 +16,7 @@ export default function ValesPanel({ bienes, personal, configuracion = {}, showT
   const [selectedVale, setSelectedVale] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  const [showSignModal, setShowSignModal] = useState(false);
 
   // Campos del Formulario de Nuevo Vale
   const [responsableId, setResponsableId] = useState('');
@@ -25,6 +27,8 @@ export default function ValesPanel({ bienes, personal, configuracion = {}, showT
   const [motivo, setMotivo] = useState('');
   const [observaciones, setObservaciones] = useState('');
   const [bienesSearch, setBienesSearch] = useState('');
+  const [signatureData, setSignatureData] = useState(null);
+  const [valeSignatureData, setValeSignatureData] = useState(null);
 
   const personalDropdownRef = useRef(null);
 
@@ -147,7 +151,8 @@ export default function ValesPanel({ bienes, personal, configuracion = {}, showT
           bienesIds: bienesSeleccionados,
           fecha_estimada: fechaEstimada,
           motivo,
-          observaciones
+          observaciones,
+          firma: signatureData
         })
       });
       
@@ -163,6 +168,7 @@ export default function ValesPanel({ bienes, personal, configuracion = {}, showT
         setMotivo('');
         setObservaciones('');
         setBienesSearch('');
+        setSignatureData(null);
         
         fetchVales();
         refreshBienes();
@@ -174,6 +180,33 @@ export default function ValesPanel({ bienes, personal, configuracion = {}, showT
       showToast('Error de conexión', 'error');
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleGuardarFirmaVale = async (e) => {
+    e.preventDefault();
+    if (!valeSignatureData || !selectedVale) return;
+
+    try {
+      const res = await fetch('/api/vales', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: selectedVale.id,
+          firma: valeSignatureData
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error al guardar la firma del vale');
+
+      showToast(`Firma registrada con éxito para el vale ${selectedVale.folio} ✓`);
+      setSelectedVale(data); // actualizar vista de vale seleccionado
+      setShowSignModal(false);
+      setValeSignatureData(null);
+      fetchVales(); // refrescar listado
+    } catch (err) {
+      console.error(err);
+      showToast(err.message || 'Error al guardar la firma', 'error');
     }
   };
 
@@ -520,7 +553,16 @@ export default function ValesPanel({ bienes, personal, configuracion = {}, showT
                       placeholder="Detalles sobre el estado del empaque, accesorios que salen o condiciones de entrega..."
                       value={observaciones} 
                       onChange={e => setObservaciones(e.target.value)} 
-                      style={{ minHeight: 140, resize: 'vertical' }}
+                      style={{ minHeight: 80, resize: 'vertical' }}
+                    />
+                  </div>
+
+                  {/* Firma del responsable */}
+                  <div>
+                    <label className="form-label" style={{ fontWeight: 600 }}>Firma Táctil de Conformidad</label>
+                    <SignaturePad 
+                      onSave={(data) => setSignatureData(data)}
+                      onClear={() => setSignatureData(null)}
                     />
                   </div>
 
@@ -801,7 +843,16 @@ export default function ValesPanel({ bienes, personal, configuracion = {}, showT
                 </div>
 
                 <div>
-                  <div style={{ height: 45, borderBottom: '1px solid #000', width: '85%', margin: '0 auto' }}></div>
+                  <div style={{ height: 45, display: 'flex', alignItems: 'center', justifyContent: 'center', width: '85%', margin: '0 auto', borderBottom: '1px solid #000' }}>
+                    {selectedVale.firma ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img 
+                        src={selectedVale.firma} 
+                        alt="Firma" 
+                        style={{ maxHeight: '42px', maxWidth: '100%', objectFit: 'contain' }} 
+                      />
+                    ) : null}
+                  </div>
                   <div style={{ fontWeight: 'bold', marginTop: 8 }}>Recibió de Conformidad</div>
                   <div style={{ fontSize: 9, color: '#666' }}>{selectedVale.personal?.nombre}</div>
                   <div style={{ fontSize: 8, color: '#999', marginTop: 2 }}>Responsable de Comisión</div>
@@ -832,7 +883,7 @@ export default function ValesPanel({ bienes, personal, configuracion = {}, showT
 
             <div className="modal-footer no-print" style={{ flexShrink: 0, padding: '12px 20px', borderTop: '1px solid var(--border)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-                <div>
+                <div style={{ display: 'flex', gap: 8 }}>
                   {isAdmin && selectedVale.estado === 'PENDIENTE' && (
                     <button 
                       type="button" 
@@ -841,6 +892,16 @@ export default function ValesPanel({ bienes, personal, configuracion = {}, showT
                       onClick={() => handleRegistrarRetorno(selectedVale.id)}
                     >
                       ↩️ Registrar Retorno de Equipos
+                    </button>
+                  )}
+                  {isAdmin && !selectedVale.firma && (
+                    <button 
+                      type="button" 
+                      className="btn btn-ghost" 
+                      style={{ border: '1px solid var(--border)', display: 'inline-flex', gap: 6 }}
+                      onClick={() => setShowSignModal(true)}
+                    >
+                      ✍️ Estampar Firma
                     </button>
                   )}
                 </div>
@@ -858,6 +919,38 @@ export default function ValesPanel({ bienes, personal, configuracion = {}, showT
           </div>
         </div>,
         document.body
+      )}
+
+      {/* Modal de Firma Digital para Vale Existente */}
+      {showSignModal && selectedVale && (
+        <div className="modal-overlay" onClick={() => { setShowSignModal(false); setValeSignatureData(null); }} style={{ zIndex: 1100, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div className="modal-box" onClick={e => e.stopPropagation()} style={{ maxWidth: 450, width: '90%' }}>
+            <div className="modal-header">
+              <div>
+                <div className="modal-title">Firma Digital del Vale {selectedVale.folio}</div>
+                <div className="modal-sub">Dibuja la firma del responsable en el panel</div>
+              </div>
+              <button className="btn-icon" onClick={() => { setShowSignModal(false); setValeSignatureData(null); }} style={{ border: 'none' }}>✕</button>
+            </div>
+            <form onSubmit={handleGuardarFirmaVale}>
+              <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <div>
+                  <label className="form-label">Dibuja la firma en el panel:</label>
+                  <SignaturePad 
+                    onSave={(data) => setValeSignatureData(data)}
+                    onClear={() => setValeSignatureData(null)}
+                  />
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button type="button" className="btn btn-ghost" onClick={() => { setShowSignModal(false); setValeSignatureData(null); }}>Cancelar</button>
+                <button type="submit" className="btn btn-primary" style={{ minWidth: 120 }} disabled={!valeSignatureData}>
+                  💾 Estampar Firma
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
 
     </div>

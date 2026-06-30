@@ -132,17 +132,42 @@ export default function ResguardosPanel({ bienes, showToast, refreshBienes, conf
 
   const handleOpenFicha = (custodio) => {
     setSelectedCustodio(custodio);
-    setIsSigned(false);
-    setSignatureData(null);
+    
+    // Buscar si ya hay una firma guardada en alguno de los bienes de este custodio
+    const matchFirma = custodio.bienes.find(b => b.firma)?.firma || null;
+    if (matchFirma) {
+      setSignatureData(matchFirma);
+      setIsSigned(true);
+    } else {
+      setSignatureData(null);
+      setIsSigned(false);
+    }
   };
 
-  // Simular la firma del acta colectiva
-  const handleSaveSignature = (e) => {
+  // Guardar firma de forma persistente en PostgreSQL
+  const handleSaveSignature = async (e) => {
     e.preventDefault();
     if (!signatureData) return;
-    setIsSigned(true);
-    setShowSignModal(false);
-    if (showToast) showToast('¡Acta de resguardo colectivo firmada digitalmente!', 'success');
+
+    try {
+      const res = await fetch('/api/personal/firmar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ personalId: selectedCustodio.id, firma: signatureData })
+      });
+      
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error al guardar la firma');
+
+      setIsSigned(true);
+      setShowSignModal(false);
+      
+      if (refreshBienes) await refreshBienes();
+      if (showToast) showToast('¡Acta de resguardo colectivo firmada y guardada de forma persistente! ✓', 'success');
+    } catch (err) {
+      console.error(err);
+      alert(err.message || 'Error al guardar la firma');
+    }
   };
 
   // Desasignar (retornar a bodega) un bien en tiempo real

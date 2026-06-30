@@ -73,6 +73,9 @@ function transformBienes(dataBienes) {
     responsableId: b.eliminado ? ''
       : (b.asignaciones?.[0]?.fecha_retorno ? ''
       : (b.asignaciones?.[0]?.personal?.id || '')),
+    firma: b.eliminado ? null
+      : (b.asignaciones?.[0]?.fecha_retorno ? null
+      : (b.asignaciones?.[0]?.firma || null)),
     icono:             b.categoria?.icono || TIPOS_EQUIPO[b.categoria?.nombre] || '🔧',
     categoria:         b.categoria?.nombre,
     categoriaId:       b.categoriaId,

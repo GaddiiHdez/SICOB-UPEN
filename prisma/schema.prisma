@@ -134,6 +134,7 @@ model Asignacion {
   fecha_retorno    DateTime?
   observaciones    String?   @db.Text
   estado_entrega   String    // Estado en el que se entregó ("Activo", "Bueno", etc.)
+  firma            String?   @db.Text
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
@@ -187,6 +188,7 @@ model ValeSalida {
   motivo           String    @db.Text
   estado           String    @default("PENDIENTE") // "PENDIENTE", "DEVUELTO", "VENCIDO"
   observaciones    String?   @db.Text
+  firma            String?   @db.Text
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 }

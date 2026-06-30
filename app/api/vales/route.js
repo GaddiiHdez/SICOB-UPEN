@@ -97,7 +97,7 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { personalId, bienesIds, fecha_estimada, motivo, observaciones } = body;
+    const { personalId, bienesIds, fecha_estimada, motivo, observaciones, firma } = body;
 
     if (!personalId) {
       return NextResponse.json({ error: 'El personal responsable es requerido.' }, { status: 400 });
@@ -132,6 +132,7 @@ export async function POST(request) {
         fecha_estimada: new Date(fecha_estimada),
         motivo,
         observaciones: observaciones || null,
+        firma: firma || null,
         estado: 'PENDIENTE',
         bienes: {
           connect: bienesIds.map(id => ({ id: parseInt(id, 10) }))
@@ -175,7 +176,7 @@ export async function PUT(request) {
     }
 
     const body = await request.json();
-    const { id, registrarRetorno, observaciones, motivo, fecha_estimada } = body;
+    const { id, registrarRetorno, observaciones, motivo, fecha_estimada, firma } = body;
 
     if (!id) {
       return NextResponse.json({ error: 'El ID del vale es requerido.' }, { status: 400 });
@@ -202,6 +203,9 @@ export async function PUT(request) {
     }
     if (fecha_estimada !== undefined) {
       updateData.fecha_estimada = new Date(fecha_estimada);
+    }
+    if (firma !== undefined) {
+      updateData.firma = firma;
     }
 
     const valeActualizado = await prisma.valeSalida.update({
