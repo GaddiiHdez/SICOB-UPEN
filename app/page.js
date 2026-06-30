@@ -19,6 +19,7 @@ import ModalAutogenerarLote from '@/app/components/ModalAutogenerarLote';
 import ModalConfirmarBorrado from '@/app/components/ModalConfirmarBorrado';
 import ModalCalibradorEtiquetas from '@/app/components/ModalCalibradorEtiquetas';
 import ModalAbout from '@/app/components/ModalAbout';
+import LabelPrintContainer from '@/app/components/LabelPrintContainer';
 import AuditoriaPanel from '@/app/components/auditoria/AuditoriaPanel';
 import ValesPanel from '@/app/components/ValesPanel';
 import InmobiliarioPanel from '@/app/components/InmobiliarioPanel';
@@ -829,130 +830,7 @@ export default function HomePage() {
   const gapColumnas = parseFloat(configuracion.etiqueta_gap_columnas || '0.5');
   const gapFilas = parseFloat(configuracion.etiqueta_gap_filas || '0.0');
 
-  const dynamicPrintStyles = isAvery ? `
-    @media print {
-      @page {
-        size: letter !important;
-        margin: 0 !important;
-      }
-      body.printing-labels {
-        background: #FFFFFF !important;
-        margin: 0 !important;
-        padding: 0 !important;
-      }
-      body.printing-labels .print-labels-container {
-        display: grid !important;
-        grid-template-columns: repeat(4, ${configuracion.etiqueta_ancho_mm || '44'}mm) !important;
-        grid-auto-rows: ${configuracion.etiqueta_alto_mm || '13'}mm !important;
-        align-content: start !important;
-        padding-top: ${margenSuperior}cm !important;
-        padding-bottom: ${margenInferior}cm !important;
-        padding-left: ${margenIzquierdo}cm !important;
-        padding-right: ${margenDerecho}cm !important;
-        box-sizing: border-box !important;
-        width: 21.59cm !important;
-        height: 27.94cm !important;
-        background: #FFFFFF !important;
-        gap: ${gapFilas}cm ${gapColumnas}cm !important;
-        page-break-after: always !important;
-        break-after: page !important;
-      }
-      body.printing-labels .print-labels-container:last-child {
-        page-break-after: avoid !important;
-        break-after: avoid !important;
-      }
-      body.printing-labels .printable-label {
-        width: ${configuracion.etiqueta_ancho_mm || '44'}mm !important;
-        height: ${configuracion.etiqueta_alto_mm || '13'}mm !important;
-        box-sizing: border-box !important;
-        padding: 0.5mm 1mm !important;
-        margin: 0 !important;
-        border: 0.1mm solid #D1D5DB !important;
-        display: block !important;
-        background: #FFFFFF !important;
-        overflow: hidden !important;
-        page-break-inside: avoid !important;
-      }
-      body.printing-labels .label-inner-clean {
-        width: 100% !important;
-        height: 100% !important;
-        display: flex !important;
-        flex-direction: column !important;
-        justify-content: space-between !important;
-        align-items: center !important;
-        box-sizing: border-box !important;
-      }
-      body.printing-labels .label-header-clean {
-        font-size: ${configuracion.etiqueta_letra_cabecera_pt || '3.8'}pt !important;
-        line-height: 1.0 !important;
-        margin: 0 !important;
-        text-align: center !important;
-        font-weight: ${configuracion.etiqueta_cabecera_bold !== 'false' ? '900' : 'normal'} !important;
-        font-style: ${configuracion.etiqueta_cabecera_italic === 'true' ? 'italic' : 'normal'} !important;
-      }
-      body.printing-labels .label-details-clean {
-        font-size: ${configuracion.etiqueta_letra_marca_modelo_pt || '3.5'}pt !important;
-        line-height: 1.0 !important;
-        margin: 0 !important;
-        text-align: center !important;
-        font-weight: ${configuracion.etiqueta_marca_bold === 'true' ? '700' : 'normal'} !important;
-        font-style: ${configuracion.etiqueta_marca_italic === 'true' ? 'italic' : 'normal'} !important;
-      }
-      body.printing-labels .label-barcode-clean {
-        height: ${configuracion.etiqueta_altura_codigo_barras_mm || '4.8'}mm !important;
-        width: 90% !important;
-        margin: 0 auto !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-      }
-      body.printing-labels .label-barcode-clean svg {
-        max-height: 100% !important;
-        width: 100% !important;
-      }
-      body.printing-labels .label-code-clean {
-        font-size: ${configuracion.etiqueta_letra_codigo_pt || '4.5'}pt !important;
-        font-weight: ${configuracion.etiqueta_codigo_bold !== 'false' ? '900' : 'normal'} !important;
-        font-style: ${configuracion.etiqueta_codigo_italic === 'true' ? 'italic' : 'normal'} !important;
-      }
-      body.printing-labels .label-serial-clean {
-        font-size: ${configuracion.etiqueta_letra_serial_pt || '4.0'}pt !important;
-        font-weight: ${configuracion.etiqueta_serial_bold === 'true' ? '900' : 'normal'} !important;
-        font-style: ${configuracion.etiqueta_serial_italic === 'true' ? 'italic' : 'normal'} !important;
-      }
-    }
-  ` : `
-    @media print {
-      body.printing-labels .printable-label {
-        width: ${configuracion.etiqueta_ancho_mm || '30'}mm !important;
-        height: ${configuracion.etiqueta_alto_mm || '15'}mm !important;
-        padding: ${0.8 * scalePad}mm ${1.5 * scalePad}mm ${1.0 * scalePad}mm !important;
-      }
-      body.printing-labels .label-header-clean {
-        font-size: ${configuracion.etiqueta_letra_cabecera_pt || '4.5'}pt !important;
-        font-weight: ${configuracion.etiqueta_cabecera_bold !== 'false' ? '900' : 'normal'} !important;
-        font-style: ${configuracion.etiqueta_cabecera_italic === 'true' ? 'italic' : 'normal'} !important;
-      }
-      body.printing-labels .label-details-clean {
-        font-size: ${configuracion.etiqueta_letra_marca_modelo_pt || '4.2'}pt !important;
-        font-weight: ${configuracion.etiqueta_marca_bold === 'true' ? '700' : 'normal'} !important;
-        font-style: ${configuracion.etiqueta_marca_italic === 'true' ? 'italic' : 'normal'} !important;
-      }
-      body.printing-labels .label-barcode-clean {
-        height: ${configuracion.etiqueta_altura_codigo_barras_mm || '5.6'}mm !important;
-      }
-      body.printing-labels .label-code-clean {
-        font-size: ${configuracion.etiqueta_letra_codigo_pt || '5.5'}pt !important;
-        font-weight: ${configuracion.etiqueta_codigo_bold !== 'false' ? '900' : 'normal'} !important;
-        font-style: ${configuracion.etiqueta_codigo_italic === 'true' ? 'italic' : 'normal'} !important;
-      }
-      body.printing-labels .label-serial-clean {
-        font-size: ${configuracion.etiqueta_letra_serial_pt || '5.0'}pt !important;
-        font-weight: ${configuracion.etiqueta_serial_bold === 'true' ? '900' : 'normal'} !important;
-        font-style: ${configuracion.etiqueta_serial_italic === 'true' ? 'italic' : 'normal'} !important;
-      }
-    }
-  `;
+  const dynamicPrintStyles = "";
 
   return (
     <div className="root-layout-wrapper" style={{ display: 'flex', height: '100vh', width: '100vw', overflow: 'hidden' }}>
@@ -1625,109 +1503,10 @@ export default function HomePage() {
       )}
 
       {/* ══ CONTENEDOR DE IMPRESIÓN DE ETIQUETAS (OCULTO EN PANTALLA) ══ */}
-      {bienesEtiquetasPrint.length > 0 && (() => {
-        const rawHeader = configuracion.cabecera_etiqueta_impresion 
-          ? configuracion.cabecera_etiqueta_impresion.replace('{siglas}', configuracion.siglas_institucion || 'UPEN')
-          : `CONTROL INTERNO DE ACTIVO FIJO ${configuracion.siglas_institucion || 'UPEN'}`;
-        const headerText = rawHeader.toUpperCase().startsWith("CONTROL INTERNO DE ACTIVO FIJO")
-          ? `ACTIVO FIJO ${configuracion.siglas_institucion || 'UPEN'}`
-          : rawHeader;
-
-        if (isAvery) {
-          // Chunk Avery labels into pages of 80
-          const pages = [];
-          for (let i = 0; i < bienesEtiquetasPrint.length; i += 80) {
-            pages.push(bienesEtiquetasPrint.slice(i, i + 80));
-          }
-
-          return (
-            <div className="print-pages-wrapper">
-              {pages.map((pageLabels, pageIdx) => (
-                <div key={pageIdx} className="print-labels-container">
-                  {pageLabels.map((bien) => (
-                    <div key={bien.id} className="printable-label">
-                      <div className="label-inner-clean">
-                        {configuracion.etiqueta_mostrar_cabecera !== 'false' && (
-                          <div className="label-header-clean">
-                            {headerText}
-                          </div>
-                        )}
-                        {configuracion.etiqueta_mostrar_marca_modelo !== 'false' && (
-                          <div className="label-details-clean">
-                            {bien.marca} {bien.modelo}
-                          </div>
-                        )}
-                        {!bien.etiqueta.startsWith('SIN-NUMERO-') ? (
-                          <div 
-                            className="label-barcode-clean" 
-                            dangerouslySetInnerHTML={{ __html: generateBarcodeSVG(bien.etiqueta, false) }} 
-                          />
-                        ) : (
-                          <div className="label-barcode-clean" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '6px', color: '#999', border: '1px dashed #ccc', borderRadius: '3px' }}>
-                            [SIN NÚMERO]
-                          </div>
-                        )}
-                        <div className="label-footer-clean">
-                          <span className="label-code-clean" style={{ maxWidth: configuracion.etiqueta_mostrar_serial !== 'false' ? '55%' : '100%' }}>
-                            {bien.etiqueta.startsWith('SIN-NUMERO-') ? 'S/N' : bien.etiqueta}
-                          </span>
-                          {configuracion.etiqueta_mostrar_serial !== 'false' && (
-                            <span className="label-serial-clean">
-                              S/N: {bien.serial || 'N/S'}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ))}
-            </div>
-          );
-        }
-
-        // Standard custom label roll (non-Avery)
-        return (
-          <div className="print-labels-container">
-            {bienesEtiquetasPrint.map((bien) => (
-              <div key={bien.id} className="printable-label">
-                <div className="label-inner-clean">
-                  {configuracion.etiqueta_mostrar_cabecera !== 'false' && (
-                    <div className="label-header-clean">
-                      {headerText}
-                    </div>
-                  )}
-                  {configuracion.etiqueta_mostrar_marca_modelo !== 'false' && (
-                    <div className="label-details-clean">
-                      {bien.marca} {bien.modelo}
-                    </div>
-                  )}
-                  {!bien.etiqueta.startsWith('SIN-NUMERO-') ? (
-                    <div 
-                      className="label-barcode-clean" 
-                      dangerouslySetInnerHTML={{ __html: generateBarcodeSVG(bien.etiqueta, false) }} 
-                    />
-                  ) : (
-                    <div className="label-barcode-clean" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '6px', color: '#999', border: '1px dashed #ccc', borderRadius: '3px' }}>
-                      [SIN NÚMERO]
-                    </div>
-                  )}
-                  <div className="label-footer-clean">
-                    <span className="label-code-clean" style={{ maxWidth: configuracion.etiqueta_mostrar_serial !== 'false' ? '55%' : '100%' }}>
-                      {bien.etiqueta.startsWith('SIN-NUMERO-') ? 'S/N' : bien.etiqueta}
-                    </span>
-                    {configuracion.etiqueta_mostrar_serial !== 'false' && (
-                      <span className="label-serial-clean">
-                        S/N: {bien.serial || 'N/S'}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        );
-      })()}
+      <LabelPrintContainer 
+        bienesEtiquetasPrint={bienesEtiquetasPrint} 
+        configuracion={configuracion} 
+      />
 
       {/* ══ NOTIFICACIÓN TOAST ═══════════════════════════════ */}
       {toast && (
