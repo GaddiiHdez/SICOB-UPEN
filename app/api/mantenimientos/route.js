@@ -231,7 +231,22 @@ export async function PUT(request) {
 
       // 3. Si pasa a "Completado"
       if (estado === 'Completado' && currentM.estado !== 'Completado') {
-        if (reasignar === true) {
+        if (currentM.incidenteId) {
+          // Si proviene de un incidente de laboratorio, resolver el incidente y activar la PC automáticamente
+          await tx.labIncidente.update({
+            where: { id: currentM.incidenteId },
+            data: {
+              estado: 'RESUELTO',
+              fechaResolucion: new Date(),
+              comentarios: `Resuelto automáticamente desde mantenimiento técnico. Técnico: ${tecnico_encargado || 'No especificado'}.`
+            }
+          });
+
+          await tx.bien.update({
+            where: { id: currentM.bienId },
+            data: { estado: 'Activo' }
+          });
+        } else if (reasignar === true) {
           // Intentar obtener el último resguardo cerrado para volver a asignarlo a ese mismo empleado
           const ultimaAsig = await tx.asignacion.findFirst({
             where: { bienId: currentM.bienId },

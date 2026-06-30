@@ -15,15 +15,28 @@ export async function GET() {
               include: {
                 categoria: {
                   select: { id: true, nombre: true, icono: true }
+                },
+                softwareInstalaciones: {
+                  include: {
+                    software: true
+                  }
                 }
               }
             }
+          }
+        },
+        softwareInstalaciones: {
+          include: {
+            software: true
           }
         },
         incidentes: {
           include: {
             bien: {
               select: { id: true, codigo_inventario: true, marca: true, modelo: true }
+            },
+            mantenimientos: {
+              select: { id: true, estado: true, tipo: true }
             }
           },
           orderBy: { fechaReporte: 'desc' }

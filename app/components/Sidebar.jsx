@@ -1,4 +1,5 @@
 'use client';
+import Image from 'next/image';
 import { NAV_ITEMS } from '@/lib/constants';
 import { getNavIcon } from '@/lib/icons';
 import { Settings2, LogOut } from 'lucide-react';
@@ -15,27 +16,9 @@ export default function Sidebar({ activeNav, onNavChange, usuario, configuracion
     <aside className={`sidebar${isOpen ? ' open' : ''}`}>
       {/* Logo / Marca Institucional */}
       <div className="sidebar-logo">
-        {logo ? (
-          <div style={{
-            width: 32,
-            height: 32,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            background: '#FFFFFF',
-            borderRadius: 6,
-            overflow: 'hidden',
-            padding: 2,
-            boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
-            flexShrink: 0
-          }}>
-            <img src={logo} alt="Logo Institucional" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-          </div>
-        ) : (
-          <div className="sidebar-logo-icon" style={{ background: 'transparent', padding: '2px' }}>
-            <img src="/sicob-logo.png" alt="SICOB Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-          </div>
-        )}
+        <div className="sidebar-logo-icon">
+          <Image src="/sicob-logo.png" alt="SICOB Logo" width={40} height={40} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+        </div>
         <div className="sidebar-logo-text">
           <h1>SICOB {siglas}</h1>
           <p>Control y Operación de Bienes</p>

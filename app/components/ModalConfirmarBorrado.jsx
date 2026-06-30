@@ -1,5 +1,6 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
+import { DynamicIcon } from '@/lib/icons';
 
 /**
  * ModalConfirmarBorrado — Ventana emergente premium para autorizar el borrado permanente de activos.
@@ -87,7 +88,9 @@ export default function ModalConfirmarBorrado({ bien, onClose, onConfirm, isLoad
               alignItems: 'center',
               gap: 12
             }}>
-              <div style={{ fontSize: 24, flexShrink: 0 }}>{bien?.icono || '💻'}</div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <DynamicIcon name={bien?.icono || '💻'} size={24} style={{ color: 'var(--primary)' }} />
+              </div>
               <div style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>{bien?.nombre}</div>
                 <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 2 }}>

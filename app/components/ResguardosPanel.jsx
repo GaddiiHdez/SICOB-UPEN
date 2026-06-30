@@ -461,6 +461,7 @@ export default function ResguardosPanel({ bienes, showToast, refreshBienes, conf
                         borderRadius: '6px',
                         flexShrink: 0
                       }}>
+                        {/* eslint-disable-next-line @next/next/no-img-element -- Dynamic institution logo from DB */}
                         <img src={configuracion.logo_institucion} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                       </div>
                     ) : (

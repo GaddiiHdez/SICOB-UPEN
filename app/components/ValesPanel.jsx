@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect, useMemo, useRef } from 'react';
+import { DynamicIcon } from '@/lib/icons';
 import { createPortal } from 'react-dom';
 import { formatDateLong as formatDate } from '@/lib/formatters';
 
@@ -57,6 +58,7 @@ export default function ValesPanel({ bienes, personal, configuracion = {}, showT
     }
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- runs once on mount; fetchVales is a stable inner function
   useEffect(() => {
     setIsMounted(true);
     fetchVales();
@@ -584,7 +586,7 @@ export default function ValesPanel({ bienes, personal, configuracion = {}, showT
                                 </td>
                                 <td style={{ padding: 8 }}>
                                   <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                                    <span>{bien.icono || '💻'}</span>
+                                    <DynamicIcon name={bien.icono || '💻'} size={14} style={{ color: 'var(--primary)' }} />
                                     <div>
                                       <div style={{ fontWeight: 600 }}>{bien.nombre}</div>
                                       <div style={{ fontSize: 10, color: 'var(--text-secondary)' }}>S/N: {bien.serial}</div>
@@ -689,6 +691,7 @@ export default function ValesPanel({ bienes, personal, configuracion = {}, showT
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #000', paddingBottom: 12, marginBottom: 20 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                   {configuracion.logo_institucion ? (
+                    // eslint-disable-next-line @next/next/no-img-element
                     <img src={configuracion.logo_institucion} alt="Logo" style={{ width: 50, height: 50, objectFit: 'contain' }} />
                   ) : (
                     <div style={{ width: 50, height: 50, background: '#00716A', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 'bold', borderRadius: 6 }}>

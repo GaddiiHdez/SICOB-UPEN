@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { ESTADO_BADGE, ESTADOS_BIEN } from '@/lib/constants';
+import { DynamicIcon } from '@/lib/icons';
 
 /**
  * DetailPanel — Panel lateral derecho de la tabla de inventario.
@@ -439,7 +440,7 @@ export default function DetailPanel({ bien, selected, personal = [], ubicaciones
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-              <span style={{ fontSize: 28 }}>{bien.icono}</span>
+              <DynamicIcon name={bien.icono} size={28} style={{ color: 'var(--primary)' }} />
               <div>
                 <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--text-primary)', lineHeight: 1.2 }}>
                   {bien.nombre}
@@ -512,7 +513,7 @@ export default function DetailPanel({ bien, selected, personal = [], ubicaciones
           <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border-light)' }}>
             <div className="detail-field-label">Departamento / Coordinación</div>
             <div style={{ fontSize: 13, fontWeight: 600, marginTop: 3, display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span>{bien.departamentoIcono || '🏢'}</span>
+              <DynamicIcon name={bien.departamentoIcono || '🏢'} size={15} style={{ color: 'var(--primary)' }} />
               <span>{bien.departamento}</span>
             </div>
             
@@ -530,7 +531,7 @@ export default function DetailPanel({ bien, selected, personal = [], ubicaciones
                 gap: 6
               }}>
                 <span>📍 Oficina Principal:</span>
-                <span>{bien.departamentoUbicacion.icono || '🏫'}</span>
+                <DynamicIcon name={bien.departamentoUbicacion.icono || '🏫'} size={13} style={{ color: 'var(--primary)' }} />
                 <strong>{bien.departamentoUbicacion.nombre}</strong>
                 {bien.departamentoUbicacion.edificio && (
                   <span style={{ opacity: 0.8, fontSize: 10 }}>({bien.departamentoUbicacion.edificio})</span>

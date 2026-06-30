@@ -1,11 +1,12 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
 import { ESTADOS_BIEN } from '@/lib/constants';
+import { X, Download, Upload, Cpu, Terminal, Sparkles, Trash2, Save, Layers } from 'lucide-react';
 
 /**
  * ModalNuevoBien — Formulario con pestañas para registrar/editar un bien.
  */
-export default function ModalNuevoBien({ initialData, categorias, ubicaciones, departamentos, personal, onClose, onSave }) {
+export default function ModalNuevoBien({ initialData, categorias = [], ubicaciones = [], departamentos = [], personal = [], onClose, onSave }) {
   const isEdit = !!initialData && !!initialData.id;
   const [activeTab, setActiveTab] = useState('general');
   const [loading, setLoading] = useState(false);
@@ -19,6 +20,7 @@ export default function ModalNuevoBien({ initialData, categorias, ubicaciones, d
     { numero_serie: '', codigo_inventario: '' }
   ]);
   const [pastedSerials, setPastedSerials] = useState('');
+  const [showColectorModal, setShowColectorModal] = useState(false);
 
   const handleCantidadLoteChange = (val) => {
     const num = Math.max(1, Math.min(100, parseInt(val) || 1));
@@ -263,7 +265,7 @@ export default function ModalNuevoBien({ initialData, categorias, ubicaciones, d
   };
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-overlay" onClick={onClose}>
       <div className="modal-box" onClick={e => e.stopPropagation()} style={{ maxWidth: 650 }}>
         
         {/* Encabezado */}
@@ -272,7 +274,34 @@ export default function ModalNuevoBien({ initialData, categorias, ubicaciones, d
             <div className="modal-title">{isEdit ? 'Editar Equipo Técnico' : 'Registro de Equipo'}</div>
             <div className="modal-sub">{isEdit ? 'Actualizar información' : 'Añadir nuevo recurso al inventario'}</div>
           </div>
-          <button className="btn-icon" onClick={onClose} disabled={loading} style={{ border: 'none' }}>✕</button>
+          <button 
+            type="button"
+            className="btn-icon" 
+            onClick={onClose} 
+            disabled={loading} 
+            style={{ 
+              border: 'none', 
+              background: 'none', 
+              cursor: 'pointer', 
+              color: 'var(--text-secondary)',
+              padding: '6px',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.2s ease',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(0, 0, 0, 0.05)';
+              e.currentTarget.style.color = '#EF4444';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'none';
+              e.currentTarget.style.color = 'var(--text-secondary)';
+            }}
+          >
+            <X size={18} />
+          </button>
         </div>
 
         {/* Pestañas (Tabs) */}
@@ -305,37 +334,35 @@ export default function ModalNuevoBien({ initialData, categorias, ubicaciones, d
             {activeTab === 'general' && (
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                 {!isEdit && (
-                  <div style={{ gridColumn: '1/-1', display: 'flex', flexDirection: 'column', gap: 10, background: 'rgba(0, 113, 106, 0.04)', border: '1px dashed var(--primary)', borderRadius: 10, padding: '14px 16px', marginBottom: 6 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
-                      <div style={{ flex: 1, minWidth: 260 }}>
-                        <strong style={{ fontSize: 13, color: 'var(--primary)', display: 'block', fontWeight: 700 }}>💻 Autocompletar con Agente Colector</strong>
-                        <span style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 2, display: 'block', lineHeight: 1.4 }}>
-                          Descarga el script en la computadora nueva, ejecútalo para generar su ficha técnica en un archivo JSON y súbelo aquí.
-                        </span>
-                      </div>
-                      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                        <a 
-                          href="/colector-sicob.ps1" 
-                          download="colector-sicob.ps1"
-                          className="btn btn-secondary" 
-                          style={{ fontSize: 11, padding: '6px 12px', height: 'auto', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4, fontWeight: 600 }}
-                        >
-                          📥 Descargar Script
-                        </a>
-                        <label 
-                          className="btn btn-primary" 
-                          style={{ fontSize: 11, padding: '6px 12px', height: 'auto', display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer', margin: 0, fontWeight: 600 }}
-                        >
-                          🔌 Cargar JSON
-                          <input 
-                            type="file" 
-                            accept=".json" 
-                            onChange={handleUploadColectorJson}
-                            style={{ display: 'none' }} 
-                          />
-                        </label>
-                      </div>
-                    </div>
+                  <div style={{ gridColumn: '1/-1', display: 'flex', justifyContent: 'flex-end', marginBottom: -4 }}>
+                    <button
+                      type="button"
+                      onClick={() => setShowColectorModal(true)}
+                      style={{
+                        background: 'rgba(0, 113, 106, 0.05)',
+                        border: '1px solid rgba(0, 113, 106, 0.2)',
+                        color: 'var(--primary)',
+                        padding: '5px 12px',
+                        borderRadius: '20px',
+                        fontSize: '11px',
+                        fontWeight: '600',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = 'rgba(0, 113, 106, 0.12)';
+                        e.currentTarget.style.transform = 'translateY(-1px)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'rgba(0, 113, 106, 0.05)';
+                        e.currentTarget.style.transform = 'none';
+                      }}
+                    >
+                      <Sparkles size={12} /> Autocompletar con Agente Colector
+                    </button>
                   </div>
                 )}
                 <div><label className="form-label">Marca</label><input className="form-input" name="marca" value={form.marca} onChange={handleChange} required disabled={loading} /></div>
@@ -355,8 +382,8 @@ export default function ModalNuevoBien({ initialData, categorias, ubicaciones, d
                       checked={esLote} 
                       onChange={e => setEsLote(e.target.checked)} 
                     />
-                    <label htmlFor="esLote" style={{ fontSize: 13, fontWeight: 700, color: 'var(--primary)', cursor: 'pointer', userSelect: 'none' }}>
-                      📦 Registro Múltiple (Agregar lote de unidades idénticas)
+                    <label htmlFor="esLote" style={{ fontSize: 13, fontWeight: 700, color: 'var(--primary)', cursor: 'pointer', userSelect: 'none', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                      <Layers size={14} /> Registro Múltiple (Agregar lote de unidades idénticas)
                     </label>
                   </div>
                 )}
@@ -690,7 +717,9 @@ export default function ModalNuevoBien({ initialData, categorias, ubicaciones, d
                             <td style={{ fontWeight: 500, fontSize: 13 }}>{k}</td>
                             <td style={{ fontSize: 13 }}>{v}</td>
                             <td style={{ textAlign: 'center' }}>
-                              <button type="button" className="btn-icon" onClick={() => handleRemoveSpec(k)} style={{ color: '#EF4444' }}>🗑</button>
+                              <button type="button" className="btn-icon" onClick={() => handleRemoveSpec(k)} style={{ color: '#EF4444', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <Trash2 size={14} />
+                              </button>
                             </td>
                           </tr>
                         ))
@@ -704,12 +733,122 @@ export default function ModalNuevoBien({ initialData, categorias, ubicaciones, d
 
           <div className="modal-footer">
             <button type="button" className="btn btn-ghost" onClick={onClose} disabled={loading}>Cancelar</button>
-            <button type="submit" className="btn btn-primary" disabled={loading} style={{ minWidth: 140 }}>
-              {loading ? '⏳ Guardando…' : isEdit ? '💾 Guardar Cambios' : '💾 Registrar Equipo'}
+            <button type="submit" className="btn btn-primary" disabled={loading} style={{ minWidth: 140, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+              {loading ? '⏳ Guardando…' : (
+                <>
+                  <Save size={16} />
+                  {isEdit ? 'Guardar Cambios' : 'Registrar Equipo'}
+                </>
+              )}
             </button>
           </div>
         </form>
       </div>
+
+      {showColectorModal && (
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(15, 23, 42, 0.4)',
+          backdropFilter: 'blur(4px)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 100,
+          borderRadius: '16px',
+        }}>
+          <div style={{
+            background: '#ffffff',
+            border: '1px solid var(--border)',
+            borderRadius: '14px',
+            padding: '24px',
+            maxWidth: '480px',
+            width: '90%',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+              <h3 style={{ fontSize: '15px', fontWeight: '700', color: 'var(--primary)', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Cpu size={18} style={{ color: 'var(--primary)' }} /> Agente Colector de Hardware
+              </h3>
+              <button 
+                type="button" 
+                onClick={() => setShowColectorModal(false)} 
+                style={{ 
+                  background: 'none', 
+                  border: 'none', 
+                  cursor: 'pointer', 
+                  color: 'var(--text-secondary)',
+                  padding: '6px',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'all 0.2s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(0, 0, 0, 0.05)';
+                  e.currentTarget.style.color = '#EF4444';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'none';
+                  e.currentTarget.style.color = 'var(--text-secondary)';
+                }}
+              >
+                <X size={18} />
+              </button>
+            </div>
+            
+            <p style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: '1.5', margin: '0 0 18px 0' }}>
+              Este agente recopila automáticamente los datos del hardware (procesador, RAM, almacenamiento interno y sistema operativo) de una computadora para acelerar su registro.
+            </p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div style={{ padding: '12px', background: 'rgba(0, 113, 106, 0.03)', borderRadius: '8px', border: '1px solid rgba(0, 113, 106, 0.08)' }}>
+                <span style={{ fontSize: '11px', fontWeight: '700', color: 'var(--primary)', display: 'block', marginBottom: '4px' }}>Método 1: Registro Automático por USB (Recomendado)</span>
+                <span style={{ fontSize: '11px', color: 'var(--text-secondary)', lineHeight: '1.4', display: 'block' }}>
+                  Descarga el script, colócalo en tu memoria USB ejecutora y córrelo en el equipo conectado a la red. El equipo se registrará solo.
+                </span>
+              </div>
+
+              <div style={{ padding: '12px', background: 'rgba(13, 148, 136, 0.03)', borderRadius: '8px', border: '1px solid rgba(13, 148, 136, 0.08)' }}>
+                <span style={{ fontSize: '11px', fontWeight: '700', color: 'var(--primary)', display: 'block', marginBottom: '4px' }}>Método 2: Carga Manual (Por Archivo JSON)</span>
+                <span style={{ fontSize: '11px', color: 'var(--text-secondary)', lineHeight: '1.4', display: 'block' }}>
+                  Si la computadora no tiene red local, ejecuta el script para generar un archivo JSON en el Escritorio y súbelo aquí abajo.
+                </span>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '10px', marginTop: '20px', justifyContent: 'flex-end' }}>
+              <a 
+                href="/colector-sicob.ps1" 
+                download="colector-sicob.ps1"
+                className="btn btn-secondary" 
+                style={{ fontSize: '11px', padding: '8px 16px', height: 'auto', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '600' }}
+              >
+                <Download size={14} /> Descargar Script
+              </a>
+              <label 
+                className="btn btn-primary" 
+                style={{ fontSize: '11px', padding: '8px 16px', height: 'auto', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', margin: 0, fontWeight: '600' }}
+              >
+                <Upload size={14} /> Cargar JSON
+                <input 
+                  type="file" 
+                  accept=".json" 
+                  onChange={(e) => {
+                    handleUploadColectorJson(e);
+                    setShowColectorModal(false);
+                  }}
+                  style={{ display: 'none' }} 
+                />
+              </label>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

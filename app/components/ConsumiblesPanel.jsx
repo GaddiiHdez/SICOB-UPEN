@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect, useMemo, useCallback } from 'react';
+import { DynamicIcon } from '@/lib/icons';
 
 const getColorDot = (color) => {
   if (!color || color === 'N/A') return null;
@@ -520,7 +521,9 @@ export default function ConsumiblesPanel({
                       >
                         <td>
                           <div className="bien-cell">
-                            <div className="bien-icon">{item.categoriaConsumible?.icono || '📦'}</div>
+                            <div className="bien-icon">
+                              <DynamicIcon name={item.categoriaConsumible?.icono || '📦'} size={15} style={{ color: 'var(--primary)' }} />
+                            </div>
                             <div>
                               <div className="bien-name" style={{ fontWeight: 600, display: 'flex', alignItems: 'center' }}>
                                 {item.nombre}

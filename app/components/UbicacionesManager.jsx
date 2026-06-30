@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Pencil, Trash2, Plus, Save, Loader2, X, Search, Grid, List, Building2, MapPin } from 'lucide-react';
+import { DynamicIcon, AVAILABLE_LUCIDE_ICONS } from '@/lib/icons';
 
 /**
  * UbicacionesManager — Gestor Avanzado de Áreas y Edificios (Diseño Premium)
@@ -26,6 +27,8 @@ export default function UbicacionesManager({ showToast, isAdmin = false }) {
   const [formEdificio, setFormEdificio] = useState('');
   const [formIcono, setFormIcono] = useState('🏫');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [iconSearchQuery, setIconSearchQuery] = useState('');
+  const [pickerTab, setPickerTab] = useState('vector'); // 'vector' o 'emoji'
 
   const [toast, setToast] = useState(null);
 
@@ -395,9 +398,9 @@ export default function UbicacionesManager({ showToast, isAdmin = false }) {
                         width: 32, height: 32, borderRadius: '50%',
                         background: 'rgba(13,148,136,0.08)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: 16, border: '1px solid rgba(13,148,136,0.2)', flexShrink: 0
+                        border: '1px solid rgba(13,148,136,0.2)', flexShrink: 0
                       }}>
-                        {row.icono || '🏫'}
+                        <DynamicIcon name={row.icono || '🏫'} size={16} style={{ color: 'var(--primary)' }} />
                       </div>
                       <span>{row.nombre}</span>
                     </div>
@@ -433,7 +436,7 @@ export default function UbicacionesManager({ showToast, isAdmin = false }) {
                             gap: 4,
                             border: '1px solid rgba(13, 148, 136, 0.15)'
                           }}>
-                            <span>{d.icono || '🏢'}</span>
+                            <DynamicIcon name={d.icono || '🏢'} size={11} style={{ color: 'var(--primary)' }} />
                             <span>{d.nombre}</span>
                           </span>
                         ))
@@ -592,7 +595,10 @@ export default function UbicacionesManager({ showToast, isAdmin = false }) {
                     className="hover-highlight"
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: 12.5 }}>{area.icono || '🏫'} {area.nombre}</span>
+                      <span style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: 12.5, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                        <DynamicIcon name={area.icono || '🏫'} size={13} style={{ color: 'var(--primary)' }} />
+                        {area.nombre}
+                      </span>
                       
                       {/* Botones de acción rápidos */}
                       {isAdmin && (
@@ -631,7 +637,7 @@ export default function UbicacionesManager({ showToast, isAdmin = false }) {
                             gap: 3,
                             border: '1px solid rgba(13, 148, 136, 0.1)'
                           }}>
-                            <span>{d.icono || '🏢'}</span>
+                            <DynamicIcon name={d.icono || '🏢'} size={10} style={{ color: 'var(--primary)' }} />
                             <span>{d.nombre}</span>
                           </span>
                         ))}
@@ -760,47 +766,158 @@ export default function UbicacionesManager({ showToast, isAdmin = false }) {
                     className="hover-highlight"
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <span style={{ fontSize: '18px' }}>{formIcono}</span>
+                      <div style={{
+                        width: 32, height: 32, borderRadius: '50%',
+                        background: 'rgba(13,148,136,0.08)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        border: '1px solid rgba(13,148,136,0.2)', flexShrink: 0
+                      }}>
+                        <DynamicIcon name={formIcono} size={18} style={{ color: 'var(--primary)' }} />
+                      </div>
                       <span style={{ fontWeight: 600 }}>Personalizar Icono / Emoji</span>
                     </div>
                     <span>{showEmojiPicker ? '▲ Ocultar' : '▼ Personalizar'}</span>
                   </button>
 
                   {showEmojiPicker && (
-                    <div style={{ marginTop: 12, animation: 'slideDown 0.2s ease-out' }}>
-                      <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+                    <div style={{ 
+                      marginTop: 12, 
+                      animation: 'slideDown 0.2s ease-out',
+                      border: '1px solid var(--border)',
+                      borderRadius: 'var(--radius-md)',
+                      background: 'var(--bg-card)',
+                      padding: '12px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 12
+                    }}>
+                      {/* Input manual */}
+                      <div style={{ display: 'flex', gap: 8 }}>
                         <input
                           type="text"
                           className="form-input"
-                          placeholder="Escribe o pega un emoji..."
+                          placeholder="Escribe o selecciona un icono..."
                           value={formIcono}
                           onChange={e => setFormIcono(e.target.value)}
                           disabled={saving}
-                          style={{ flex: 1, textAlign: 'center', fontSize: '20px' }}
+                          style={{ flex: 1, textAlign: 'center', fontSize: '14px', fontWeight: '500' }}
                         />
                       </div>
-                      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', background: 'var(--bg-body)', padding: 8, borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
-                        {['🏫', '🏢', '🏛️', '🔬', '🚪', '📚', '💻', '🖥️', '📽️', '🖨️', '🛠️', '🩺', '🎨', '🧪', '🧬', '🔊', '🔋', '🔌', '📡', '🌱', '🌍', '🍽️', '🏋️', '🪑', '🛋️', '💡', '🔑', '🔒', '👨‍💻', '👩‍💻', '👨‍🏫', '👩‍🏫', '👨‍🔬', '👩‍🔬', '👨‍💼', '👩‍💼', '👥'].map(emoji => (
-                          <button
-                            key={emoji}
-                            type="button"
-                            onClick={() => setFormIcono(emoji)}
-                            disabled={saving}
-                            style={{
-                              fontSize: '18px',
-                              padding: '4px 8px',
-                              border: '1px solid var(--border)',
-                              background: formIcono === emoji ? 'rgba(13, 148, 136, 0.15)' : 'var(--bg-card)',
-                              borderColor: formIcono === emoji ? 'var(--primary)' : 'var(--border)',
-                              borderRadius: 'var(--radius-sm)',
-                              cursor: 'pointer',
-                              transition: 'all 0.1s ease',
-                            }}
-                            className="emoji-quick-picker"
-                          >
-                            {emoji}
-                          </button>
-                        ))}
+
+                      {/* Selector de pestañas */}
+                      <div style={{ display: 'flex', borderBottom: '1px solid var(--border)', paddingBottom: '4px', gap: 12 }}>
+                        <button
+                          type="button"
+                          onClick={() => setPickerTab('vector')}
+                          style={{
+                            background: 'transparent',
+                            border: 'none',
+                            borderBottom: pickerTab === 'vector' ? '2px solid var(--primary)' : '2px solid transparent',
+                            color: pickerTab === 'vector' ? 'var(--primary)' : 'var(--text-secondary)',
+                            fontSize: '11px',
+                            fontWeight: '600',
+                            padding: '4px 8px',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s'
+                          }}
+                        >
+                          Iconos Premium
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setPickerTab('emoji')}
+                          style={{
+                            background: 'transparent',
+                            border: 'none',
+                            borderBottom: pickerTab === 'emoji' ? '2px solid var(--primary)' : '2px solid transparent',
+                            color: pickerTab === 'emoji' ? 'var(--primary)' : 'var(--text-secondary)',
+                            fontSize: '11px',
+                            fontWeight: '600',
+                            padding: '4px 8px',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s'
+                          }}
+                        >
+                          Emojis Clásicos
+                        </button>
+                      </div>
+
+                      {/* Buscador para iconos vectoriales */}
+                      {pickerTab === 'vector' && (
+                        <div style={{ position: 'relative' }}>
+                          <input
+                            type="text"
+                            className="form-input"
+                            placeholder="Buscar icono por nombre..."
+                            value={iconSearchQuery}
+                            onChange={e => setIconSearchQuery(e.target.value)}
+                            style={{ fontSize: '11.5px', padding: '6px 10px 6px 28px', width: '100%' }}
+                          />
+                          <Search size={12} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
+                        </div>
+                      )}
+
+                      {/* Contenedor de iconos */}
+                      <div style={{ 
+                        maxHeight: '160px', 
+                        overflowY: 'auto', 
+                        display: 'grid', 
+                        gridTemplateColumns: 'repeat(auto-fill, minmax(36px, 1fr))', 
+                        gap: 6, 
+                        background: 'var(--bg-body)', 
+                        padding: 8, 
+                        borderRadius: 'var(--radius-sm)', 
+                        border: '1px solid var(--border)' 
+                      }}>
+                        {pickerTab === 'vector' ? (
+                          AVAILABLE_LUCIDE_ICONS.filter(name => name.toLowerCase().includes(iconSearchQuery.toLowerCase())).map(name => (
+                            <button
+                              key={name}
+                              type="button"
+                              onClick={() => setFormIcono(name)}
+                              disabled={saving}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                padding: '8px',
+                                border: '1px solid var(--border)',
+                                background: formIcono === name ? 'rgba(13, 148, 136, 0.15)' : 'var(--bg-card)',
+                                borderColor: formIcono === name ? 'var(--primary)' : 'var(--border)',
+                                color: formIcono === name ? 'var(--primary)' : 'var(--text-secondary)',
+                                borderRadius: 'var(--radius-sm)',
+                                cursor: 'pointer',
+                                transition: 'all 0.1s ease',
+                              }}
+                              className="emoji-quick-picker"
+                              title={name}
+                            >
+                              <DynamicIcon name={name} size={15} />
+                            </button>
+                          ))
+                        ) : (
+                          ['🏫', '🏢', '🏛️', '🔬', '🚪', '📚', '💻', '🖥️', '📽️', '🖨️', '🛠️', '🩺', '🎨', '🧪', '🧬', '🔊', '🔋', '🔌', '📡', '🌱', '🌍', '🍽️', '🏋️', '🪑', '🛋️', '💡', '🔑', '🔒', '👨‍💻', '👩‍💻', '👨‍🏫', '👩‍🏫', '👨‍🔬', '👩‍🔬', '👨‍💼', '👩‍💼', '👥'].map(emoji => (
+                            <button
+                              key={emoji}
+                              type="button"
+                              onClick={() => setFormIcono(emoji)}
+                              disabled={saving}
+                              style={{
+                                fontSize: '18px',
+                                padding: '4px',
+                                border: '1px solid var(--border)',
+                                background: formIcono === emoji ? 'rgba(13, 148, 136, 0.15)' : 'var(--bg-card)',
+                                borderColor: formIcono === emoji ? 'var(--primary)' : 'var(--border)',
+                                borderRadius: 'var(--radius-sm)',
+                                cursor: 'pointer',
+                                transition: 'all 0.1s ease',
+                              }}
+                              className="emoji-quick-picker"
+                            >
+                              {emoji}
+                            </button>
+                          ))
+                        )}
                       </div>
                     </div>
                   )}

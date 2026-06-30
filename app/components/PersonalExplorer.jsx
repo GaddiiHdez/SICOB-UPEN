@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
+import { DynamicIcon } from '@/lib/icons';
 
 /**
  * PersonalExplorer — Panel de Administración e Integración de Personal (Custodios)
@@ -283,13 +284,13 @@ export default function PersonalExplorer({ departamentos, showToast, refreshBien
                       </td>
                       <td style={{ padding: '12px 20px', fontSize: 12, color: 'var(--text-secondary)' }}>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontWeight: 600, color: 'var(--text-primary)' }}>
-                            <span>{p.departamento?.icono || '🏢'}</span>
+                           <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontWeight: 600, color: 'var(--text-primary)' }}>
+                            <DynamicIcon name={p.departamento?.icono || '🏢'} size={12} style={{ color: 'var(--primary)' }} />
                             <span>{p.departamento?.nombre || 'General'}</span>
                           </div>
                           {p.departamento?.ubicacion && (
-                            <div style={{ fontSize: 10.5, display: 'flex', alignItems: 'center', gap: 4, opacity: 0.85 }}>
-                              <span>{p.departamento.ubicacion.icono || '🏫'}</span>
+                             <div style={{ fontSize: 10.5, display: 'flex', alignItems: 'center', gap: 4, opacity: 0.85 }}>
+                              <DynamicIcon name={p.departamento.ubicacion.icono || '🏫'} size={11} style={{ color: 'var(--primary)' }} />
                               <span>{p.departamento.ubicacion.nombre}</span>
                             </div>
                           )}
@@ -434,7 +435,7 @@ export default function PersonalExplorer({ departamentos, showToast, refreshBien
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12.5, alignItems: 'center' }}>
                   <span style={{ color: 'var(--text-secondary)' }}>Depto. / Coordinación:</span>
                   <span style={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6, color: 'var(--text-primary)' }}>
-                    <span>{selectedEmpleado.departamento?.icono || '🏢'}</span>
+                    <DynamicIcon name={selectedEmpleado.departamento?.icono || '🏢'} size={12} style={{ color: 'var(--primary)' }} />
                     <span>{selectedEmpleado.departamento?.nombre || 'General'}</span>
                   </span>
                 </div>
@@ -442,7 +443,7 @@ export default function PersonalExplorer({ departamentos, showToast, refreshBien
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12.5, alignItems: 'center' }}>
                     <span style={{ color: 'var(--text-secondary)' }}>Oficina Física:</span>
                     <span style={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6, color: 'var(--primary)' }}>
-                      <span>{selectedEmpleado.departamento.ubicacion.icono || '🏫'}</span>
+                      <DynamicIcon name={selectedEmpleado.departamento.ubicacion.icono || '🏫'} size={12} style={{ color: 'var(--primary)' }} />
                       <span>{selectedEmpleado.departamento.ubicacion.nombre}</span>
                       {selectedEmpleado.departamento.ubicacion.edificio && (
                         <span style={{ fontSize: 11, color: 'var(--text-secondary)', fontWeight: 'normal' }}>({selectedEmpleado.departamento.ubicacion.edificio})</span>

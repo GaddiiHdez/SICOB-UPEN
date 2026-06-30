@@ -137,7 +137,7 @@ export default function ModalImportador({ onClose, onImportSuccess, bienes = [],
 
     // Matriz completa con títulos y espacio de instrucciones
     const aoa = [
-      ["PLANTILLA MAESTRA DE IMPORTACIÓN - GDI UPEN", "", "", "", "", "", "", "", "", "", ""],
+      ["PLANTILLA MAESTRA DE IMPORTACIÓN - SICOB UPEN", "", "", "", "", "", "", "", "", "", ""],
       ["Instrucciones: Completa la información respetando las columnas. Los ejemplos sombreados en verde son ilustrativos y deben ser borrados o reemplazados.", "", "", "", "", "", "", "", "", "", ""],
       ["", "", "", "", "", "", "", "", "", "", ""],
       headers,

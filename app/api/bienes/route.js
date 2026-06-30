@@ -91,6 +91,7 @@ export async function GET(request) {
     const bienes = await prisma.bien.findMany({
       where,
       orderBy: { createdAt: 'desc' },
+      take: 500,
       select: {
         id: true,
         codigo_inventario: true,
@@ -297,7 +298,7 @@ export async function POST(request) {
           });
           creados.push(nuevoB);
         }
-      });
+      }, { timeout: 15000 });
 
       return NextResponse.json({ success: true, count: creados.length, bienes: creados });
     }
@@ -558,7 +559,7 @@ export async function PUT(request) {
               data: { codigo_inventario: codigoInventarioFinal }
             });
           }
-        });
+        }, { timeout: 15000 });
 
         return NextResponse.json({ success: true, message: `No. de Inventario autogenerado para ${idsInt.length} bienes.` });
       }
@@ -969,7 +970,7 @@ export async function DELETE(request) {
         await tx.bien.delete({
           where: { id: idInt }
         });
-      });
+      }, { timeout: 15000 });
 
       return NextResponse.json({
         success: true,

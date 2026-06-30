@@ -1,5 +1,6 @@
 'use client';
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { DynamicIcon } from '@/lib/icons';
 import { generateBarcodeSVG } from '@/lib/barcode';
 import ModalExportador from '@/app/components/ModalExportador';
 
@@ -452,7 +453,9 @@ export default function InmobiliarioPanel({
                           <td>
                             <div className="bien-cell" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                               <span style={{ width: 16, display: 'inline-block' }} />
-                              <div className="bien-icon">{item.categoriaInmobiliario?.icono || '🪑'}</div>
+                              <div className="bien-icon">
+                                <DynamicIcon name={item.categoriaInmobiliario?.icono || '🪑'} size={15} style={{ color: 'var(--primary)' }} />
+                              </div>
                               <div>
                                 <div className="bien-name" style={{ fontWeight: 600 }}>{item.descripcion}</div>
                                 <div className="bien-serial" style={{ fontSize: 12.5 }}>
@@ -509,7 +512,9 @@ export default function InmobiliarioPanel({
                               }}>
                                 ▶
                               </span>
-                              <div className="bien-icon">{firstItem.categoriaInmobiliario?.icono || '🪑'}</div>
+                              <div className="bien-icon">
+                                <DynamicIcon name={firstItem.categoriaInmobiliario?.icono || '🪑'} size={15} style={{ color: 'var(--primary)' }} />
+                              </div>
                               <div>
                                 <div className="bien-name" style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 600 }}>
                                   {firstItem.descripcion}
@@ -677,6 +682,7 @@ export default function InmobiliarioPanel({
             {/* Imagen del bien */}
             <div style={{ width: '100%', height: 160, borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', background: 'var(--bg-card)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', position: 'relative' }}>
               {selectedItem.imagen_url ? (
+                /* eslint-disable-next-line @next/next/no-img-element */
                 <img src={selectedItem.imagen_url} alt="Mobiliario" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               ) : (
                 <span style={{ fontSize: 48, opacity: 0.2 }}>🪑</span>
@@ -1032,12 +1038,12 @@ export default function InmobiliarioPanel({
             return (
               <div key={item.id} className="printable-label">
                 <div className="label-inner-clean">
-                  {configuracion.etiqueta_mostrar_cabecera !== 'false' && (
+                  {configuracion.etiqueta_mostrar_cabecera !== 'false' && configuracion.etiqueta_mostrar_cabecera !== false && (
                     <div className="label-header-clean">
                       {headerText}
                     </div>
                   )}
-                  {configuracion.etiqueta_mostrar_marca_modelo !== 'false' && (
+                  {configuracion.etiqueta_mostrar_marca_modelo !== 'false' && configuracion.etiqueta_mostrar_marca_modelo !== false && (
                     <div className="label-details-clean" style={{ fontWeight: 650 }}>
                       {item.descripcion.substring(0, 32)}
                     </div>

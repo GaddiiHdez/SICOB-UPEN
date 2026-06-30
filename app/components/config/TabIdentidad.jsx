@@ -283,6 +283,7 @@ export default function TabIdentidad({
               className="logo-drop-zone"
             >
               {logoBase64 ? (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={logoBase64}
                   alt="Logotipo institucional"

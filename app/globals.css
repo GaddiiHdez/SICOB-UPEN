@@ -105,13 +105,26 @@ body {
 .sidebar-logo-icon {
   width: 36px;
   height: 36px;
-  background: var(--accent);
+  background: transparent !important;
   border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
   flex-shrink: 0;
+  position: relative;
+}
+
+.sidebar-logo-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 0 6px rgba(90, 115, 60, 0.6)) !important;
+  transition: transform 0.25s ease, filter 0.25s ease;
+}
+
+.sidebar-logo-icon:hover img {
+  transform: scale(1.1) rotate(2deg);
+  filter: drop-shadow(0 0 10px rgba(90, 115, 60, 0.95)) !important;
 }
 
 .sidebar-logo-text h1 {
@@ -952,13 +965,49 @@ body.dark-mode .stat-card-compact.active {
 }
 
 .login-logo-wrap {
-  width: 76px;
-  height: 76px;
-  margin-bottom: 16px;
+  width: 130px;
+  height: 130px;
+  margin-bottom: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
-  filter: drop-shadow(0 4px 10px rgba(0, 113, 106, 0.15));
+  position: relative;
+}
+
+/* Halo de retroiluminación difusa de fondo */
+.login-logo-wrap::after {
+  content: '';
+  position: absolute;
+  width: 110px;
+  height: 110px;
+  background: radial-gradient(circle, rgba(90, 115, 60, 0.25) 0%, rgba(0, 113, 106, 0.08) 50%, rgba(255, 255, 255, 0) 70%);
+  filter: blur(12px);
+  z-index: 1;
+  pointer-events: none;
+  transition: all 0.4s ease;
+}
+
+.login-logo-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  position: relative;
+  z-index: 2;
+  /* Sombra del objeto y retroiluminación combinadas */
+  filter: drop-shadow(0 8px 16px rgba(90, 115, 60, 0.18)) drop-shadow(0 2px 4px rgba(0, 113, 106, 0.1)) !important;
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.4s ease;
+}
+
+/* Animación interactiva en hover */
+.login-logo-wrap:hover::after {
+  transform: scale(1.2);
+  background: radial-gradient(circle, rgba(90, 115, 60, 0.35) 0%, rgba(0, 113, 106, 0.15) 50%, rgba(255, 255, 255, 0) 70%);
+  filter: blur(14px);
+}
+
+.login-logo-wrap:hover img {
+  transform: scale(1.06) translateY(-5px);
+  filter: drop-shadow(0 16px 28px rgba(90, 115, 60, 0.28)) drop-shadow(0 4px 8px rgba(0, 113, 106, 0.15)) !important;
 }
 
 .login-title {
@@ -2748,7 +2797,7 @@ body.dark-mode .main-header {
     white-space: nowrap !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
-    max-width: 55%;
+    max-width: 40%;
   }
 
   body.printing-labels .label-serial-clean {
@@ -2764,7 +2813,7 @@ body.dark-mode .main-header {
     white-space: nowrap !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
-    max-width: 45%;
+    max-width: 60%;
   }
 
   /* ── IMPRESIÓN DE FICHA TÉCNICA (ModalFichaBien) ─────────────
@@ -2847,13 +2896,26 @@ body.dark-mode .main-header {
     margin-left: 0 !important;
     width: 100% !important;
     height: auto !important;
+    min-height: 0 !important;
     overflow: visible !important;
+    display: block !important;
     background: #FFFFFF !important;
   }
 
   body:not(.printing-labels) .main-content {
     padding: 0 !important;
     overflow: visible !important;
+    height: auto !important;
+    min-height: 0 !important;
+    flex: none !important;
+    display: block !important;
+  }
+
+  body:not(.printing-labels) .reportes-panel-container {
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    display: block !important;
   }
 
   .print-only {
@@ -2867,6 +2929,14 @@ body.dark-mode .main-header {
     padding: 0 !important;
     margin: 0 !important;
     color: #000000 !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  /* Liberar el wrapper de overflow horizontal de la tabla durante impresión */
+  .printable-report-area > div[style] {
+    overflow: visible !important;
+    height: auto !important;
   }
 
   .printable-report-area h2,
@@ -2879,6 +2949,14 @@ body.dark-mode .main-header {
   .printable-report-area .report-table {
     width: 100% !important;
     border-collapse: collapse !important;
+    page-break-inside: auto !important;
+  }
+  .printable-report-area .report-table thead {
+    display: table-header-group !important;
+  }
+  .printable-report-area .report-table tbody tr {
+    page-break-inside: avoid !important;
+    page-break-after: auto !important;
   }
   .printable-report-area .report-th {
     font-size: 8px !important;

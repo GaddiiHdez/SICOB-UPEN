@@ -36,21 +36,24 @@ export default function AuditoriaPanel({
     }
   }, []);
 
-  // Guardar estado de auditoría automáticamente ante cambios
+  // Guardar estado de auditoría automáticamente ante cambios (con debounce para evitar escrituras excesivas)
   useEffect(() => {
-    try {
-      if (step === 'audit' || step === 'report') {
-        localStorage.setItem('active_audit', JSON.stringify({
-          step,
-          ubicacionSeleccionada,
-          scannedCodes
-        }));
-      } else {
-        localStorage.removeItem('active_audit');
+    const timer = setTimeout(() => {
+      try {
+        if (step === 'audit' || step === 'report') {
+          localStorage.setItem('active_audit', JSON.stringify({
+            step,
+            ubicacionSeleccionada,
+            scannedCodes
+          }));
+        } else {
+          localStorage.removeItem('active_audit');
+        }
+      } catch (e) {
+        console.error("Error al guardar auditoría:", e);
       }
-    } catch (e) {
-      console.error("Error al guardar auditoría:", e);
-    }
+    }, 2000);
+    return () => clearTimeout(timer);
   }, [step, ubicacionSeleccionada, scannedCodes]);
 
   const handleSelectUbicacion = (ubicacion) => {

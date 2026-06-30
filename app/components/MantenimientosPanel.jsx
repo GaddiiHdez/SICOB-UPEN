@@ -184,8 +184,14 @@ export default function MantenimientosPanel({
       setFormEstado('En proceso');
       setFormTipo('Correctivo');
       setFormFechaMantenimiento(new Date().toISOString().split('T')[0]);
+      setActiveTab('taller');
       setShowScheduleModal(true);
-      if (onClearPreselectedBien) onClearPreselectedBien();
+      
+      // Diferir el limpiado en el padre para no interrumpir el montaje del componente
+      const timer = setTimeout(() => {
+        if (onClearPreselectedBien) onClearPreselectedBien();
+      }, 100);
+      return () => clearTimeout(timer);
     }
   }, [preselectedBien, onClearPreselectedBien]);
 

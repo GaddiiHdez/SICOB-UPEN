@@ -49,6 +49,7 @@ export default function ModalPlanMes({ planMes, mantenimientos, configuracion, g
             {/* Cabecera institucional */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 16, paddingBottom: 12, borderBottom: '3px double #111827', marginBottom: 20 }}>
               {configuracion?.logo_institucion
+                // eslint-disable-next-line @next/next/no-img-element -- Dynamic institution logo from DB
                 ? <img src={configuracion.logo_institucion} alt="Logo" style={{ width: 60, height: 60, objectFit: 'contain' }} />
                 : <span style={{ fontSize: 40 }}>🎓</span>}
               <div style={{ flex: 1 }}>

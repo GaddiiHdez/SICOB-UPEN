@@ -1,7 +1,7 @@
 'use client';
 import { useState, useMemo } from 'react';
 import { TIPOS_EQUIPO, ESTADO_BADGE } from '@/lib/constants';
-import { getStatIcon } from '@/lib/icons';
+import { getStatIcon, DynamicIcon } from '@/lib/icons';
 import { Plus, QrCode, Wrench, ClipboardList, BarChart3 } from 'lucide-react';
 
 // ── Paleta de colores para los gráficos ──────────────────────
@@ -541,8 +541,8 @@ export default function Dashboard({ bienes, categorias = [], ubicaciones = [], m
                     <div key={item.categoria} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12.5 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 600, color: 'var(--text-primary)' }}>
-                          <span>{item.icono}</span>
-                          <span>{item.categoria}</span>
+                           <DynamicIcon name={item.icono} size={14} style={{ color: 'var(--primary)' }} />
+                           <span>{item.categoria}</span>
                         </div>
                         <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>
                           {new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 }).format(item.valor)}
@@ -593,10 +593,10 @@ export default function Dashboard({ bienes, categorias = [], ubicaciones = [], m
                     }}
                     className="hover-highlight"
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <span style={{ fontSize: 15 }}>{item.icono}</span>
-                      <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--text-primary)' }}>{item.area}</span>
-                    </div>
+                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                       <DynamicIcon name={item.icono} size={14} style={{ color: 'var(--primary)' }} />
+                       <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--text-primary)' }}>{item.area}</span>
+                     </div>
                     <span style={{
                       fontSize: 11,
                       fontWeight: 700,
@@ -656,8 +656,8 @@ export default function Dashboard({ bienes, categorias = [], ubicaciones = [], m
                       {i < actividadReciente.length - 1 && <div className="dash-timeline-connector"></div>}
                     </div>
                     <div className="dash-timeline-content">
-                      <div className="dash-timeline-icon">{a.icono}</div>
-                      <div className="dash-timeline-body">
+                       <div className="dash-timeline-icon"><DynamicIcon name={a.icono} size={13} /></div>
+                       <div className="dash-timeline-body">
                         <div className="dash-timeline-text">{a.texto}</div>
                         <div className="dash-timeline-time">{a.tiempo}</div>
                       </div>
@@ -807,9 +807,9 @@ export default function Dashboard({ bienes, categorias = [], ubicaciones = [], m
                           }}
                           className="hover-highlight"
                         >
-                          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                            <span style={{ fontSize: 14 }}>{b.icono}</span>
-                            <div>
+                           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                             <DynamicIcon name={b.icono} size={14} style={{ color: 'var(--primary)' }} />
+                             <div>
                               <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>
                                 {b.nombre}
                               </div>

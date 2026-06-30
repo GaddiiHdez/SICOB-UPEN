@@ -135,9 +135,10 @@ export default function ModalLectorCodigos({ onClose, onScan, bienes }) {
         html5QrCode.stop().catch(err => console.error("Error al apagar la cámara en cleanup:", err));
       }
     };
-     
-    // triggerSearch es una función estable redefinida sólo cuando bienes/onScan cambian;
-    // el React Compiler de Next.js 16 gestiona la memoización automáticamente.
+         // triggerSearch es una función estable redefinida sólo cuando bienes/onScan cambian;
+     // el React Compiler de Next.js 16 gestiona la memoización automáticamente.
+     // isScanning is a ref-like state flag that must not re-trigger the scanner lifecycle.
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- scanner lifecycle must only react to scanMode/libraryLoaded
   }, [scanMode, libraryLoaded]);
 
   const stopCamera = (callback) => {

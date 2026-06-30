@@ -2,6 +2,7 @@ import React, { useState, useMemo, useCallback } from 'react';
 import { ESTADOS_BIEN, ESTADO_BADGE } from '@/lib/constants';
 import DetailPanel from '@/app/components/DetailPanel';
 import ModalExportador from '@/app/components/ModalExportador';
+import { DynamicIcon } from '@/lib/icons';
 
 /**
  * InventarioView — Vista completa del módulo de Inventario
@@ -281,7 +282,9 @@ export default function InventarioView({
                       </td>
                       <td>
                         <div className="bien-cell">
-                          <div className="bien-icon">{bien.icono}</div>
+                          <div className="bien-icon">
+                            <DynamicIcon name={bien.icono} size={15} style={{ color: 'var(--primary)' }} />
+                          </div>
                           <div>
                             <div className="bien-name">{bien.nombre}</div>
                             <div className="bien-serial" style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: 550, fontFamily: 'monospace', marginTop: '2px' }}>{bien.serial}</div>
@@ -361,7 +364,9 @@ export default function InventarioView({
                           <td>
                             <div className="bien-cell" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                               <span style={{ width: 16, display: 'inline-block' }} />
-                              <div className="bien-icon">{bien.icono}</div>
+                              <div className="bien-icon">
+                                <DynamicIcon name={bien.icono} size={15} style={{ color: 'var(--primary)' }} />
+                              </div>
                               <div>
                                 <div className="bien-name">{bien.nombre}</div>
                                 <div className="bien-serial" style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: 550, fontFamily: 'monospace', marginTop: '2px' }}>{bien.serial}</div>
@@ -457,7 +462,9 @@ export default function InventarioView({
                               }}>
                                 ▶
                               </span>
-                              <div className="bien-icon">{firstBien.icono}</div>
+                              <div className="bien-icon">
+                                <DynamicIcon name={firstBien.icono} size={15} style={{ color: 'var(--primary)' }} />
+                              </div>
                               <div>
                                 <div className="bien-name" style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 600 }}>
                                   {firstBien.nombre}

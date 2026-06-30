@@ -1,5 +1,14 @@
 'use client';
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+
+// Contexto de audio compartido para evitar crear uno nuevo en cada señal sonora
+let sharedAudioCtx = null;
+function getAudioContext() {
+  if (!sharedAudioCtx || sharedAudioCtx.state === 'closed') {
+    sharedAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  return sharedAudioCtx;
+}
 
 /**
  * Audio cue helper using Web Audio API to play synthetic sound feedback.
@@ -8,7 +17,7 @@ const playAudioCue = (type) => {
   try {
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     if (!AudioContext) return;
-    const ctx = new AudioContext();
+    const ctx = getAudioContext();
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     
@@ -72,6 +81,7 @@ export default function ScannerPanel({
   const inputRef = useRef(null);
   const scannerRef = useRef(null);
   const lastScannedTimeRef = useRef({}); // Cooldown por código
+  const flashTimerRef = useRef(null); // Referencia al timer del flash para limpiar el anterior
   const SCANNER_DIV_ID = "continuous-camera-scanner-preview";
 
   // Carga dinámica de html5-qrcode
@@ -102,6 +112,74 @@ export default function ScannerPanel({
       }, 150);
     }
   };
+
+  const triggerFlashMessage = useCallback((msg, type) => {
+    setFlashMessage({ msg, type });
+    if (flashTimerRef.current) clearTimeout(flashTimerRef.current);
+    const timer = setTimeout(() => {
+      setFlashMessage(null);
+    }, 3000);
+    flashTimerRef.current = timer;
+    return () => clearTimeout(timer);
+  }, []);
+
+  const stopCamera = useCallback(() => {
+    if (scannerRef.current && scannerRef.current.isScanning) {
+      scannerRef.current.stop().then(() => {
+        setIsScanning(false);
+        scannerRef.current = null;
+      }).catch(err => {
+        console.error(err);
+        setIsScanning(false);
+        scannerRef.current = null;
+      });
+    } else {
+      setIsScanning(false);
+    }
+  }, []);
+
+  // Procesar código leído (sea de cámara, manual o lector físico)
+  const processCode = useCallback((rawCode) => {
+    const cleanCode = rawCode.trim();
+    if (!cleanCode) return;
+
+    // Verificar si ya se escaneó en esta sesión
+    const isDuplicate = scannedCodes.some(c => c.toUpperCase() === cleanCode.toUpperCase());
+    
+    // Buscar coincidencia en bienes (null-safe)
+    const match = bienes.find(b => 
+      (b.etiqueta          && b.etiqueta.toUpperCase()          === cleanCode.toUpperCase()) || 
+      (b.serial            && b.serial.toUpperCase()            === cleanCode.toUpperCase()) ||
+      (b.codigo_inventario && b.codigo_inventario.toUpperCase() === cleanCode.toUpperCase()) ||
+      (b.numero_serie      && b.numero_serie.toUpperCase()      === cleanCode.toUpperCase())
+    );
+
+    if (isDuplicate) {
+      playAudioCue('duplicate');
+      triggerFlashMessage(`Duplicado: "${cleanCode}" ya fue escaneado`, 'duplicate');
+      return;
+    }
+
+    if (match) {
+      const isCorrectLocation = match.ubicacionId === ubicacion?.id;
+      if (isCorrectLocation) {
+        playAudioCue('success');
+        triggerFlashMessage(`✅ Correcto: ${match.nombre || match.marca} (${match.marca})`, 'success');
+      } else {
+        playAudioCue('warning');
+        triggerFlashMessage(`⚠️ Otra área: ${match.nombre || match.marca} (Registrado en: ${match.area || 'Bodega'})`, 'warning');
+      }
+      onScanCode(match.etiqueta || match.codigo_inventario || cleanCode);
+    } else {
+      playAudioCue('warning');
+      triggerFlashMessage(`❓ No registrado: "${cleanCode}" no existe en el sistema`, 'not_found');
+      onScanCode(cleanCode);
+    }
+
+    if (navigator.vibrate) {
+      navigator.vibrate(80);
+    }
+  }, [bienes, scannedCodes, onScanCode, ubicacion, triggerFlashMessage]);
 
   // Encender/apagar cámara
   useEffect(() => {
@@ -182,74 +260,10 @@ export default function ScannerPanel({
         html5QrCode.stop().catch(err => console.error(err));
       }
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- isScanning is managed internally by scanner; must not re-trigger hardware init
   }, [cameraActive, libraryLoaded, processCode]);
 
-  const stopCamera = () => {
-    if (scannerRef.current && scannerRef.current.isScanning) {
-      scannerRef.current.stop().then(() => {
-        setIsScanning(false);
-        scannerRef.current = null;
-      }).catch(err => {
-        console.error(err);
-        setIsScanning(false);
-        scannerRef.current = null;
-      });
-    } else {
-      setIsScanning(false);
-    }
-  };
 
-  // Procesar código leído (sea de cámara, manual o lector físico)
-  const processCode = useCallback((rawCode) => {
-    const cleanCode = rawCode.trim();
-    if (!cleanCode) return;
-
-    // Verificar si ya se escaneó en esta sesión
-    const isDuplicate = scannedCodes.some(c => c.toUpperCase() === cleanCode.toUpperCase());
-    
-    // Buscar coincidencia en bienes (null-safe)
-    const match = bienes.find(b => 
-      (b.etiqueta          && b.etiqueta.toUpperCase()          === cleanCode.toUpperCase()) || 
-      (b.serial            && b.serial.toUpperCase()            === cleanCode.toUpperCase()) ||
-      (b.codigo_inventario && b.codigo_inventario.toUpperCase() === cleanCode.toUpperCase()) ||
-      (b.numero_serie      && b.numero_serie.toUpperCase()      === cleanCode.toUpperCase())
-    );
-
-    if (isDuplicate) {
-      playAudioCue('duplicate');
-      triggerFlashMessage(`Duplicado: "${cleanCode}" ya fue escaneado`, 'duplicate');
-      return;
-    }
-
-    if (match) {
-      const isCorrectLocation = match.ubicacionId === ubicacion?.id;
-      if (isCorrectLocation) {
-        playAudioCue('success');
-        triggerFlashMessage(`✅ Correcto: ${match.nombre || match.marca} (${match.marca})`, 'success');
-      } else {
-        playAudioCue('warning');
-        triggerFlashMessage(`⚠️ Otra área: ${match.nombre || match.marca} (Registrado en: ${match.area || 'Bodega'})`, 'warning');
-      }
-      onScanCode(match.etiqueta || match.codigo_inventario || cleanCode);
-    } else {
-      playAudioCue('warning');
-      triggerFlashMessage(`❓ No registrado: "${cleanCode}" no existe en el sistema`, 'not_found');
-      onScanCode(cleanCode);
-    }
-
-    if (navigator.vibrate) {
-      navigator.vibrate(80);
-    }
-  }, [bienes, scannedCodes, onScanCode, ubicacion]);
-
-  const triggerFlashMessage = (msg, type) => {
-    setFlashMessage({ msg, type });
-    // Limpiar flash en 3 segundos
-    const timer = setTimeout(() => {
-      setFlashMessage(null);
-    }, 3000);
-    return () => clearTimeout(timer);
-  };
 
   const handleSubmitManual = (e) => {
     e.preventDefault();
@@ -260,7 +274,7 @@ export default function ScannerPanel({
   };
 
   // Mapear los códigos escaneados a sus datos reales para mostrarlos en el feed lateral
-  const scannedBienesDetails = scannedCodes.map(code => {
+  const scannedBienesDetails = useMemo(() => scannedCodes.map(code => {
     const match = bienes.find(b => 
       (b.etiqueta && b.etiqueta.toUpperCase() === code.toUpperCase()) || 
       (b.serial && b.serial.toUpperCase() === code.toUpperCase())
@@ -289,7 +303,7 @@ export default function ScannerPanel({
       areaRegistrada: 'Ninguna',
       status: 'unregistered'
     };
-  }).reverse(); // Mostrar el último arriba
+  }).reverse(), [scannedCodes, bienes, ubicacion]); // Mostrar el último arriba
 
   return (
     <div className="fade-in" style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 24, padding: '10px 0' }}>

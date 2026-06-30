@@ -17,16 +17,16 @@ export default function CatalogsPanel({ showToast, isAdmin = false }) {
   useEffect(() => {
     let active = true;
     fetch('/api/ubicaciones')
-      .then(res => res.json())
+      .then(res => res.ok ? res.json() : [])
       .then(data => {
-        if (active) setUbicaciones(data);
+        if (active && Array.isArray(data)) setUbicaciones(data);
       })
       .catch(err => console.error("Error al cargar ubicaciones en catálogos:", err));
 
     fetch('/api/personal')
-      .then(res => res.json())
+      .then(res => res.ok ? res.json() : [])
       .then(data => {
-        if (active) setPersonal(data);
+        if (active && Array.isArray(data)) setPersonal(data);
       })
       .catch(err => console.error("Error al cargar personal en catálogos:", err));
 
@@ -137,13 +137,13 @@ export default function CatalogsPanel({ showToast, isAdmin = false }) {
                 name: 'jefe', 
                 label: 'Titular / Jefe o Coordinador',
                 type: 'select',
-                options: personal.map(p => ({ value: p.nombre, label: `${p.nombre} (${p.puesto || 'Sin puesto'})` }))
+                options: Array.isArray(personal) ? personal.map(p => ({ value: p.nombre, label: `${p.nombre} (${p.puesto || 'Sin puesto'})` })) : []
               },
               { 
                 name: 'ubicacionId', 
                 label: 'Ubicación física de la Oficina', 
                 type: 'select',
-                options: ubicaciones.map(u => ({ value: String(u.id), label: `${u.nombre} (Edif. ${u.edificio || 'General'})` }))
+                options: Array.isArray(ubicaciones) ? ubicaciones.map(u => ({ value: String(u.id), label: `${u.nombre} (Edif. ${u.edificio || 'General'})` })) : []
               },
               { name: 'icono', label: 'Icono / Emoji Distintivo', defaultValue: '🏢', type: 'emoji' }
             ]}

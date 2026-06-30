@@ -1,5 +1,7 @@
 import React from 'react';
-import {
+import * as LucideIcons from 'lucide-react';
+
+const {
   LayoutDashboard,
   Archive,
   FlaskConical,
@@ -36,7 +38,7 @@ import {
   CheckCircle2,
   HelpCircle,
   FileText
-} from 'lucide-react';
+} = LucideIcons;
 
 /**
  * Returns a Lucide icon component by name or ID.
@@ -116,3 +118,42 @@ export function getStatIcon(key, size = 20, className = '') {
       return <HelpCircle size={size} className={className} />;
   }
 }
+
+export function DynamicIcon({ name, size = 16, className = '', style = {}, ...props }) {
+  if (!name) return null;
+  const IconComponent = LucideIcons[name];
+  if (IconComponent) {
+    return <IconComponent size={size} className={className} style={style} {...props} />;
+  }
+  return (
+    <span
+      className={className}
+      style={{
+        fontSize: size,
+        lineHeight: 1,
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        ...style
+      }}
+      {...props}
+    >
+      {name}
+    </span>
+  );
+}
+
+export const AVAILABLE_LUCIDE_ICONS = [
+  // Lugares / Áreas / Infraestructura
+  'Building2', 'MapPin', 'School', 'Warehouse', 'Home', 'Compass', 'Map', 'Navigation', 'Globe',
+  // Equipos / TI / Oficina
+  'Laptop', 'Monitor', 'Tv', 'Smartphone', 'Tablet', 'Printer', 'Mouse', 'HardDrive', 'Cpu', 'Server', 'Wifi', 'Keyboard', 'Projector', 'Camera', 'Video', 'Mic', 'Headphones',
+  // Mobiliario / Espacios
+  'Armchair', 'Lamp', 'Columns', 'Grid', 'Trash2',
+  // Herramientas / Mantenimiento
+  'Wrench', 'Settings', 'Hammer', 'Scissors', 'Shield', 'Key', 'Activity', 'Gauge',
+  // Materiales / Consumibles / Documentos
+  'FileText', 'Layers', 'Tag', 'Archive', 'Package', 'Folder', 'Briefcase', 'ClipboardList', 'BookOpen', 'GraduationCap',
+  // Roles / Varios
+  'User', 'Users', 'Award', 'ShieldCheck', 'BarChart3', 'Sparkles', 'Palette', 'Lightbulb', 'Megaphone', 'Heart'
+];

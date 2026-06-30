@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import Image from 'next/image';
 
 // ── Sub-componente: Formulario de restablecimiento ─────────────────────────
 function ForgotPasswordForm({ onBack }) {
@@ -229,7 +230,7 @@ export default function Login({ onLoginSuccess }) {
       <div className="login-form-side fade-in">
         <div className="login-form-container">
           <div className="login-logo-wrap">
-            <img src="/sicob-logo.png" alt="SICOB Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+            <Image src="/sicob-logo.png" alt="SICOB Logo" width={80} height={80} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
           </div>
           <h1 className="login-title">SICOB</h1>
           <p className="login-sub">Sistema de Control y Operación de Bienes</p>
@@ -319,7 +320,7 @@ export default function Login({ onLoginSuccess }) {
             <span>•</span>
             <a href="#" onClick={(e) => e.preventDefault()}>Soporte Técnico</a>
             <span>•</span>
-            <span style={{ fontWeight: 600, color: 'var(--accent)' }}>v0.12.5 (Pre-lanzamiento)</span>
+            <span style={{ fontWeight: 600, color: 'var(--accent)' }}>v1.0.0 (Estable)</span>
           </div>
         </footer>
       </div>
@@ -459,9 +460,11 @@ export default function Login({ onLoginSuccess }) {
         </svg>
 
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 2, position: 'relative' }}>
-          <img 
+          <Image 
             src="/upen-logo.png" 
             alt="UPEN Logo" 
+            width={230}
+            height={100}
             style={{ 
               width: '230px', 
               height: 'auto', 

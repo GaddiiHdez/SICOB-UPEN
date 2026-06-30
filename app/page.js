@@ -18,6 +18,7 @@ import ModalImportador from '@/app/components/ModalImportador';
 import ModalAutogenerarLote from '@/app/components/ModalAutogenerarLote';
 import ModalConfirmarBorrado from '@/app/components/ModalConfirmarBorrado';
 import ModalCalibradorEtiquetas from '@/app/components/ModalCalibradorEtiquetas';
+import ModalAbout from '@/app/components/ModalAbout';
 import AuditoriaPanel from '@/app/components/auditoria/AuditoriaPanel';
 import ValesPanel from '@/app/components/ValesPanel';
 import InmobiliarioPanel from '@/app/components/InmobiliarioPanel';
@@ -50,6 +51,7 @@ export default function HomePage() {
   const [globalSearch, setGlobalSearch] = useState('');
   const [showGlobalResults, setShowGlobalResults] = useState(false);
   const globalSearchInputRef = useRef(null);
+  const toastTimeoutRef = useRef(null); // Referencia al timeout del toast para evitar acumulación
 
   // ── Estado de UI/Dropdowns ────────────────────────────────
   const [showNotifDropdown, setShowNotifDropdown] = useState(false);
@@ -59,6 +61,7 @@ export default function HomePage() {
   const [showScannerModal, setShowScannerModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
   const [showAutogenerarModal, setShowAutogenerarModal] = useState(false);
+  const [showAboutModal, setShowAboutModal] = useState(false);
   const [bienesEtiquetasPrint, setBienesEtiquetasPrint] = useState([]);
   const [bienesEtiquetasCalibrar, setBienesEtiquetasCalibrar] = useState([]);
 
@@ -116,14 +119,15 @@ export default function HomePage() {
   // Helper para notificaciones tipo Toast
   const showToast = useCallback((msg, type = 'success') => {
     setToast({ msg, type });
-    setTimeout(() => setToast(null), 3000);
+    if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
+    toastTimeoutRef.current = setTimeout(() => setToast(null), 3000);
   }, []);
 
   // ── Datos del inventario (8 APIs + transformación) ──────────
   const {
     bienes, categorias, ubicaciones, departamentos,
     usuarios, personal, configuracion, mantenimientos,
-    isLoading, fetchData
+    isLoading, error: dbError, fetchData
   } = useInventarioData(isAuthenticated, showToast);
 
   // ── Tema oscuro ───────────────────────────────────────
@@ -751,6 +755,56 @@ export default function HomePage() {
     );
   }
 
+  if (dbError) {
+    return (
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '100vh',
+        width: '100vw',
+        background: 'var(--bg-main)',
+        color: 'var(--text-primary)',
+        padding: 24,
+        textAlign: 'center',
+        gap: 16
+      }}>
+        <div style={{ fontSize: 64 }}>⚠️</div>
+        <h2 style={{ fontSize: 20, fontWeight: 700 }}>Error al Cargar la Base de Datos</h2>
+        <p style={{ fontSize: 14, color: 'var(--text-secondary)', maxWidth: 440, margin: '0 auto' }}>
+          No pudimos conectarnos con el servidor de la base de datos de SICOB. Por favor, verifica que el servicio PostgreSQL esté activo e inténtalo de nuevo.
+        </p>
+        <code style={{ fontSize: 11, background: 'var(--bg-card)', padding: '8px 12px', borderRadius: 6, border: '1px solid var(--border)', maxWidth: '100%', wordBreak: 'break-all', fontFamily: 'monospace' }}>
+          {dbError}
+        </code>
+        <div style={{ display: 'flex', gap: 12, marginTop: 12 }}>
+          <button 
+            type="button" 
+            className="btn btn-ghost"
+            style={{ border: '1px solid var(--border)', background: 'var(--bg-card)' }}
+            onClick={async () => {
+              await fetch('/api/auth', { method: 'DELETE' });
+              setUsuario(null);
+              setIsAuthenticated(false);
+              window.location.reload();
+            }}
+          >
+            Regresar al Login
+          </button>
+          <button 
+            type="button" 
+            className="btn btn-primary"
+            onClick={() => fetchData()}
+            style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+          >
+            🔄 Reintentar Conexión
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (!isAuthenticated) {
     return (
       <Login 
@@ -1199,9 +1253,19 @@ export default function HomePage() {
                         setActiveNav('configuracion');
                         setShowUserDropdown(false);
                       }}
-                      style={{ display: 'flex', alignItems: 'center', gap: 8 }}
+                      style={{ borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 8 }}
                     >
                       <Settings2 size={15} /> Configurar Sistema
+                    </button>
+                    <button
+                      className="user-dropdown-item"
+                      onClick={() => {
+                        setShowAboutModal(true);
+                        setShowUserDropdown(false);
+                      }}
+                      style={{ borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 8 }}
+                    >
+                      <PartyPopper size={15} /> Acerca de SICOB
                     </button>
                     <button
                       className="user-dropdown-item user-dropdown-item-danger"
@@ -1549,6 +1613,14 @@ export default function HomePage() {
           configuracion={configuracion}
           onSaveConfig={handleSaveConfig}
           onPrint={handleStartPrinting}
+        />
+      )}
+
+      {/* ══ MODAL ACERCA DE ══════════════════════════════════ */}
+      {showAboutModal && (
+        <ModalAbout
+          isOpen={showAboutModal}
+          onClose={() => setShowAboutModal(false)}
         />
       )}
 

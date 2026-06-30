@@ -1,11 +1,13 @@
 {
   "name": "gdi-upen",
-  "version": "0.13.0",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
+    "predev": "node predev.js",
     "dev": "next dev",
     "dev:network": "next dev -H 0.0.0.0",
     "build": "next build",
+    "prestart": "node predev.js",
     "start": "next start",
     "lint": "eslint"
   },

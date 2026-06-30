@@ -20,6 +20,7 @@ export async function GET(request) {
     const movimientos = await prisma.movimientoConsumible.findMany({
       where,
       orderBy: { fecha: 'desc' },
+      take: 1000,
       include: {
         consumible: {
           select: {

@@ -92,6 +92,23 @@ export default function HistorialTab({
                     }}>{m.tipo}</span>
                   </td>
                   <td style={{ maxWidth: 220, fontSize: 12, color: 'var(--text-secondary)', whiteSpace: 'pre-wrap' }}>
+                    {m.incidente && (
+                      <div style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 4,
+                        fontSize: 10,
+                        background: 'rgba(16, 185, 129, 0.08)',
+                        color: '#10B981',
+                        padding: '2px 6px',
+                        borderRadius: 4,
+                        border: '1px solid rgba(16, 185, 129, 0.15)',
+                        fontWeight: 600,
+                        marginBottom: 6
+                      }}>
+                        ✓ Reporte Resuelto: #{m.incidente.id} ({m.incidente.titulo})
+                      </div>
+                    )}
                     {(() => {
                       const periodo = parsePeriodo(m.descripcion);
                       return (

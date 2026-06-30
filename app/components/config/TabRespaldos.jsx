@@ -24,7 +24,7 @@ export default function TabRespaldos({
           <div>
             <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>Estatus del Sistema</h3>
             <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>
-              Monitorea la integridad de tu base de datos PostgreSQL de GDI UPEN y gestiona copias de seguridad portátiles.
+              Monitorea la integridad de tu base de datos PostgreSQL de SICOB UPEN y gestiona copias de seguridad portátiles.
             </p>
           </div>
 

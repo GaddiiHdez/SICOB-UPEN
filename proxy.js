@@ -18,10 +18,12 @@ import { jwtVerify } from 'jose';
 // Rutas que NO requieren autenticación
 const RUTAS_PUBLICAS = [
   { path: '/api/auth', methods: ['POST'] },
+  { path: '/api/bienes/auto-registrar', methods: ['POST'] },
 ];
 
 export async function proxy(request) {
   const { pathname } = request.nextUrl;
+  console.log(`[Proxy Request] Path: ${pathname}, Method: ${request.method}`);
 
   // Solo aplica a rutas /api/
   if (!pathname.startsWith('/api/')) {
@@ -32,6 +34,7 @@ export async function proxy(request) {
   const esPublica = RUTAS_PUBLICAS.some(
     r => pathname === r.path && r.methods.includes(request.method)
   );
+  console.log(`[Proxy Request] Path: ${pathname}, Public: ${esPublica}`);
   if (esPublica) return NextResponse.next();
 
   // Leer token desde cookie httpOnly o header Authorization
@@ -49,8 +52,13 @@ export async function proxy(request) {
 
   try {
     const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-    await jwtVerify(token, secret);
-    return NextResponse.next();
+    const { payload } = await jwtVerify(token, secret);
+
+    // Inyectar datos del usuario verificado en los headers para que
+    // los route handlers los lean sin re-verificar el JWT.
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set('x-user-payload', JSON.stringify(payload));
+    return NextResponse.next({ request: { headers: requestHeaders } });
   } catch {
     return NextResponse.json(
       { error: 'Sesión inválida o expirada. Por favor, inicia sesión de nuevo.' },

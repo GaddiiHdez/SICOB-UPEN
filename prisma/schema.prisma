@@ -40,6 +40,7 @@ model Bien {
   vales             ValeSalida[] @relation("ValesBienes")
   movimientosConsumibles MovimientoConsumible[]
   labIncidentes     LabIncidente[]
+  softwareInstalaciones SoftwareInstalacion[]
 
   // Índices para acelerar las consultas más frecuentes
   @@index([eliminado, estado])
@@ -141,6 +142,9 @@ model Asignacion {
   bien             Bien      @relation(fields: [bienId], references: [id])
   personalId       Int
   personal         Personal  @relation(fields: [personalId], references: [id])
+
+  @@index([bienId, fecha_retorno])
+  @@index([personalId])
 }
 
 model Configuracion {
@@ -153,18 +157,22 @@ model Configuracion {
 }
 
 model Mantenimiento {
-  id                    Int       @id @default(autoincrement())
+  id                    Int           @id @default(autoincrement())
   bienId                Int
-  bien                  Bien      @relation(fields: [bienId], references: [id], onDelete: Cascade)
-  tipo                  String    // "Preventivo" o "Correctivo"
-  descripcion           String    @db.Text
+  bien                  Bien          @relation(fields: [bienId], references: [id], onDelete: Cascade)
+  tipo                  String        // "Preventivo" o "Correctivo"
+  descripcion           String        @db.Text
   costo                 Float?
-  fecha_mantenimiento   DateTime  @default(now())
+  fecha_mantenimiento   DateTime      @default(now())
   proximo_mantenimiento DateTime? // Fecha programada para el siguiente mantenimiento preventivo
   tecnico_encargado     String?   // Nombre de quien realiza la revisión
-  estado                String    // "Programado", "En proceso", "Completado"
-  createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
+  estado                String        // "Programado", "En proceso", "Completado"
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+
+  // Relación con reportes de incidentes
+  incidenteId           Int?
+  incidente             LabIncidente? @relation(fields: [incidenteId], references: [id], onDelete: SetNull)
 }
 
 model ValeSalida {
@@ -221,6 +229,7 @@ model Inmobiliario {
 
   @@index([eliminado, estado])
   @@index([eliminado, ubicacionId])
+  @@index([eliminado, categoriaInmobiliarioId])
 }
 
 model CategoriaConsumible {
@@ -276,6 +285,9 @@ model MovimientoConsumible {
   usuarioId      Int?         // Usuario que registra el movimiento (opcional)
   bienId         Int?         // Impresora asociada al cambio
   bien           Bien?        @relation(fields: [bienId], references: [id], onDelete: SetNull)
+
+  @@index([consumibleId])
+  @@index([bienId])
 }
 
 model Laboratorio {
@@ -295,25 +307,65 @@ model Laboratorio {
   ubicacionId   Int?           @unique
   ubicacion     Ubicacion?     @relation(fields: [ubicacionId], references: [id], onDelete: SetNull)
   incidentes    LabIncidente[]
+  softwareInstalaciones SoftwareInstalacion[]
 }
 
 model LabIncidente {
-  id              Int          @id @default(autoincrement())
+  id              Int             @id @default(autoincrement())
   titulo          String
-  descripcion     String       @db.Text
-  estado          String       @default("PENDIENTE") // "PENDIENTE", "RESUELTO"
-  prioridad       String       @default("MEDIA")     // "BAJA", "MEDIA", "ALTA"
+  descripcion     String          @db.Text
+  estado          String          @default("PENDIENTE") // "PENDIENTE", "RESUELTO"
+  prioridad       String          @default("MEDIA")     // "BAJA", "MEDIA", "ALTA"
+  categoria       String?                               // "Hardware", "Software", "Red", "Otros"
   reportadoPor    String?
-  fechaReporte    DateTime     @default(now())
+  fechaReporte    DateTime        @default(now())
   fechaResolucion DateTime?
-  comentarios     String?      @db.Text
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
+  comentarios     String?         @db.Text
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
 
   // Relaciones
   laboratorioId   Int
-  laboratorio     Laboratorio  @relation(fields: [laboratorioId], references: [id], onDelete: Cascade)
+  laboratorio     Laboratorio     @relation(fields: [laboratorioId], references: [id], onDelete: Cascade)
   bienId          Int?
-  bien            Bien?        @relation(fields: [bienId], references: [id], onDelete: SetNull)
+  bien            Bien?           @relation(fields: [bienId], references: [id], onDelete: SetNull)
+  mantenimientos  Mantenimiento[]
+}
+
+model Software {
+  id                  Int                  @id @default(autoincrement())
+  nombre              String               @unique
+  version             String?
+  fabricante          String?
+  tipoLicencia        String               // "Libre", "Propietaria", "OEM", "Educativa", "Suscripción"
+  licenciaKey         String?              @db.Text
+  vencimientoLicencia DateTime?
+  sitioWeb            String?
+  descripcion         String?              @db.Text
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  instalaciones       SoftwareInstalacion[]
+}
+
+model SoftwareInstalacion {
+  id               Int          @id @default(autoincrement())
+  softwareId       Int
+  software         Software     @relation(fields: [softwareId], references: [id], onDelete: Cascade)
+  bienId           Int?         // Si se instala por equipo individual
+  bien             Bien?        @relation(fields: [bienId], references: [id], onDelete: Cascade)
+  laboratorioId    Int?         // Si se instala para todo un laboratorio
+  laboratorio      Laboratorio? @relation(fields: [laboratorioId], references: [id], onDelete: Cascade)
+  
+  // Licencias individuales por equipo
+  licenciaKey         String?   @db.Text
+  vencimientoLicencia DateTime?
+
+  fechaInstalacion DateTime     @default(now())
+  observaciones    String?      @db.Text
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  @@unique([softwareId, bienId])
+  @@unique([softwareId, laboratorioId])
 }
 

@@ -19,14 +19,14 @@ export default function ModalRegistrar({
   isEditing,
   editingGroup,
   modoAsignacion,
-  ubicaciones,
-  categorias,
+  ubicaciones = [],
+  categorias = [],
   ubicacionMasiva,
   categoriaMasiva,
-  bienesAfectados,
-  tareasMasivas,
+  bienesAfectados = [],
+  tareasMasivas = {},
   bienSearchQuery,
-  bienesBuscados,
+  bienesBuscados = [],
   showBienDropdown,
   formTipo,
   formEstado,
@@ -39,7 +39,7 @@ export default function ModalRegistrar({
   formLiberarResguardo,
   usarRangoFechas,
   formBienId,
-  bienes,
+  bienes = [],
   onClose,
   onSubmit,
   onModoChange,
@@ -61,8 +61,8 @@ export default function ModalRegistrar({
   onUsarRangoChange,
 }) {
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-box fade-in" onClick={e => e.stopPropagation()} style={{ maxWidth: 500 }}>
+      <div className="modal-overlay" onClick={onClose}>
+        <div className="modal-box fade-in" onClick={e => e.stopPropagation()} style={{ maxWidth: 500 }}>
         <div className="modal-header">
           <div>
             <h3 className="modal-title">

@@ -1,5 +1,6 @@
 'use client';
 import { useState, useMemo } from 'react';
+import { DynamicIcon } from '@/lib/icons';
 
 /**
  * UbicacionSelector — Paso 1 de la Auditoría.
@@ -136,7 +137,7 @@ export default function UbicacionSelector({ ubicaciones = [], bienes = [], onSel
                       fontSize: 20,
                       border: '1px solid var(--border)'
                     }}>
-                      {u.icono || '🏫'}
+                      <DynamicIcon name={u.icono || '🏫'} size={20} style={{ color: 'var(--primary)' }} />
                     </div>
                     <span className="badge" style={{
                       background: count > 0 ? 'rgba(99, 102, 241, 0.1)' : 'var(--bg-body)',

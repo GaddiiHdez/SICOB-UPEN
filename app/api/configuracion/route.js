@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/db';
 import { requireAuth } from '@/lib/auth';
 
+export const dynamic = 'force-dynamic';
+
 // Obtener configuración mapeada como objeto clave-valor
 export async function GET() {
   try {
@@ -116,6 +118,47 @@ export async function GET() {
     }
     if (!configMap['etiqueta_gap_filas']) {
       configMap['etiqueta_gap_filas'] = '0.0';
+    }
+
+    // Valores por defecto específicos del formato ULINE S-10425SIL (2 5/8" x 1", 30 etiq/hoja Carta)
+    if (!configMap['etiqueta_ancho_mm_uline_s10425sil']) {
+      configMap['etiqueta_ancho_mm_uline_s10425sil'] = '66.7';
+    }
+    if (!configMap['etiqueta_alto_mm_uline_s10425sil']) {
+      configMap['etiqueta_alto_mm_uline_s10425sil'] = '25.4';
+    }
+    if (!configMap['etiqueta_margen_superior_uline_s10425sil']) {
+      configMap['etiqueta_margen_superior_uline_s10425sil'] = '1.27';
+    }
+    if (!configMap['etiqueta_margen_inferior_uline_s10425sil']) {
+      configMap['etiqueta_margen_inferior_uline_s10425sil'] = '1.27';
+    }
+    if (!configMap['etiqueta_margen_izquierdo_uline_s10425sil']) {
+      configMap['etiqueta_margen_izquierdo_uline_s10425sil'] = '0.48';
+    }
+    if (!configMap['etiqueta_margen_derecho_uline_s10425sil']) {
+      configMap['etiqueta_margen_derecho_uline_s10425sil'] = '0.48';
+    }
+    if (!configMap['etiqueta_gap_columnas_uline_s10425sil']) {
+      configMap['etiqueta_gap_columnas_uline_s10425sil'] = '0.32';
+    }
+    if (!configMap['etiqueta_gap_filas_uline_s10425sil']) {
+      configMap['etiqueta_gap_filas_uline_s10425sil'] = '0.0';
+    }
+    if (!configMap['etiqueta_altura_codigo_barras_mm_uline_s10425sil']) {
+      configMap['etiqueta_altura_codigo_barras_mm_uline_s10425sil'] = '9.0';
+    }
+    if (!configMap['etiqueta_letra_cabecera_pt_uline_s10425sil']) {
+      configMap['etiqueta_letra_cabecera_pt_uline_s10425sil'] = '6.5';
+    }
+    if (!configMap['etiqueta_letra_marca_modelo_pt_uline_s10425sil']) {
+      configMap['etiqueta_letra_marca_modelo_pt_uline_s10425sil'] = '6.0';
+    }
+    if (!configMap['etiqueta_letra_codigo_pt_uline_s10425sil']) {
+      configMap['etiqueta_letra_codigo_pt_uline_s10425sil'] = '7.5';
+    }
+    if (!configMap['etiqueta_letra_serial_pt_uline_s10425sil']) {
+      configMap['etiqueta_letra_serial_pt_uline_s10425sil'] = '6.8';
     }
 
     return NextResponse.json(configMap);

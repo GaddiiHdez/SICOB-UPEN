@@ -2,6 +2,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { ESTADOS_BIEN, ESTADO_BADGE } from '@/lib/constants';
 import ModalExportador from '@/app/components/ModalExportador';
+import { DynamicIcon } from '@/lib/icons';
 
 export default function ReportesPanel({ bienes = [], categorias = [], ubicaciones = [], departamentos = [], mantenimientos = [], showToast, configuracion = {} }) {
   const [activeTab, setActiveTab] = useState('hoja-vida');
@@ -250,7 +251,135 @@ export default function ReportesPanel({ bienes = [], categorias = [], ubicacione
   };
 
   const handlePrint = () => {
-    window.print();
+    const logoSrc = configuracion?.logo_institucion || null;
+    const nombre = configuracion?.nombre_institucion || 'Universidad Politécnica del Estado';
+    const siglas = configuracion?.siglas_institucion || 'UPEN';
+    const fecha = new Date().toLocaleDateString('es-MX', { dateStyle: 'long' });
+    const hora  = new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+
+    const filtersText = [
+      `<strong>Categoría:</strong> ${filterCatName}`,
+      `<strong>Ubicación:</strong> ${filterUbiName}`,
+      `<strong>Depto./Coord.:</strong> ${filterDepName}`,
+      `<strong>Estado:</strong> ${filterEstado || 'Todos'}`,
+      `<strong>Fondo/Programa:</strong> ${filterPrograma || 'Todos'}`,
+    ].join(' &nbsp;|&nbsp; ');
+
+    const valorFmt = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 });
+
+    const rows = bienesReportados.map((row, idx) => `
+      <tr style="border-bottom: ${idx === bienesReportados.length - 1 ? 'none' : '1px solid #E5E7EB'}">
+        <td style="padding:4px 6px; font-size:8px; border:1px solid #E5E7EB;">
+          <span style="font-family:monospace; font-size:7px; border:1px solid #D1D5DB; padding:0 2px; border-radius:2px;">${row.etiqueta.startsWith('SIN-NUMERO-') ? 'S/N' : row.etiqueta}</span>
+          <div style="color:#6B7280; font-size:7px; margin-top:2px; font-family:monospace;">S/N: ${row.serial || '—'}</div>
+        </td>
+        <td style="padding:4px 6px; font-size:8px; border:1px solid #E5E7EB; font-weight:600;">${row.nombre || '—'}</td>
+        <td style="padding:4px 6px; font-size:8px; border:1px solid #E5E7EB; color:#374151;">${row.area || 'Bodega'}</td>
+        <td style="padding:4px 6px; font-size:8px; border:1px solid #E5E7EB; color:#374151;">${row.departamento || 'Sin asignar'}</td>
+        <td style="padding:4px 6px; font-size:8px; border:1px solid #E5E7EB;">
+          <span style="font-size:7px; border:1px solid #9CA3AF; padding:0 3px; border-radius:2px;">${row.estado || '—'}</span>
+        </td>
+        <td style="padding:4px 6px; font-size:8px; border:1px solid #E5E7EB; text-align:right; font-weight:600;">${valorFmt.format(row.valor_estimado || 0)}</td>
+      </tr>
+    `).join('');
+
+    const htmlContent = `<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Reporte Físico de Inventario — ${siglas}</title>
+  <style>
+    @page { size: letter; margin: 12mm 14mm; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Arial', sans-serif; font-size: 9px; color: #111; background: #fff; }
+    h1 { font-size: 13px; font-weight: 800; text-transform: uppercase; margin: 0; }
+    h2 { font-size: 10px; font-weight: 600; color: #4B5563; margin: 2px 0 0 0; }
+    .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #00716A; padding-bottom: 10px; margin-bottom: 10px; }
+    .header-left { display: flex; align-items: center; gap: 12px; }
+    .logo-box { width: 50px; height: 50px; object-fit: contain; }
+    .logo-placeholder { width: 50px; height: 50px; background: #00716A; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; border-radius: 4px; }
+    .header-right { text-align: right; font-size: 8px; color: #4B5563; }
+    .meta-table { width: 100%; border-collapse: collapse; border: 1px solid #D1D5DB; margin-bottom: 10px; }
+    .meta-table td { padding: 3px 6px; font-size: 8px; border: 1px solid #D1D5DB; }
+    .meta-table td:first-child { background: #F9FAFB; font-weight: 700; width: 18%; }
+    .report-table { width: 100%; border-collapse: collapse; }
+    .report-table thead tr { background: #F3F4F6; }
+    .report-table th { padding: 4px 6px; font-size: 8px; font-weight: 700; text-transform: uppercase; border: 1px solid #D1D5DB; color: #374151; }
+    .report-table tbody tr { page-break-inside: avoid; }
+    .report-table thead { display: table-header-group; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-left">
+      ${logoSrc
+        // eslint-disable-next-line @next/next/no-img-element
+        ? `<img src="${logoSrc}" alt="Logo" class="logo-box"/>`
+        : `<div class="logo-placeholder">${siglas}</div>`}
+      <div>
+        <h1>${nombre}</h1>
+        <h2>Departamento de Informática</h2>
+      </div>
+    </div>
+    <div class="header-right">
+      <div><strong>Documento:</strong> Reporte Físico de Inventario</div>
+      <div><strong>Fecha de Emisión:</strong> ${fecha}</div>
+      <div><strong>Hora:</strong> ${hora}</div>
+    </div>
+  </div>
+
+  <table class="meta-table">
+    <tbody>
+      <tr>
+        <td>Filtros Aplicados:</td>
+        <td>${filtersText}</td>
+      </tr>
+      <tr>
+        <td>Total de Bienes:</td>
+        <td>${sumaReporte.totalItems} unidades</td>
+      </tr>
+      <tr>
+        <td>Valor Patrimonial:</td>
+        <td><strong>${valorFmt.format(sumaReporte.valorTotal)}</strong></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <table class="report-table">
+    <thead>
+      <tr>
+        <th>Código / Serie</th>
+        <th>Nombre del Bien</th>
+        <th>Ubicación / Área</th>
+        <th>Depto. / Coordinación</th>
+        <th>Estado</th>
+        <th style="text-align:right">Valor</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${rows}
+    </tbody>
+  </table>
+</body>
+</html>`;
+
+    const printWin = window.open('', '_blank', 'width=900,height=700');
+    if (!printWin) {
+      alert('El navegador bloqueó la ventana emergente. Por favor, permite ventanas emergentes para este sitio.');
+      return;
+    }
+    printWin.document.write(htmlContent);
+    printWin.document.close();
+    printWin.focus();
+    // Esperar a que carguen imágenes antes de imprimir
+    printWin.onload = () => {
+      printWin.print();
+      printWin.close();
+    };
+    // Fallback por si onload no dispara
+    setTimeout(() => {
+      try { printWin.print(); printWin.close(); } catch(e) { /* ya cerrada */ }
+    }, 800);
   };
 
   return (
@@ -496,7 +625,7 @@ export default function ReportesPanel({ bienes = [], categorias = [], ubicacione
                           boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
                           zIndex: 1
                         }}>
-                          {evento.icono}
+                          <DynamicIcon name={evento.icono} size={12} />
                         </div>
 
                         {/* Contenido del evento */}
@@ -776,7 +905,9 @@ export default function ReportesPanel({ bienes = [], categorias = [], ubicacione
                         </td>
                         <td className="report-td" style={{ padding: '14px 16px', fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <span className="no-print">{row.icono || '💻'}</span>
+                            <span className="no-print" style={{ display: 'inline-flex', alignItems: 'center' }}>
+                              <DynamicIcon name={row.icono || '💻'} size={14} style={{ color: 'var(--primary)' }} />
+                            </span>
                             <span>{row.nombre}</span>
                           </div>
                         </td>
@@ -865,8 +996,11 @@ export default function ReportesPanel({ bienes = [], categorias = [], ubicacione
                     const pct = (c.count / maxCount) * 100;
                     return (
                       <div key={c.id}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>
-                          <span>{c.icono} {c.nombre}</span>
+                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                            <DynamicIcon name={c.icono} size={13} style={{ color: 'var(--primary)' }} />
+                            {c.nombre}
+                          </span>
                           <span style={{ color: 'var(--text-secondary)' }}>
                             {c.count} uds. | {new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 }).format(c.valor)}
                           </span>

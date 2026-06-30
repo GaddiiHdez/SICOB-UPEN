@@ -4,6 +4,25 @@ All notable changes to the **SICOB** (Sistema de Control y Operación de Bienes)
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.0] - 2026-06-25
+
+### Added
+- **Primer Lanzamiento Estable Oficial (v1.0.0):** Transición formal de la versión de pre-lanzamiento a la versión estable para uso institucional.
+- **Identificadores Estables:** Actualización del footer de la pantalla de login y del panel de configuración para reflejar `v1.0.0 (Estable)`.
+
+## [0.13.1] - 2026-06-25
+
+### Added
+- **Arranque Automático Local:** Creación de los scripts de arranque `start-server.bat` y `start-hidden.vbs` optimizados para ejecutar el servidor en modo de producción de manera silenciosa en Windows.
+- **Títulos Dinámicos e Inteligentes:** Implementación de títulos de cabecera que se actualizan automáticamente según la sección activa, eliminando textos redundantes y estáticos.
+
+### Changed
+- **Identidad Visual del Sistema:** Renombrado general del sistema a "SICOB UPEN" e inyección del nuevo logotipo premium en 3D en la pantalla de inicio de sesión, con un tamaño ampliado de 130px y un sofisticado efecto de retroiluminación y flotado 3D interactivo.
+- **Simplificación de la Barra Superior:** Remoción del logotipo duplicado en la nav bar para mejorar el flujo visual y reducir la redundancia con respecto a la barra lateral.
+
+### Fixed
+- **Impresión de Reportes Multihaja:** Reemplazo de la impresión nativa de la SPA por una ventana de impresión limpia (`window.open`), superando las restricciones de altura (`100vh`) y desbordamiento (`overflow: hidden`) del layout de la SPA. Esto asegura que los reportes con múltiples registros fluyan a tantas hojas físicas de papel como sea necesario, repitiendo la cabecera en cada una.
+
 ## [0.13.0] - 2026-06-17
 
 ### Added

@@ -39,6 +39,23 @@ export default function TallerTab({ tallerMantenimientos, onFinalize, onDelete, 
               <td><EtiquetaCell bien={m.bien} /></td>
               <td><TipoBadge tipo={m.tipo} /></td>
               <td style={{ maxWidth: 240, fontSize: 12, color: 'var(--text-secondary)', whiteSpace: 'pre-wrap' }}>
+                {m.incidente && (
+                  <div style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 4,
+                    fontSize: 10,
+                    background: 'rgba(239, 68, 68, 0.08)',
+                    color: '#EF4444',
+                    padding: '2px 6px',
+                    borderRadius: 4,
+                    border: '1px solid rgba(239, 68, 68, 0.15)',
+                    fontWeight: 600,
+                    marginBottom: 6
+                  }}>
+                    ⚠️ Falla: #{m.incidente.id} ({m.incidente.categoria}) - {m.incidente.titulo}
+                  </div>
+                )}
                 {(() => {
                   const periodo = parsePeriodo(m.descripcion);
                   return (

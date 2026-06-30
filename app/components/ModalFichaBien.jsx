@@ -1,6 +1,7 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
 import { ESTADO_BADGE, ESTADOS_BIEN } from '@/lib/constants';
+import { DynamicIcon } from '@/lib/icons';
 import { generateBarcodeSVG } from '@/lib/barcode';
 import { formatCurrency, formatDateLong as formatDate } from '@/lib/formatters';
 
@@ -679,6 +680,7 @@ export default function ModalFichaBien({
                       pointerEvents: 'none'
                     }}
                   />
+                  {/* eslint-disable-next-line @next/next/no-img-element -- Dynamic user-uploaded asset image */}
                   <img 
                     src={localImage} 
                     alt={bien.nombre} 
@@ -718,7 +720,9 @@ export default function ModalFichaBien({
                 </>
               ) : (
                 <div style={{ textAlign: 'center', color: '#9CA3AF', padding: 20, zIndex: 1 }}>
-                  <div style={{ fontSize: 44, marginBottom: 8 }}>{bien.icono || '🔧'}</div>
+                  <div style={{ fontSize: 44, marginBottom: 8 }}>
+                    <DynamicIcon name={bien.icono || '🔧'} size={44} style={{ color: 'var(--primary)' }} />
+                  </div>
                   <div style={{ fontSize: 12, fontWeight: 600 }}>Sin Fotografía del Equipo</div>
                   <div style={{ fontSize: 10, marginTop: 4 }}>Formatos admitidos: JPG, PNG</div>
                 </div>
@@ -772,18 +776,35 @@ export default function ModalFichaBien({
                 ? `ACTIVO FIJO ${configuracion.siglas_institucion || 'UPEN'}`
                 : rawHeader;
 
-              const anchoEtiqueta = parseFloat(configuracion.etiqueta_ancho_mm || '30');
-              const altoEtiqueta = parseFloat(configuracion.etiqueta_alto_mm || '15');
+              const activeFormat = configuracion.etiqueta_formato_papel || 'avery_5167';
+              const getFormatVal = (baseKey, defaultValue, isBool = false) => {
+                const suffixed = `${baseKey}_${activeFormat}`;
+                const raw = configuracion[suffixed] !== undefined ? configuracion[suffixed] : configuracion[baseKey];
+                if (raw === undefined || raw === null) return defaultValue;
+                if (isBool) {
+                  return raw !== 'false' && raw !== false;
+                }
+                return raw;
+              };
+
+              const isAveryLocal = activeFormat === 'avery_5167';
+              const isUlineLocal = activeFormat === 'uline_s10425sil';
+              const anchoEtiqueta = parseFloat(getFormatVal('etiqueta_ancho_mm', isAveryLocal ? '44' : (isUlineLocal ? '66.7' : (activeFormat === 'rollo_51_25' ? '51' : '30'))));
+              const altoEtiqueta = parseFloat(getFormatVal('etiqueta_alto_mm', isAveryLocal ? '13' : (isUlineLocal ? '25.4' : (activeFormat === 'rollo_51_25' ? '25' : '15'))));
               
               const previewWidth = 260; // Ancho en píxeles aproximado en el sidebar
               const scale = previewWidth / anchoEtiqueta;
               const ptToPx = (pt) => pt * 0.3527 * scale;
 
-              const cabeceraPt = parseFloat(configuracion.etiqueta_letra_cabecera_pt || '4.5');
-              const marcaModeloPt = parseFloat(configuracion.etiqueta_letra_marca_modelo_pt || '4.2');
-              const codigoPt = parseFloat(configuracion.etiqueta_letra_codigo_pt || '5.5');
-              const serialPt = parseFloat(configuracion.etiqueta_letra_serial_pt || '5.0');
-              const barcodeHeightMm = parseFloat(configuracion.etiqueta_altura_codigo_barras_mm || '5.6');
+              const cabeceraPt = parseFloat(getFormatVal('etiqueta_letra_cabecera_pt', isAveryLocal ? '3.8' : (isUlineLocal ? '6.5' : (activeFormat === 'rollo_51_25' ? '6.5' : '4.5'))));
+              const marcaModeloPt = parseFloat(getFormatVal('etiqueta_letra_marca_modelo_pt', isAveryLocal ? '3.5' : (isUlineLocal ? '6.0' : (activeFormat === 'rollo_51_25' ? '6.0' : '4.2'))));
+              const codigoPt = parseFloat(getFormatVal('etiqueta_letra_codigo_pt', isAveryLocal ? '4.5' : (isUlineLocal ? '7.5' : (activeFormat === 'rollo_51_25' ? '7.5' : '5.5'))));
+              const serialPt = parseFloat(getFormatVal('etiqueta_letra_serial_pt', isAveryLocal ? '4.0' : (isUlineLocal ? '6.8' : (activeFormat === 'rollo_51_25' ? '6.8' : '5.0'))));
+              const barcodeHeightMm = parseFloat(getFormatVal('etiqueta_altura_codigo_barras_mm', isAveryLocal ? '4.8' : (isUlineLocal ? '9.0' : (activeFormat === 'rollo_51_25' ? '9.0' : '5.6'))));
+
+              const mostrarCabecera = getFormatVal('etiqueta_mostrar_cabecera', true, true);
+              const mostrarMarcaModelo = getFormatVal('etiqueta_mostrar_marca_modelo', true, true);
+              const mostrarSerial = getFormatVal('etiqueta_mostrar_serial', true, true);
 
               return (
                 <div style={{
@@ -815,14 +836,14 @@ export default function ModalFichaBien({
                   ` }} />
 
                   {/* Cabecera de Etiqueta */}
-                  {configuracion.etiqueta_mostrar_cabecera !== 'false' && (
+                  {mostrarCabecera && (
                     <div style={{ fontSize: `${ptToPx(cabeceraPt)}px`, fontWeight: 900, textTransform: 'uppercase', color: '#1F2937', letterSpacing: '0.01em', lineHeight: 1.0, width: '100%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {headerText}
                     </div>
                   )}
 
                   {/* Marca y Modelo */}
-                  {configuracion.etiqueta_mostrar_marca_modelo !== 'false' && (
+                  {mostrarMarcaModelo && (
                     <div style={{ fontSize: `${ptToPx(marcaModeloPt)}px`, fontWeight: 700, textTransform: 'uppercase', color: '#4B5563', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', lineHeight: 1.0, width: '100%' }}>
                       {bien.marca} {bien.modelo}
                     </div>
@@ -843,11 +864,11 @@ export default function ModalFichaBien({
 
                   {/* Pie de Etiqueta */}
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', gap: '4px' }}>
-                    <span style={{ fontSize: `${ptToPx(codigoPt)}px`, fontWeight: 900, fontFamily: 'monospace', color: '#000000', textTransform: 'uppercase', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: configuracion.etiqueta_mostrar_serial !== 'false' ? '55%' : '100%', textAlign: 'left' }}>
+                    <span style={{ fontSize: `${ptToPx(codigoPt)}px`, fontWeight: 900, fontFamily: 'monospace', color: '#000000', textTransform: 'uppercase', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: mostrarSerial ? '40%' : '100%', textAlign: 'left' }}>
                       {etiqueta.startsWith('SIN-NUMERO-') ? 'S/N' : etiqueta}
                     </span>
-                    {configuracion.etiqueta_mostrar_serial !== 'false' && (
-                      <span style={{ fontSize: `${ptToPx(serialPt)}px`, fontWeight: 900, fontFamily: 'monospace', color: '#111827', textTransform: 'uppercase', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '45%', textAlign: 'right' }}>
+                    {mostrarSerial && (
+                      <span style={{ fontSize: `${ptToPx(serialPt)}px`, fontWeight: 900, fontFamily: 'monospace', color: '#111827', textTransform: 'uppercase', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '60%', textAlign: 'right' }}>
                         S/N: {serial || 'N/S'}
                       </span>
                     )}
@@ -932,13 +953,13 @@ export default function ModalFichaBien({
               <div>
                 <div style={{ fontSize: 10, textTransform: 'uppercase', color: 'var(--text-secondary)', fontWeight: 600 }}>Departamento</div>
                 <div style={{ fontSize: 13, fontWeight: 600, marginTop: 4, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <span>{bien.departamentoIcono || '🏢'}</span>
+                  <DynamicIcon name={bien.departamentoIcono || '🏢'} size={14} style={{ color: 'var(--primary)' }} />
                   <span>{bien.departamento || 'Sin departamento'}</span>
                 </div>
                 {bien.departamentoUbicacion && (
                   <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 2, display: 'flex', alignItems: 'center', gap: 4 }}>
                     <span>📍 Oficina:</span>
-                    <span>{bien.departamentoUbicacion.icono || '🏫'}</span>
+                    <DynamicIcon name={bien.departamentoUbicacion.icono || '🏫'} size={11} style={{ color: 'var(--primary)' }} />
                     <span>{bien.departamentoUbicacion.nombre}</span>
                   </div>
                 )}
@@ -1384,21 +1405,21 @@ export default function ModalFichaBien({
               <button 
                 onClick={() => {
                   try {
-                    console.log('Ficha bottom edit click. currentBien:', currentBien);
+                    const hasAsignaciones = Array.isArray(currentBien.asignaciones) && currentBien.asignaciones.length > 0;
+                    const primeraAsignacion = hasAsignaciones ? currentBien.asignaciones[0] : null;
+                    const activa = primeraAsignacion && !primeraAsignacion.fecha_retorno;
+
                     const normalizedBien = {
                       ...currentBien,
                       serial: currentBien.serial || currentBien.numero_serie || '',
                       etiqueta: currentBien.etiqueta || currentBien.codigo_inventario || '',
                       responsable: currentBien.responsable || 
-                        (currentBien.asignaciones?.[0]?.fecha_retorno ? 'Sin asignar' : 
-                        (currentBien.asignaciones?.[0]?.personal?.nombre || 'Sin asignar')),
+                        (activa ? (primeraAsignacion.personal?.nombre || 'Sin asignar') : 'Sin asignar'),
                       responsableId: currentBien.responsableId || 
-                        (currentBien.asignaciones?.[0]?.fecha_retorno ? '' : 
-                        (currentBien.asignaciones?.[0]?.personal?.id || ''))
+                        (activa ? (primeraAsignacion.personal?.id || '') : '')
                     };
-                    console.log('Ficha bottom edit normalized:', normalizedBien);
+                    
                     onEdit(normalizedBien);
-                    onClose();
                   } catch (err) {
                     alert('Error en click handler (Editar Datos): ' + err.message);
                     console.error('Error en click handler (Editar Datos):', err);

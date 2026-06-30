@@ -176,9 +176,12 @@ export default function ModalGuard() {
           if (node.nodeType === 1) {
             const isOverlay = node.classList.contains("modal-overlay") || node.querySelector(".modal-overlay");
             if (isOverlay) {
-              if (window.history.state?.modalOpen && !isHandlingPopStateRef.current) {
-                window.history.back();
-              }
+              setTimeout(() => {
+                const remainingModals = document.querySelectorAll(".modal-overlay").length;
+                if (remainingModals === 0 && window.history.state?.modalOpen && !isHandlingPopStateRef.current) {
+                  window.history.back();
+                }
+              }, 50);
             }
           }
         }

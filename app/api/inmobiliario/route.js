@@ -50,6 +50,7 @@ export async function GET(request) {
     const items = await prisma.inmobiliario.findMany({
       where,
       orderBy: { createdAt: 'desc' },
+      take: 500,
       include: {
         categoriaInmobiliario: true,
         ubicacion: true,
@@ -159,7 +160,7 @@ export async function POST(request) {
           });
           creados.push(nuevoInmob);
         }
-      });
+      }, { timeout: 15000 });
 
       return NextResponse.json({ success: true, count: creados.length, items: creados });
     }

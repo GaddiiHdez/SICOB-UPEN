@@ -72,6 +72,22 @@ export default function TabFormato({
       setEtiquetaLetraMarcaModeloPt(3.5);
       setEtiquetaLetraCodigoPt(4.5);
       setEtiquetaLetraSerialPt(4.0);
+    } else if (val === 'uline_s10425sil') {
+      setEtiquetaAnchoMm(66.7);
+      setEtiquetaAltoMm(25.4);
+      setEtiquetaAlturaCodigoBarrasMm(9.0);
+      setEtiquetaLetraCabeceraPt(6.5);
+      setEtiquetaLetraMarcaModeloPt(6.0);
+      setEtiquetaLetraCodigoPt(7.5);
+      setEtiquetaLetraSerialPt(6.8);
+    } else if (val === 'rollo_51_25') {
+      setEtiquetaAnchoMm(51);
+      setEtiquetaAltoMm(25);
+      setEtiquetaAlturaCodigoBarrasMm(9.0);
+      setEtiquetaLetraCabeceraPt(6.5);
+      setEtiquetaLetraMarcaModeloPt(6.0);
+      setEtiquetaLetraCodigoPt(7.5);
+      setEtiquetaLetraSerialPt(6.8);
     } else {
       setEtiquetaAnchoMm(30);
       setEtiquetaAltoMm(15);
@@ -97,7 +113,7 @@ export default function TabFormato({
   }, []);
 
   useEffect(() => {
-    if (etiquetaFormatoPapel !== 'avery_5167' && previewMode !== 'single') {
+    if (etiquetaFormatoPapel !== 'avery_5167' && etiquetaFormatoPapel !== 'uline_s10425sil' && previewMode !== 'single') {
       setPreviewMode('single');
     }
   }, [etiquetaFormatoPapel, previewMode]);
@@ -300,13 +316,15 @@ export default function TabFormato({
                     onChange={handleFormatoPapelChange}
                     style={{ fontSize: 12, padding: '8px 12px', height: 'auto', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', background: 'var(--bg-body)', color: 'var(--text-primary)' }}
                   >
-                    <option value="rollo">🏷️ Rollo Continuo (Impresora Térmica)</option>
+                    <option value="rollo_51_25">🏷️ Rollo Continuo 51x25mm (2" x 1") Preset</option>
+                    <option value="rollo">🏷️ Rollo Continuo Personalizado</option>
                     <option value="avery_5167">🖨️ Hoja Carta de 80 etiquetas (Avery 5167 / Office Depot 64415)</option>
+                    <option value="uline_s10425sil">🖨️ Hoja Carta de 30 etiquetas (ULINE S-10425SIL 2 5/8" x 1")</option>
                   </select>
                 </div>
 
-                {/* Calibración de Márgenes de Avery 5167 */}
-                {etiquetaFormatoPapel === 'avery_5167' && (
+                {/* Calibración de Márgenes de Avery 5167 / ULINE */}
+                {(etiquetaFormatoPapel === 'avery_5167' || etiquetaFormatoPapel === 'uline_s10425sil') && (
                   <div style={{
                     background: 'rgba(13, 148, 136, 0.04)',
                     border: '1.5px dashed var(--primary)',
@@ -434,7 +452,7 @@ export default function TabFormato({
                     />
                   </div>
                 </div>
-                {etiquetaFormatoPapel === 'avery_5167' && (
+                {(etiquetaFormatoPapel === 'avery_5167' || etiquetaFormatoPapel === 'uline_s10425sil') && (
                   <div style={{ fontSize: 10, color: 'var(--text-secondary)', fontStyle: 'italic', marginTop: -4 }}>
                     * Modifica las dimensiones de la etiqueta para calibrarla con precisión milimétrica sobre tu plantilla física.
                   </div>
@@ -598,7 +616,7 @@ export default function TabFormato({
               </div>
             </div>
             
-            {etiquetaFormatoPapel === 'avery_5167' && (
+            {(etiquetaFormatoPapel === 'avery_5167' || etiquetaFormatoPapel === 'uline_s10425sil') && (
               <div style={{ 
                 display: 'flex', 
                 background: 'var(--bg-body)', 
@@ -854,7 +872,7 @@ export default function TabFormato({
                       whiteSpace: 'nowrap',
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
-                      maxWidth: etiquetaMostrarSerial ? '55%' : '100%',
+                      maxWidth: etiquetaMostrarSerial ? '40%' : '100%',
                       textAlign: 'left'
                     }}>
                       {generatePreviewCode(format, previewCategory)}
@@ -870,7 +888,7 @@ export default function TabFormato({
                         whiteSpace: 'nowrap',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
-                        maxWidth: '45%',
+                        maxWidth: '60%',
                         textAlign: 'right'
                       }}>
                         S/N: 2UA6120F4Z
@@ -908,14 +926,14 @@ export default function TabFormato({
                   paddingRight: `${letterPadRight}px`,
                   boxSizing: 'border-box',
                   display: 'grid',
-                  gridTemplateColumns: `repeat(4, ${gridColWidth}px)`,
+                  gridTemplateColumns: `repeat(${etiquetaFormatoPapel === 'uline_s10425sil' ? 3 : 4}, ${gridColWidth}px)`,
                   columnGap: `${gridColGap}px`,
                   rowGap: `${gridRowGap}px`,
                   overflow: 'hidden',
                   transition: 'width 0.1s, height 0.1s',
                   margin: '24px auto'
                 }}>
-                  {Array.from({ length: 80 }).map((_, idx) => {
+                  {Array.from({ length: etiquetaFormatoPapel === 'uline_s10425sil' ? 30 : 80 }).map((_, idx) => {
                     const isEven = idx % 2 === 0;
                     const mockCode = `UPEN-${isEven ? 'COMP' : 'LAPT'}-2026-${String(1001 + idx).padStart(4, '0')}`;
                     const mockBrand = isEven ? 'HP PROBOOK' : 'DELL LATITUDE';
@@ -993,7 +1011,7 @@ export default function TabFormato({
                             fontWeight: etiquetaCodigoBold ? 900 : 'normal',
                             fontStyle: etiquetaCodigoItalic ? 'italic' : 'normal',
                             fontFamily: 'monospace',
-                            maxWidth: etiquetaMostrarSerial ? '55%' : '100%',
+                            maxWidth: etiquetaMostrarSerial ? '40%' : '100%',
                             overflow: 'hidden'
                           }}>
                             {mockCode}
@@ -1004,7 +1022,7 @@ export default function TabFormato({
                               fontStyle: etiquetaSerialItalic ? 'italic' : 'normal',
                               color: '#4B5563',
                               fontFamily: 'monospace',
-                              maxWidth: '45%',
+                              maxWidth: '60%',
                               overflow: 'hidden',
                               textAlign: 'right'
                             }}>

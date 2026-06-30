@@ -114,36 +114,92 @@ export default function ConfiguracionPanel({ bienes, showToast, configuracion = 
       if (configuracion?.firma_tecnico_nombre)         setFirmaTecnicoNombre(configuracion.firma_tecnico_nombre);
       if (configuracion?.firma_tecnico_puesto)         setFirmaTecnicoPuesto(configuracion.firma_tecnico_puesto);
       if (configuracion?.cabecera_etiqueta_impresion) setCabecera(configuracion.cabecera_etiqueta_impresion);
-      setEtiquetaMostrarCabecera(configuracion?.etiqueta_mostrar_cabecera !== 'false');
-      setEtiquetaMostrarMarcaModelo(configuracion?.etiqueta_mostrar_marca_modelo !== 'false');
-      setEtiquetaMostrarSerial(configuracion?.etiqueta_mostrar_serial !== 'false');
-      setEtiquetaAnchoMm(parseFloat(configuracion?.etiqueta_ancho_mm || '30'));
-      setEtiquetaAltoMm(parseFloat(configuracion?.etiqueta_alto_mm || '15'));
-      setEtiquetaAlturaCodigoBarrasMm(parseFloat(configuracion?.etiqueta_altura_codigo_barras_mm || '5.6'));
-      setEtiquetaLetraCabeceraPt(parseFloat(configuracion?.etiqueta_letra_cabecera_pt || '4.5'));
-      setEtiquetaLetraMarcaModeloPt(parseFloat(configuracion?.etiqueta_letra_marca_modelo_pt || '4.2'));
-      setEtiquetaLetraCodigoPt(parseFloat(configuracion?.etiqueta_letra_codigo_pt || '5.5'));
-      setEtiquetaLetraSerialPt(parseFloat(configuracion?.etiqueta_letra_serial_pt || '5.0'));
       setEtiquetaFormatoPapel(configuracion?.etiqueta_formato_papel || 'rollo');
-      setEtiquetaMargenSuperior(parseFloat(configuracion?.etiqueta_margen_superior || '1.0'));
-      setEtiquetaMargenInferior(parseFloat(configuracion?.etiqueta_margen_inferior || '1.0'));
-      setEtiquetaMargenIzquierdo(parseFloat(configuracion?.etiqueta_margen_izquierdo || '1.0'));
-      setEtiquetaMargenDerecho(parseFloat(configuracion?.etiqueta_margen_derecho || '1.0'));
-      setEtiquetaGapColumnas(parseFloat(configuracion?.etiqueta_gap_columnas || '0.5'));
-      setEtiquetaGapFilas(parseFloat(configuracion?.etiqueta_gap_filas || '0.0'));
-
-      setEtiquetaCabeceraBold(configuracion?.etiqueta_cabecera_bold !== 'false');
-      setEtiquetaCabeceraItalic(configuracion?.etiqueta_cabecera_italic === 'true');
-      setEtiquetaMarcaBold(configuracion?.etiqueta_marca_bold === 'true');
-      setEtiquetaMarcaItalic(configuracion?.etiqueta_marca_italic === 'true');
-      setEtiquetaCodigoBold(configuracion?.etiqueta_codigo_bold !== 'false');
-      setEtiquetaCodigoItalic(configuracion?.etiqueta_codigo_italic === 'true');
-      setEtiquetaSerialBold(configuracion?.etiqueta_serial_bold === 'true');
-      setEtiquetaSerialItalic(configuracion?.etiqueta_serial_italic === 'true');
-
       setLoading(false);
     });
   }, [configuracion]);
+
+  // Sincronizar configuraciones cuando cambia el formato de papel seleccionado para independizar los presets
+  useEffect(() => {
+    if (!configuracion) return;
+    const f = etiquetaFormatoPapel;
+
+    const getVal = (baseKey, defaultValue, isBool = false) => {
+      const suffixed = `${baseKey}_${f}`;
+      if (configuracion[suffixed] !== undefined && configuracion[suffixed] !== null) {
+        const raw = configuracion[suffixed];
+        if (isBool) return raw !== 'false' && raw !== false;
+        return raw;
+      }
+      const savedFormat = configuracion.etiqueta_formato_papel || 'avery_5167';
+      if (f === savedFormat && configuracion[baseKey] !== undefined && configuracion[baseKey] !== null) {
+        const raw = configuracion[baseKey];
+        if (isBool) return raw !== 'false' && raw !== false;
+        return raw;
+      }
+      return defaultValue;
+    };
+
+    // Load values for the selected format
+    if (f === 'avery_5167') {
+      setEtiquetaAnchoMm(parseFloat(getVal('etiqueta_ancho_mm', '44')));
+      setEtiquetaAltoMm(parseFloat(getVal('etiqueta_alto_mm', '13')));
+      setEtiquetaAlturaCodigoBarrasMm(parseFloat(getVal('etiqueta_altura_codigo_barras_mm', '4.8')));
+      setEtiquetaLetraCabeceraPt(parseFloat(getVal('etiqueta_letra_cabecera_pt', '3.8')));
+      setEtiquetaLetraMarcaModeloPt(parseFloat(getVal('etiqueta_letra_marca_modelo_pt', '3.5')));
+      setEtiquetaLetraCodigoPt(parseFloat(getVal('etiqueta_letra_codigo_pt', '4.5')));
+      setEtiquetaLetraSerialPt(parseFloat(getVal('etiqueta_letra_serial_pt', '4.0')));
+      setEtiquetaMargenSuperior(parseFloat(getVal('etiqueta_margen_superior', '1.0')));
+      setEtiquetaMargenInferior(parseFloat(getVal('etiqueta_margen_inferior', '1.0')));
+      setEtiquetaMargenIzquierdo(parseFloat(getVal('etiqueta_margen_izquierdo', '1.0')));
+      setEtiquetaMargenDerecho(parseFloat(getVal('etiqueta_margen_derecho', '1.0')));
+      setEtiquetaGapColumnas(parseFloat(getVal('etiqueta_gap_columnas', '0.5')));
+      setEtiquetaGapFilas(parseFloat(getVal('etiqueta_gap_filas', '0.0')));
+    } else if (f === 'uline_s10425sil') {
+      setEtiquetaAnchoMm(parseFloat(getVal('etiqueta_ancho_mm', '66.7')));
+      setEtiquetaAltoMm(parseFloat(getVal('etiqueta_alto_mm', '25.4')));
+      setEtiquetaAlturaCodigoBarrasMm(parseFloat(getVal('etiqueta_altura_codigo_barras_mm', '9.0')));
+      setEtiquetaLetraCabeceraPt(parseFloat(getVal('etiqueta_letra_cabecera_pt', '6.5')));
+      setEtiquetaLetraMarcaModeloPt(parseFloat(getVal('etiqueta_letra_marca_modelo_pt', '6.0')));
+      setEtiquetaLetraCodigoPt(parseFloat(getVal('etiqueta_letra_codigo_pt', '7.5')));
+      setEtiquetaLetraSerialPt(parseFloat(getVal('etiqueta_letra_serial_pt', '6.8')));
+      setEtiquetaMargenSuperior(parseFloat(getVal('etiqueta_margen_superior', '1.27')));
+      setEtiquetaMargenInferior(parseFloat(getVal('etiqueta_margen_inferior', '1.27')));
+      setEtiquetaMargenIzquierdo(parseFloat(getVal('etiqueta_margen_izquierdo', '0.48')));
+      setEtiquetaMargenDerecho(parseFloat(getVal('etiqueta_margen_derecho', '0.48')));
+      setEtiquetaGapColumnas(parseFloat(getVal('etiqueta_gap_columnas', '0.32')));
+      setEtiquetaGapFilas(parseFloat(getVal('etiqueta_gap_filas', '0.0')));
+    } else if (f === 'rollo_51_25') {
+      setEtiquetaAnchoMm(parseFloat(getVal('etiqueta_ancho_mm', '51')));
+      setEtiquetaAltoMm(parseFloat(getVal('etiqueta_alto_mm', '25')));
+      setEtiquetaAlturaCodigoBarrasMm(parseFloat(getVal('etiqueta_altura_codigo_barras_mm', '9.0')));
+      setEtiquetaLetraCabeceraPt(parseFloat(getVal('etiqueta_letra_cabecera_pt', '6.5')));
+      setEtiquetaLetraMarcaModeloPt(parseFloat(getVal('etiqueta_letra_marca_modelo_pt', '6.0')));
+      setEtiquetaLetraCodigoPt(parseFloat(getVal('etiqueta_letra_codigo_pt', '7.5')));
+      setEtiquetaLetraSerialPt(parseFloat(getVal('etiqueta_letra_serial_pt', '6.8')));
+    } else { // 'rollo' (generic custom)
+      setEtiquetaAnchoMm(parseFloat(getVal('etiqueta_ancho_mm', '30')));
+      setEtiquetaAltoMm(parseFloat(getVal('etiqueta_alto_mm', '15')));
+      setEtiquetaAlturaCodigoBarrasMm(parseFloat(getVal('etiqueta_altura_codigo_barras_mm', '5.6')));
+      setEtiquetaLetraCabeceraPt(parseFloat(getVal('etiqueta_letra_cabecera_pt', '4.5')));
+      setEtiquetaLetraMarcaModeloPt(parseFloat(getVal('etiqueta_letra_marca_modelo_pt', '4.2')));
+      setEtiquetaLetraCodigoPt(parseFloat(getVal('etiqueta_letra_codigo_pt', '5.5')));
+      setEtiquetaLetraSerialPt(parseFloat(getVal('etiqueta_letra_serial_pt', '5.0')));
+    }
+
+    setEtiquetaMostrarCabecera(getVal('etiqueta_mostrar_cabecera', true, true));
+    setEtiquetaMostrarMarcaModelo(getVal('etiqueta_mostrar_marca_modelo', true, true));
+    setEtiquetaMostrarSerial(getVal('etiqueta_mostrar_serial', true, true));
+    
+    setEtiquetaCabeceraBold(getVal('etiqueta_cabecera_bold', true, true));
+    setEtiquetaCabeceraItalic(getVal('etiqueta_cabecera_italic', false, true));
+    setEtiquetaMarcaBold(getVal('etiqueta_marca_bold', false, true));
+    setEtiquetaMarcaItalic(getVal('etiqueta_marca_italic', false, true));
+    setEtiquetaCodigoBold(getVal('etiqueta_codigo_bold', true, true));
+    setEtiquetaCodigoItalic(getVal('etiqueta_codigo_italic', false, true));
+    setEtiquetaSerialBold(getVal('etiqueta_serial_bold', false, true));
+    setEtiquetaSerialItalic(getVal('etiqueta_serial_italic', false, true));
+  }, [etiquetaFormatoPapel, configuracion]);
 
   // Cargar lista de respaldos al entrar a la pestaña "sistema"
   const fetchBackups = useCallback(async () => {
@@ -174,37 +230,68 @@ export default function ConfiguracionPanel({ bienes, showToast, configuracion = 
     if (e) e.preventDefault();
     setSaving(true);
     try {
+      const f = etiquetaFormatoPapel;
+      const payload = { 
+        formato_codigo_inventario: format, 
+        cabecera_etiqueta_impresion: cabecera.trim(),
+        etiqueta_formato_papel: f,
+
+        // active generic values
+        etiqueta_mostrar_cabecera: String(etiquetaMostrarCabecera),
+        etiqueta_mostrar_marca_modelo: String(etiquetaMostrarMarcaModelo),
+        etiqueta_mostrar_serial: String(etiquetaMostrarSerial),
+        etiqueta_ancho_mm: String(etiquetaAnchoMm),
+        etiqueta_alto_mm: String(etiquetaAltoMm),
+        etiqueta_altura_codigo_barras_mm: String(etiquetaAlturaCodigoBarrasMm),
+        etiqueta_letra_cabecera_pt: String(etiquetaLetraCabeceraPt),
+        etiqueta_letra_marca_modelo_pt: String(etiquetaLetraMarcaModeloPt),
+        etiqueta_letra_codigo_pt: String(etiquetaLetraCodigoPt),
+        etiqueta_letra_serial_pt: String(etiquetaLetraSerialPt),
+        etiqueta_cabecera_bold: String(etiquetaCabeceraBold),
+        etiqueta_cabecera_italic: String(etiquetaCabeceraItalic),
+        etiqueta_marca_bold: String(etiquetaMarcaBold),
+        etiqueta_marca_italic: String(etiquetaMarcaItalic),
+        etiqueta_codigo_bold: String(etiquetaCodigoBold),
+        etiqueta_codigo_italic: String(etiquetaCodigoItalic),
+        etiqueta_serial_bold: String(etiquetaSerialBold),
+        etiqueta_serial_italic: String(etiquetaSerialItalic),
+        etiqueta_margen_superior: String(etiquetaMargenSuperior),
+        etiqueta_margen_inferior: String(etiquetaMargenInferior),
+        etiqueta_margen_izquierdo: String(etiquetaMargenIzquierdo),
+        etiqueta_margen_derecho: String(etiquetaMargenDerecho),
+        etiqueta_gap_columnas: String(etiquetaGapColumnas),
+        etiqueta_gap_filas: String(etiquetaGapFilas),
+
+        // format-specific suffixed values
+        [`etiqueta_mostrar_cabecera_${f}`]: String(etiquetaMostrarCabecera),
+        [`etiqueta_mostrar_marca_modelo_${f}`]: String(etiquetaMostrarMarcaModelo),
+        [`etiqueta_mostrar_serial_${f}`]: String(etiquetaMostrarSerial),
+        [`etiqueta_ancho_mm_${f}`]: String(etiquetaAnchoMm),
+        [`etiqueta_alto_mm_${f}`]: String(etiquetaAltoMm),
+        [`etiqueta_altura_codigo_barras_mm_${f}`]: String(etiquetaAlturaCodigoBarrasMm),
+        [`etiqueta_letra_cabecera_pt_${f}`]: String(etiquetaLetraCabeceraPt),
+        [`etiqueta_letra_marca_modelo_pt_${f}`]: String(etiquetaLetraMarcaModeloPt),
+        [`etiqueta_letra_codigo_pt_${f}`]: String(etiquetaLetraCodigoPt),
+        [`etiqueta_letra_serial_pt_${f}`]: String(etiquetaLetraSerialPt),
+        [`etiqueta_cabecera_bold_${f}`]: String(etiquetaCabeceraBold),
+        [`etiqueta_cabecera_italic_${f}`]: String(etiquetaCabeceraItalic),
+        [`etiqueta_marca_bold_${f}`]: String(etiquetaMarcaBold),
+        [`etiqueta_marca_italic_${f}`]: String(etiquetaMarcaItalic),
+        [`etiqueta_codigo_bold_${f}`]: String(etiquetaCodigoBold),
+        [`etiqueta_codigo_italic_${f}`]: String(etiquetaCodigoItalic),
+        [`etiqueta_serial_bold_${f}`]: String(etiquetaSerialBold),
+        [`etiqueta_serial_italic_${f}`]: String(etiquetaSerialItalic),
+        [`etiqueta_margen_superior_${f}`]: String(etiquetaMargenSuperior),
+        [`etiqueta_margen_inferior_${f}`]: String(etiquetaMargenInferior),
+        [`etiqueta_margen_izquierdo_${f}`]: String(etiquetaMargenIzquierdo),
+        [`etiqueta_margen_derecho_${f}`]: String(etiquetaMargenDerecho),
+        [`etiqueta_gap_columnas_${f}`]: String(etiquetaGapColumnas),
+        [`etiqueta_gap_filas_${f}`]: String(etiquetaGapFilas)
+      };
+
       const res = await fetch('/api/configuracion', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          formato_codigo_inventario: format, 
-          cabecera_etiqueta_impresion: cabecera.trim(),
-          etiqueta_mostrar_cabecera: String(etiquetaMostrarCabecera),
-          etiqueta_mostrar_marca_modelo: String(etiquetaMostrarMarcaModelo),
-          etiqueta_mostrar_serial: String(etiquetaMostrarSerial),
-          etiqueta_ancho_mm: String(etiquetaAnchoMm),
-          etiqueta_alto_mm: String(etiquetaAltoMm),
-          etiqueta_altura_codigo_barras_mm: String(etiquetaAlturaCodigoBarrasMm),
-          etiqueta_letra_cabecera_pt: String(etiquetaLetraCabeceraPt),
-          etiqueta_letra_marca_modelo_pt: String(etiquetaLetraMarcaModeloPt),
-          etiqueta_letra_codigo_pt: String(etiquetaLetraCodigoPt),
-          etiqueta_letra_serial_pt: String(etiquetaLetraSerialPt),
-          etiqueta_formato_papel: etiquetaFormatoPapel,
-          etiqueta_cabecera_bold: String(etiquetaCabeceraBold),
-          etiqueta_cabecera_italic: String(etiquetaCabeceraItalic),
-          etiqueta_marca_bold: String(etiquetaMarcaBold),
-          etiqueta_marca_italic: String(etiquetaMarcaItalic),
-          etiqueta_codigo_bold: String(etiquetaCodigoBold),
-          etiqueta_codigo_italic: String(etiquetaCodigoItalic),
-          etiqueta_serial_bold: String(etiquetaSerialBold),
-          etiqueta_serial_italic: String(etiquetaSerialItalic),
-          etiqueta_margen_superior: String(etiquetaMargenSuperior),
-          etiqueta_margen_inferior: String(etiquetaMargenInferior),
-          etiqueta_margen_izquierdo: String(etiquetaMargenIzquierdo),
-          etiqueta_margen_derecho: String(etiquetaMargenDerecho),
-          etiqueta_gap_columnas: String(etiquetaGapColumnas),
-          etiqueta_gap_filas: String(etiquetaGapFilas)
-        })
+        body: JSON.stringify(payload)
       });
       if (!res.ok) throw new Error('Error al guardar');
       if (showToast) showToast('¡Configuración de etiqueta guardada exitosamente!', 'success');
@@ -356,7 +443,7 @@ export default function ConfiguracionPanel({ bienes, showToast, configuracion = 
       <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '24px', boxShadow: 'var(--shadow-card)', display: 'flex', flexDirection: 'column', gap: 8 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div className="content-panel-label">Parámetros Globales</div>
-          <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>v0.12.5 (Pre-lanzamiento)</span>
+          <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>v1.0.0 (Estable)</span>
         </div>
         <h2 style={{ fontSize: 24, fontWeight: 700, letterSpacing: '-0.03em', marginTop: 4 }}>Configuración General del Sistema</h2>
         <p style={{ color: 'var(--text-secondary)', fontSize: 13, marginTop: 4 }}>

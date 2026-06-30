@@ -142,6 +142,7 @@ export default function ReporteDiscrepancias({
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             {configuracion?.logo_institucion ? (
+              // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={configuracion.logo_institucion}
                 alt="Logo Oficial"
@@ -590,7 +591,7 @@ export default function ReporteDiscrepancias({
               marginBottom: 16,
               lineHeight: 1.5
             }}>
-              ℹ️ Los siguientes códigos de barras o números de serie fueron detectados por el lector pero no coinciden con ningún bien registrado en la base de datos de <strong>GDI UPEN</strong>. Puedes registrar un nuevo bien o verificar si la etiqueta está maltratada.
+              ℹ️ Los siguientes códigos de barras o números de serie fueron detectados por el lector pero no coinciden con ningún bien registrado en la base de datos de <strong>SICOB UPEN</strong>. Puedes registrar un nuevo bien o verificar si la etiqueta está maltratada.
             </div>
 
             <table className="inventory-table" style={{ width: '100%', fontSize: 12 }}>
