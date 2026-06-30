@@ -1,5 +1,6 @@
 'use client';
 import { useState, useMemo, useEffect, useCallback } from 'react';
+import SignaturePad from './SignaturePad';
 
 /**
  * ResguardosPanel — Gestor Profesional de Resguardos Colectivos e Individuales
@@ -127,16 +128,18 @@ export default function ResguardosPanel({ bienes, showToast, refreshBienes, conf
     };
   }, [activeCustodioId, custodiosConResguardos]);
 
+  const [signatureData, setSignatureData] = useState(null);
+
   const handleOpenFicha = (custodio) => {
     setSelectedCustodio(custodio);
     setIsSigned(false);
-    setTypedName('');
+    setSignatureData(null);
   };
 
   // Simular la firma del acta colectiva
   const handleSaveSignature = (e) => {
     e.preventDefault();
-    if (!typedName.trim()) return;
+    if (!signatureData) return;
     setIsSigned(true);
     setShowSignModal(false);
     if (showToast) showToast('¡Acta de resguardo colectivo firmada digitalmente!', 'success');
@@ -631,17 +634,14 @@ export default function ResguardosPanel({ bienes, showToast, refreshBienes, conf
                 </div>
 
                 <div style={{ flex: 1, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                  <div style={{ height: 48, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', width: '80%' }}>
-                    {isSigned ? (
-                      <span style={{
-                        fontFamily: signatureFont === 'cursive' ? '"Caveat", "Brush Script MT", cursive' : 'sans-serif',
-                        fontSize: 22,
-                        color: '#1D4ED8',
-                        lineHeight: 1,
-                        transform: 'rotate(-3deg)'
-                      }}>
-                        {typedName}
-                      </span>
+                  <div style={{ height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center', width: '80%' }}>
+                    {isSigned && signatureData ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img 
+                        src={signatureData} 
+                        alt="Firma" 
+                        style={{ maxHeight: '44px', maxWidth: '100%', objectFit: 'contain' }} 
+                      />
                     ) : (
                       <span style={{ fontSize: 9.5, color: '#9CA3AF', fontStyle: 'italic' }}>
                         Firma pendiente del Custodio
@@ -661,79 +661,28 @@ export default function ResguardosPanel({ bienes, showToast, refreshBienes, conf
 
       {/* Modal de Firma Digital (No imprimible) */}
       {showSignModal && (
-        <div className="modal-overlay" onClick={() => setShowSignModal(false)} style={{ zIndex: 130 }}>
+        <div className="modal-overlay" onClick={() => { setShowSignModal(false); setSignatureData(null); }} style={{ zIndex: 130 }}>
           <div className="modal-box" onClick={e => e.stopPropagation()} style={{ maxWidth: 450 }}>
             <div className="modal-header">
               <div>
-                <div className="modal-title">Firma Digital del Resguardo Colectivo</div>
-                <div className="modal-sub">Escribe el nombre completo del custodio para conformar firma</div>
+                <div className="modal-title">Firma Táctil del Resguardo Colectivo</div>
+                <div className="modal-sub">Dibuja la firma del custodio directamente en el panel</div>
               </div>
-              <button className="btn-icon" onClick={() => setShowSignModal(false)} style={{ border: 'none' }}>✕</button>
+              <button className="btn-icon" onClick={() => { setShowSignModal(false); setSignatureData(null); }} style={{ border: 'none' }}>✕</button>
             </div>
             <form onSubmit={handleSaveSignature}>
               <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                 <div>
-                  <label className="form-label">Escribe el nombre para la firma:</label>
-                  <input
-                    className="form-input"
-                    type="text"
-                    required
-                    placeholder={activeCustodioDetails?.nombre}
-                    value={typedName}
-                    onChange={e => setTypedName(e.target.value)}
+                  <label className="form-label">Dibuja la firma en el panel:</label>
+                  <SignaturePad 
+                    onSave={(data) => setSignatureData(data)}
+                    onClear={() => setSignatureData(null)}
                   />
                 </div>
-
-                <div>
-                  <label className="form-label">Estilo de Firma Manuscrita:</label>
-                  <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, cursor: 'pointer' }}>
-                      <input
-                        type="radio"
-                        name="font"
-                        checked={signatureFont === 'cursive'}
-                        onChange={() => setSignatureFont('cursive')}
-                      />
-                      Manuscrita (Script)
-                    </label>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, cursor: 'pointer' }}>
-                      <input
-                        type="radio"
-                        name="font"
-                        checked={signatureFont === 'sans'}
-                        onChange={() => setSignatureFont('sans')}
-                      />
-                      Formal (Sencilla)
-                    </label>
-                  </div>
-                </div>
-
-                {/* Vista previa */}
-                {typedName && (
-                  <div style={{
-                    background: '#F9FAFB',
-                    border: '1px dashed #D1D5DB',
-                    borderRadius: 6,
-                    padding: '20px 10px',
-                    textAlign: 'center',
-                    marginTop: 10
-                  }}>
-                    <div style={{ fontSize: 10, color: '#6B7280', marginBottom: 8, textTransform: 'uppercase' }}>Vista Previa de la Firma</div>
-                    <span style={{
-                      fontFamily: signatureFont === 'cursive' ? '"Caveat", "Brush Script MT", cursive' : 'sans-serif',
-                      fontSize: 24,
-                      color: '#1D4ED8',
-                      transform: 'rotate(-2deg)',
-                      display: 'inline-block'
-                    }}>
-                      {typedName}
-                    </span>
-                  </div>
-                )}
               </div>
               <div className="modal-footer">
-                <button type="button" className="btn btn-ghost" onClick={() => setShowSignModal(false)}>Cancelar</button>
-                <button type="submit" className="btn btn-primary" style={{ minWidth: 120 }}>
+                <button type="button" className="btn btn-ghost" onClick={() => { setShowSignModal(false); setSignatureData(null); }}>Cancelar</button>
+                <button type="submit" className="btn btn-primary" style={{ minWidth: 120 }} disabled={!signatureData}>
                   💾 Estampar Firma
                 </button>
               </div>
