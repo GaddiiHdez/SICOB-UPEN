@@ -29,7 +29,7 @@ import { generateBarcodeSVG } from '@/lib/barcode';
 import { useInventarioData } from '@/hooks/useInventarioData';
 import { useNotifications }  from '@/hooks/useNotifications';
 import { useDarkMode }       from '@/hooks/useDarkMode';
-import { Sun, Moon, QrCode, Bell, Download, Plus, RefreshCw, Settings2, LogOut, PartyPopper } from 'lucide-react';
+import { Sun, Moon, QrCode, Bell, Download, Plus, RefreshCw, Settings2, LogOut, PartyPopper, BookOpen } from 'lucide-react';
 
 // ── Página principal del sistema de inventario ──────────────────
 // Este archivo contiene:
@@ -1145,6 +1145,16 @@ export default function HomePage() {
                     >
                       <PartyPopper size={15} /> Acerca de SICOB
                     </button>
+                    <a
+                      href="/MANUAL.html"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="user-dropdown-item"
+                      onClick={() => setShowUserDropdown(false)}
+                      style={{ borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', color: 'var(--text-primary)' }}
+                    >
+                      <BookOpen size={15} /> Manual de Usuario
+                    </a>
                     <button
                       className="user-dropdown-item user-dropdown-item-danger"
                       onClick={() => {
