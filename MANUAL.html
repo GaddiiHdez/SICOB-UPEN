@@ -659,16 +659,64 @@
   <div class="page">
     <h2 class="chapter-title"><span class="chapter-number">8.</span> Catálogos</h2>
     <p>
-      El módulo de <strong>Catálogos</strong> administra las tablas maestras que estructuran las relaciones del sistema. Solo es editable por usuarios con rol <strong>ADMINISTRADOR</strong>.
+      El módulo de <strong>Catálogos</strong> administra las tablas maestras que estructuran las relaciones de SICOB. Solo es accesible y editable por usuarios con rol <strong>ADMINISTRADOR</strong>.
     </p>
 
     <h3>Tablas Maestras Disponibles:</h3>
-    <ol>
+    <ol style="margin-bottom: 20px;">
       <li><strong>Categorías</strong>: Clasificaciones del inventario (ej. Cómputo, Monitores, Mobiliario de Aula, Drones) con iconos personalizados.</li>
       <li><strong>Ubicaciones</strong>: Edificios, aulas, almacenes o laboratorios físicos de la universidad.</li>
       <li><strong>Departamentos</strong>: Oficinas administrativas de la institución (ej. Recursos Humanos, Servicios Escolares, Departamento de Informática).</li>
-      <li><strong>Usuarios</strong>: Gestión de accesos al sistema con asignación de roles y herramientas de seguridad (como la generación de códigos para restablecer contraseñas).</li>
+      <li><strong>Usuarios</strong>: Control de credenciales de acceso, asignación de roles y flujos de restablecimiento de contraseñas.</li>
     </ol>
+
+    <h3>Gestión de Usuarios y Roles</h3>
+    <p>
+      La seguridad del sistema se fundamenta en dos roles definidos que controlan los permisos dentro de la aplicación:
+    </p>
+    <ul>
+      <li><strong>ADMINISTRADOR</strong>: Posee control total del sistema. Puede añadir y modificar bienes, personal, consumibles, catálogos, configuraciones de impresión, generar códigos de restablecimiento y realizar copias de seguridad de la base de datos.</li>
+      <li><strong>USUARIO</strong>: Cuenta con permisos exclusivos de consulta y operación básica. Puede ver el inventario, incidentes, consumibles y generar reportes o actas de resguardo, pero tiene bloqueadas las acciones de creación de usuarios, borrado de registros, modificaciones del sistema y copias de seguridad.</li>
+    </ul>
+
+    <h3>Cómo Añadir un Nuevo Usuario</h3>
+    <ol class="step-list">
+      <li class="step-item">
+        Ingresa a <strong>Catálogos</strong> y haz clic en la pestaña <strong>"Usuarios"</strong>.
+      </li>
+      <li class="step-item">
+        Haz clic en el botón <strong>"➕ Añadir Usuario"</strong> en la parte superior derecha.
+      </li>
+      <li class="step-item">
+        Completa el formulario: ingresa el Nombre completo, Correo electrónico institucional, selecciona el Rol asignado (Administrador o Usuario) y escribe la contraseña inicial de acceso.
+      </li>
+      <li class="step-item">
+        Haz clic en <strong>"Guardar"</strong>. El usuario se registrará con su contraseña encriptada de forma segura bajo algoritmo bcrypt en la base de datos PostgreSQL.
+      </li>
+    </ol>
+
+    <h3>Flujo para Restablecer Contraseñas</h3>
+    <p>
+      Si un usuario olvida su contraseña, el administrador puede generar un código de acceso temporal de 6 dígitos para que el usuario restablezca su clave de forma autónoma:
+    </p>
+    <ol class="step-list">
+      <li class="step-item">
+        <strong>Generar el Código (Administrador):</strong> Ve a Catálogos ➔ Usuarios, localiza al usuario y haz clic en el botón <strong>"🔑 Reestablecer"</strong>. Esto generará un código único de 6 dígitos válido por 30 minutos. Haz clic en "Copiar código" y compártelo con el usuario de manera segura.
+      </li>
+      <li class="step-item">
+        <strong>Iniciar la Recuperación (Usuario):</strong> El usuario debe ir a la pantalla de inicio de sesión de SICOB y hacer clic en <strong>"¿Olvidaste tu contraseña?"</strong>.
+      </li>
+      <li class="step-item">
+        <strong>Ingresar Datos:</strong> El usuario escribe su correo institucional, el código de 6 dígitos que le compartió el administrador, y escribe su nueva contraseña (mínimo 6 caracteres).
+      </li>
+      <li class="step-item">
+        <strong>Confirmar Cambio:</strong> Haz clic en <strong>"Cambiar contraseña"</strong>. El sistema validará el código en PostgreSQL y actualizará la contraseña de inmediato.
+      </li>
+    </ol>
+
+    <div class="alert-box alert-important">
+      <strong>[!] SOPORTE DE CASO Y ESPACIOS:</strong> El sistema de inicio de sesión y recuperación normaliza de forma automática el correo institucional convirtiéndolo a minúsculas y removiendo espacios adicionales. Esto previene que errores de autocorrección en teclados móviles bloqueen la validación del código.
+    </div>
   </div>
 
   <!-- ==========================================
