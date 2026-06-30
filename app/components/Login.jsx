@@ -30,7 +30,11 @@ function ForgotPasswordForm({ onBack }) {
       const res = await fetch('/api/auth/reset-confirm', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ correo, token: token.trim(), nuevaPassword }),
+        body: JSON.stringify({ 
+          correo: correo.trim().toLowerCase(), 
+          token: token.trim(), 
+          nuevaPassword 
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Error al restablecer la contraseña');

@@ -31,8 +31,10 @@ export async function POST(request) {
       );
     }
 
+    const normalizedCorreo = correo.trim().toLowerCase();
+
     // Verificar que el usuario existe
-    const usuario = await prisma.usuario.findUnique({ where: { correo } });
+    const usuario = await prisma.usuario.findUnique({ where: { correo: normalizedCorreo } });
     if (!usuario) {
       return NextResponse.json(
         { error: 'No existe un usuario con ese correo.' },
@@ -42,7 +44,7 @@ export async function POST(request) {
 
     // Invalidar tokens previos no usados del mismo correo
     await prisma.passwordReset.updateMany({
-      where: { correo, usado: false },
+      where: { correo: normalizedCorreo, usado: false },
       data: { usado: true },
     });
 
@@ -53,7 +55,7 @@ export async function POST(request) {
     const expiresAt = new Date(Date.now() + 30 * 60 * 1000);
 
     await prisma.passwordReset.create({
-      data: { correo, token, expiresAt },
+      data: { correo: normalizedCorreo, token, expiresAt },
     });
 
     console.log(`🔑 Token de restablecimiento generado por ${user.correo} para ${correo}: ${token}`);

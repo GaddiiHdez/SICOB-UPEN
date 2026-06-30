@@ -44,8 +44,10 @@ export async function POST(request) {
       );
     }
 
+    const normalizedCorreo = correo.trim().toLowerCase();
+
     // Buscar el usuario en la base de datos
-    const usuario = await prisma.usuario.findUnique({ where: { correo } });
+    const usuario = await prisma.usuario.findUnique({ where: { correo: normalizedCorreo } });
 
     if (!usuario) {
       // Respuesta genérica: no revelar si el correo existe o no (seguridad)

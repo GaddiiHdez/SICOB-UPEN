@@ -26,9 +26,12 @@ export async function POST(request) {
       );
     }
 
+    const normalizedCorreo = correo.trim().toLowerCase();
+    const normalizedToken = token.trim();
+
     // Buscar el token más reciente válido para ese correo
     const resetRecord = await prisma.passwordReset.findFirst({
-      where: { correo, token, usado: false },
+      where: { correo: normalizedCorreo, token: normalizedToken, usado: false },
       orderBy: { createdAt: 'desc' },
     });
 
@@ -52,7 +55,7 @@ export async function POST(request) {
 
     await prisma.$transaction([
       prisma.usuario.update({
-        where: { correo },
+        where: { correo: normalizedCorreo },
         data: { password_hash: nuevoHash },
       }),
       prisma.passwordReset.update({
